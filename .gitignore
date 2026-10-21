@@ -1,0 +1,16 @@
+# Build files
+build/
+cmake-build-*/
+
+# Local SQLite database
+database/*.db
+database/*.db-shm
+database/*.db-wal
+
+# IDE files
+.vscode/
+.idea/
+
+# Temporary files
+cpp17_check.cpp
+hms.exe
