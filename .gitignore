@@ -1,15 +1,23 @@
-# Build files
-build/
+# Build output
+build*/
+out/
 cmake-build-*/
-
-# Local SQLite database
-database/*.db
-database/*.db-shm
-database/*.db-wal
+CMakeFiles/
+CMakeCache.txt
 
 # IDE files
+.vs/
 .vscode/
 .idea/
+*.user
+
+# Local data stores and their companion files (never commit patient data)
+database/
+*.db
+*.db-journal
+*.db.lock
+*.db-wal
+*.db-shm
 
 # Temporary files
 cpp17_check.cpp
