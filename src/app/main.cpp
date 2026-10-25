@@ -8,10 +8,14 @@
 #include <string>
 #include <system_error>
 
+#include "config/policy.hpp"
+#include "core/clock.hpp"
 #include "data/schema.hpp"
 #include "data/store.hpp"
 #include "platform/console_setup.hpp"
+#include "patient/patient_service.hpp"
 #include "platform/store_lock.hpp"
+#include "ui/console_app.hpp"
 #include "ui/console_io.hpp"
 
 using namespace hms;
@@ -89,8 +93,40 @@ int main(int argc, char** argv) {
         out << "\nCannot start: " << store.message << "\n";
         return 1;
     }
-    out << "\nData store: " << canonical << (store.created ? "  (new)" : "") << "\n"
-        << "Schema version: " << store.schemaVersion << "\n"
-        << "The data store is ready. Features are added by the module pull requests.\n";
-    return 0;
+    out << "\nData store: " << canonical << (store.created ? "  (new)" : "") << "\n";
+    if (store.migrated) out << "The data store was upgraded to schema version " << store.schemaVersion << ".\n";
+
+    // 3. Session. Staff login is issue #3; until it is merged the user picks
+    //    the role to simulate (deviation D-01). The business modules still
+    //    check the role on every operation.
+    out << "\nStaff login is not built yet (issue #3). Choose the role to simulate:\n"
+           "  1. Receptionist\n  2. Doctor\n  0. Exit\n";
+    Session session;
+    session.simulated = true;
+    while (true) {
+        auto choice = io.readLine("Role: ");
+        if (!choice || *choice == "0") {
+            out << "Goodbye.\n";
+            return 0;
+        }
+        if (*choice == "1") {
+            session.role = Role::Receptionist;
+            session.userId = "SIM-RECEPTION";
+            session.displayName = "Reception desk (simulated)";
+            break;
+        }
+        if (*choice == "2") {
+            session.role = Role::Doctor;
+            session.userId = "SIM-DOCTOR";
+            session.displayName = "Doctor (simulated)";
+            break;
+        }
+        out << "  Please choose 0, 1 or 2.\n";
+    }
+
+    SystemClock clock;
+    AppPolicy policy;
+    PatientService patients(*store.db, clock, policy);
+    ConsoleApp app(io, patients, session);
+    return app.run();
 }

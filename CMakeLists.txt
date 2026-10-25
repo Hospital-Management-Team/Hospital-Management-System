@@ -78,6 +78,16 @@ set(HMS_FOUNDATION_SOURCES
 
 # Feature modules: each feature pull request adds its sources here.
 set(HMS_FEATURE_SOURCES
+  # Patient registration and search (issue #2), with the audit trail and role check it needs
+  src/audit/audit_log.cpp
+  src/auth/authorizer.cpp
+  src/patient/uhid.cpp
+  src/patient/phone.cpp
+  src/patient/patient.cpp
+  src/patient/patient_validation.cpp
+  src/patient/patient_repository.cpp
+  src/patient/patient_service.cpp
+  src/ui/console_app.cpp
 )
 
 add_library(hms_core STATIC ${HMS_FOUNDATION_SOURCES} ${HMS_FEATURE_SOURCES})
@@ -86,6 +96,11 @@ target_link_libraries(hms_core PUBLIC hms_sqlite PRIVATE hms_warnings)
 
 add_executable(hms src/app/main.cpp)
 target_link_libraries(hms PRIVATE hms_core hms_warnings)
+
+# ---- Developer tools ---------------------------------------------------------
+# hms_seed: synthetic patients and search timings (test data only).
+add_executable(hms_seed tools/hms_seed.cpp)
+target_link_libraries(hms_seed PRIVATE hms_core hms_warnings)
 
 # ---- Tests -------------------------------------------------------------------
 if(HMS_BUILD_TESTS)
@@ -99,6 +114,14 @@ if(HMS_BUILD_TESTS)
   )
   # Feature pull requests add their test files here.
   set(HMS_FEATURE_TEST_SOURCES
+    # issue #2
+    tests/test_uhid.cpp
+    tests/test_phone.cpp
+    tests/test_patient_validation.cpp
+    tests/test_registration.cpp
+    tests/test_search.cpp
+    tests/test_patient_store.cpp
+    tests/test_console_app.cpp
   )
   add_executable(hms_tests ${HMS_TEST_SOURCES} ${HMS_FEATURE_TEST_SOURCES})
   target_include_directories(hms_tests SYSTEM PRIVATE third_party/doctest)
