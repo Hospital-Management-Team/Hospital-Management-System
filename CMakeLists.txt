@@ -3,7 +3,7 @@ project(HospitalManagementSystem VERSION 0.1.0 LANGUAGES C CXX)
 
 # ---------------------------------------------------------------------------
 # Hospital Management System (Team 2)
-# C++17, SQLite (vendored amalgamation), doctest (vendored single header).
+# C++17, SQLite (vendored amalgamation), Argon2 (vendored), doctest (vendored).
 # Builds on Windows (MSVC) and Linux (GCC/Clang) with nothing to install
 # except a compiler and CMake.
 # ---------------------------------------------------------------------------
@@ -45,6 +45,24 @@ else()
   target_link_libraries(hms_sqlite PUBLIC Threads::Threads ${CMAKE_DL_LIBS})
 endif()
 
+# ---- Argon2 (third_party/argon2, reference implementation) -----------------
+add_library(hms_argon2 STATIC
+  third_party/argon2/src/argon2.c
+  third_party/argon2/src/core.c
+  third_party/argon2/src/encoding.c
+  third_party/argon2/src/ref.c
+  third_party/argon2/src/thread.c
+  third_party/argon2/src/blake2/blake2b.c)
+target_include_directories(hms_argon2 SYSTEM PUBLIC third_party/argon2/include)
+target_include_directories(hms_argon2 PRIVATE third_party/argon2/src)
+if(MSVC)
+  target_compile_options(hms_argon2 PRIVATE /W0)
+else()
+  target_compile_options(hms_argon2 PRIVATE -w)
+  find_package(Threads REQUIRED)
+  target_link_libraries(hms_argon2 PUBLIC Threads::Threads)
+endif()
+
 # ---- Warning flags for our own code ----------------------------------------
 add_library(hms_warnings INTERFACE)
 if(MSVC)
@@ -83,16 +101,9 @@ set(HMS_FEATURE_SOURCES
 
 add_library(hms_core STATIC ${HMS_FOUNDATION_SOURCES} ${HMS_FEATURE_SOURCES})
 target_include_directories(hms_core PUBLIC src)
-target_include_directories(hms_core PRIVATE
-  "C:/Users/jithu/OneDrive/Pictures/Desktop/New folder/ucrt64/include"
-)
-
-target_link_libraries(hms_core PUBLIC
-  "C:/Users/jithu/OneDrive/Pictures/Desktop/New folder/ucrt64/lib/libargon2.a"
-)
-target_link_libraries(hms_core PUBLIC hms_sqlite PRIVATE hms_warnings)
+target_link_libraries(hms_core PUBLIC hms_sqlite hms_argon2 PRIVATE hms_warnings)
 if(WIN32)
-    target_link_libraries(hms_core PUBLIC bcrypt)
+  target_link_libraries(hms_core PUBLIC bcrypt)
 endif()
 
 add_executable(hms src/app/main.cpp)

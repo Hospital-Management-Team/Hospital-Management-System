@@ -2,7 +2,7 @@
 #include "auth/authentication.hpp"
 
 #include <argon2.h>
-
+#include <cctype>
 #include <array>
 #include <cerrno>
 #include <stdexcept>
@@ -88,15 +88,40 @@ bool verifyPassword(
 }
 
 } // namespace
+bool isPasswordAcceptable(const std::string& password, std::string& reason) {
+    if (password.size() < 8 || password.size() > 128) {
+        reason = "Password must be 8 to 128 characters long.";
+        return false;
+    }
+    bool upper = false, lower = false, digit = false, symbol = false;
+    for (const char ch : password) {
+        const auto c = static_cast<unsigned char>(ch);
+        if (std::isupper(c)) upper = true;
+        else if (std::islower(c)) lower = true;
+        else if (std::isdigit(c)) digit = true;
+        else symbol = true;
+    }
+    if (!(upper && lower && digit && symbol)) {
+        reason = "Password needs an upper-case letter, a lower-case letter, a digit and a symbol.";
+        return false;
+    }
+    return true;
+}
 
+bool hasStaffAccounts(Database& db) {
+    auto statement = db.prepare("SELECT 1 FROM staff_accounts LIMIT 1");
+    return statement.step();
+}
 bool createStaffAccount(
     Database& db,
     const std::string& username,
     const std::string& password,
     Role role) {
 
-    if (username.empty() || password.empty() ||
-        username.find_first_of(" \t\r\n") != std::string::npos) {
+    std::string reason;
+    if (username.empty() ||
+        username.find_first_of(" \t\r\n") != std::string::npos ||
+        !isPasswordAcceptable(password, reason)) {
         return false;
     }
 

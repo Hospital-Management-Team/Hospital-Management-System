@@ -1,13 +1,10 @@
-// Hospital Management System - console application entry point.
-//
-// Usage:  hms [--store PATH]
-//   --store PATH   data store file (default: database/hospital.db)
 
 #include <filesystem>
 #include <iostream>
 #include <string>
 #include <system_error>
-
+#include "platform/password_input.hpp"
+#include "auth/authentication.hpp"
 #include "data/schema.hpp"
 #include "data/store.hpp"
 #include "platform/console_setup.hpp"
@@ -24,27 +21,70 @@ void printUsage() {
                  "  --help         show this help\n"
                  "  --version      show the version\n";
 }
+void adminMenu(ConsoleIO& io, Database& db) {
+    auto& out = io.out();
+    while (true) {
+        out << "\n--- ADMIN MENU ---\n"
+               "  1. Create staff account\n"
+               "  0. Log out\n";
+        auto c = io.readLine("Choose an option: ");
+        if (!c || *c == "0") return;
+        if (*c != "1") { out << "  Please choose 0 or 1.\n"; continue; }
 
-}  // namespace
+        auto u = io.readLine("New username: ");
+        if (!u) return;
+        out << "  Role: 1. Doctor   2. Receptionist   3. Administrator\n";
+        auto r = io.readLine("Role: ");
+        if (!r) return;
+
+        auth::Role role = auth::Role::Doctor;
+        if (*r == "1") role = auth::Role::Doctor;
+        else if (*r == "2") role = auth::Role::Receptionist;
+        else if (*r == "3") role = auth::Role::Administrator;
+        else { out << "  Please choose 1, 2 or 3.\n"; continue; }
+
+        std::string p1, p2;
+        if (!readPassword("Password: ", p1)) return;
+        if (!readPassword("Repeat password: ", p2)) return;
+        if (p1 != p2) { out << "  Passwords do not match.\n"; continue; }
+
+        std::string reason;
+        if (!auth::isPasswordAcceptable(p1, reason)) { out << "  " << reason << "\n"; continue; }
+
+        if (auth::createStaffAccount(db, *u, p1, role)) {
+            out << "  Account created for '" << *u << "'.\n";
+        } else {
+            out << "  Could not create the account (empty name, contains spaces, or already used).\n";
+        }
+    }
+}
+
+} // namespace
 
 int main(int argc, char** argv) {
     setUpConsoleUtf8();
 
     std::string storePath = "database/hospital.db";
+
     for (int i = 1; i < argc; ++i) {
         const std::string arg = argv[i];
+
         if (arg == "--help" || arg == "-h") {
             printUsage();
             return 0;
         }
+
         if (arg == "--version") {
-            std::cout << "HMS 0.1.0, schema version " << schema::currentVersion() << "\n";
+            std::cout << "HMS 0.1.0, schema version "
+                      << schema::currentVersion() << "\n";
             return 0;
         }
+
         if (arg == "--store" && i + 1 < argc) {
             storePath = argv[++i];
             continue;
         }
+
         std::cerr << "Unknown option: " << arg << "\n";
         printUsage();
         return 2;
@@ -52,45 +92,136 @@ int main(int argc, char** argv) {
 
     ConsoleIO io(std::cin, std::cout);
     auto& out = io.out();
+
     out << "==============================================================================\n"
            " HOSPITAL MANAGEMENT SYSTEM  -  Patient records and appointments\n"
            "==============================================================================\n";
 
-    // The folder that holds the store is created if it is missing.
     const std::string canonical = canonicalStorePath(storePath);
+
     {
         std::error_code ec;
-        const auto parent = std::filesystem::path(canonical).parent_path();
-        if (!parent.empty()) std::filesystem::create_directories(parent, ec);
+        const auto parent =
+            std::filesystem::path(canonical).parent_path();
+
+        if (!parent.empty()) {
+            std::filesystem::create_directories(parent, ec);
+        }
+
+        if (ec) {
+            out << "Cannot create data-store directory: "
+                << ec.message() << "\n";
+            return 1;
+        }
     }
 
-    // 1. One instance per data store (SRS 2.4): take the lock before opening.
+    // Take the store lock before opening the database.
     std::string lockError;
     auto lock = StoreLock::acquire(canonical, lockError);
+
     if (!lock) {
-        out << "Cannot start: " << lockError << ".\nNothing was changed.\n";
+        out << "Cannot start: " << lockError
+            << ".\nNothing was changed.\n";
         return 1;
     }
 
-    // 2. A missing store is created only after confirmation (HMS-F-053 rule 1).
+    // Ask before creating a new, empty store.
     bool create = false;
+
     if (!storeFileExists(canonical)) {
-        out << "\nNo existing data store was found at:\n  " << canonical << "\n";
-        auto yes = io.askYesNo("Set up a NEW, EMPTY data store here? (Y/N): ");
+        out << "\nNo existing data store was found at:\n  "
+            << canonical << "\n";
+
+        auto yes = io.askYesNo(
+            "Set up a NEW, EMPTY data store here? (Y/N): ");
+
         if (!yes || !*yes) {
-            out << "Nothing was created. If you expected existing data, check the --store path.\n";
+            out << "Nothing was created. If you expected existing data, "
+                   "check the --store path.\n";
             return 0;
         }
+
         create = true;
     }
 
     auto store = openStore(canonical, create);
+
     if (store.status != StoreStatus::Opened) {
         out << "\nCannot start: " << store.message << "\n";
         return 1;
     }
-    out << "\nData store: " << canonical << (store.created ? "  (new)" : "") << "\n"
-        << "Schema version: " << store.schemaVersion << "\n"
-        << "The data store is ready. Features are added by the module pull requests.\n";
-    return 0;
+
+    out << "\nData store: " << canonical
+        << (store.created ? " (new)" : "") << "\n"
+        << "Schema version: " << store.schemaVersion << "\n";
+
+        // First run: no staff accounts yet -> create the first Administrator.
+    if (!auth::hasStaffAccounts(*store.db)) {
+        out << "\n=== First-time setup: create the Administrator account ===\n"
+               "Password: 8+ characters with upper-case, lower-case, a digit and a symbol.\n";
+        while (true) {
+            auto u = io.readLine("Admin username: ");
+            if (!u) return 0;
+            std::string p1, p2;
+            if (!readPassword("Password: ", p1)) return 0;
+            if (!readPassword("Repeat password: ", p2)) return 0;
+            if (p1 != p2) { out << "  Passwords do not match.\n"; continue; }
+            std::string reason;
+            if (!auth::isPasswordAcceptable(p1, reason)) { out << "  " << reason << "\n"; continue; }
+            if (!auth::createStaffAccount(*store.db, *u, p1, auth::Role::Administrator)) {
+                out << "  Could not create the account (empty name, spaces, or already used).\n";
+                continue;
+            }
+            out << "  Administrator account created.\n";
+            break;
+        }
+    }
+
+        // Staff login. The role comes from the stored account, never from the user.
+    while (true) {
+        out << "\n=== Staff Login ===   (Ctrl+Z then Enter to quit)\n";
+        bool loggedIn = false;
+        bool locked = false;
+        auth::LoginResult result{auth::LoginStatus::InvalidCredentials,
+                                 auth::Role::Receptionist, 0};
+
+        for (int attempt = 0; attempt < 5 && !loggedIn && !locked; ++attempt) {
+            auto u = io.readLine("Username: ");
+            if (!u) return 0;
+            std::string pw;
+            if (!readPassword("Password: ", pw)) return 0;
+            result = auth::login(*store.db, *u, pw);
+            if (result.status == auth::LoginStatus::Success) {
+                loggedIn = true;
+            } else if (result.status == auth::LoginStatus::AccountLocked) {
+                locked = true;
+                out << "\nThis account is locked after repeated failed attempts. Ask an Administrator.\n";
+            } else {
+                out << "\nInvalid username or password.\n";
+            }
+        }
+
+        if (!loggedIn) {
+            if (!locked) {
+                out << "Too many failed attempts. Exiting.\n";
+                return 0;
+            }
+            continue;  // locked: back to the login screen
+        }
+
+        out << "\nLogin successful. Role: ";
+        switch (result.role) {
+            case auth::Role::Administrator: out << "Administrator\n"; break;
+            case auth::Role::Doctor: out << "Doctor\n"; break;
+            case auth::Role::Receptionist: out << "Receptionist\n"; break;
+        }
+
+        if (result.role == auth::Role::Administrator) {
+            adminMenu(io, *store.db);
+        } else {
+            // TODO after Vinay's PR merges: build a Session and run ConsoleApp here.
+            out << "(Role menu arrives when the patient module is merged.) Logging out.\n";
+        }
+        out << "Logged out.\n";
+    }
 }

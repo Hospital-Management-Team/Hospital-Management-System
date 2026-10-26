@@ -38,4 +38,9 @@ LoginResult login(
 
 bool isAuthorized(Role role, const std::string& action);
 
+// Password policy (SRS HMS-SR-002): 8-128 chars with upper, lower, digit, symbol.
+bool isPasswordAcceptable(const std::string& password, std::string& reason);
+
+// True if at least one staff account exists (used for first-run setup).
+bool hasStaffAccounts(Database& db);
 }
