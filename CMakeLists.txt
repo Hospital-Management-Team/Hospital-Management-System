@@ -78,11 +78,22 @@ set(HMS_FOUNDATION_SOURCES
 
 # Feature modules: each feature pull request adds its sources here.
 set(HMS_FEATURE_SOURCES
+  src/auth/authentication.cpp
 )
 
 add_library(hms_core STATIC ${HMS_FOUNDATION_SOURCES} ${HMS_FEATURE_SOURCES})
 target_include_directories(hms_core PUBLIC src)
+target_include_directories(hms_core PRIVATE
+  "C:/Users/jithu/OneDrive/Pictures/Desktop/New folder/ucrt64/include"
+)
+
+target_link_libraries(hms_core PUBLIC
+  "C:/Users/jithu/OneDrive/Pictures/Desktop/New folder/ucrt64/lib/libargon2.a"
+)
 target_link_libraries(hms_core PUBLIC hms_sqlite PRIVATE hms_warnings)
+if(WIN32)
+    target_link_libraries(hms_core PUBLIC bcrypt)
+endif()
 
 add_executable(hms src/app/main.cpp)
 target_link_libraries(hms PRIVATE hms_core hms_warnings)
