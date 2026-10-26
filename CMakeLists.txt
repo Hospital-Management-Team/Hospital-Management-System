@@ -1,13 +1,6 @@
 cmake_minimum_required(VERSION 3.16)
 project(HospitalManagementSystem VERSION 0.1.0 LANGUAGES C CXX)
 
-# ---------------------------------------------------------------------------
-# Hospital Management System (Team 2)
-# C++17, SQLite (vendored amalgamation), Argon2 (vendored), doctest (vendored).
-# Builds on Windows (MSVC) and Linux (GCC/Clang) with nothing to install
-# except a compiler and CMake.
-# ---------------------------------------------------------------------------
-
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_CXX_EXTENSIONS OFF)
@@ -29,7 +22,7 @@ if(HMS_SANITIZE)
   endif()
 endif()
 
-# ---- SQLite (third_party/sqlite, amalgamation 3.50.4) ----------------------
+# ---- SQLite (third_party/sqlite) -------------------------------------------
 add_library(hms_sqlite STATIC third_party/sqlite/sqlite3.c)
 target_include_directories(hms_sqlite SYSTEM PUBLIC third_party/sqlite)
 target_compile_definitions(hms_sqlite PRIVATE
@@ -79,7 +72,6 @@ else()
 endif()
 
 # ---- Sources -----------------------------------------------------------------
-# Foundation (issue #1) and input layer (issue #13).
 set(HMS_FOUNDATION_SOURCES
   src/core/result.cpp
   src/core/clock.cpp
@@ -94,8 +86,18 @@ set(HMS_FOUNDATION_SOURCES
   src/ui/console_io.cpp
 )
 
-# Feature modules: each feature pull request adds its sources here.
 set(HMS_FEATURE_SOURCES
+  # Patient registration and search (issue #2)
+  src/audit/audit_log.cpp
+  src/auth/authorizer.cpp
+  src/patient/uhid.cpp
+  src/patient/phone.cpp
+  src/patient/patient.cpp
+  src/patient/patient_validation.cpp
+  src/patient/patient_repository.cpp
+  src/patient/patient_service.cpp
+  src/ui/console_app.cpp
+  # Staff authentication (issue #3)
   src/auth/authentication.cpp
 )
 
@@ -109,6 +111,10 @@ endif()
 add_executable(hms src/app/main.cpp)
 target_link_libraries(hms PRIVATE hms_core hms_warnings)
 
+# ---- Developer tools ---------------------------------------------------------
+add_executable(hms_seed tools/hms_seed.cpp)
+target_link_libraries(hms_seed PRIVATE hms_core hms_warnings)
+
 # ---- Tests -------------------------------------------------------------------
 if(HMS_BUILD_TESTS)
   enable_testing()
@@ -119,8 +125,16 @@ if(HMS_BUILD_TESTS)
     tests/test_console_io.cpp
     tests/test_store.cpp
   )
-  # Feature pull requests add their test files here.
   set(HMS_FEATURE_TEST_SOURCES
+    # issue #2
+    tests/test_uhid.cpp
+    tests/test_phone.cpp
+    tests/test_patient_validation.cpp
+    tests/test_registration.cpp
+    tests/test_search.cpp
+    tests/test_patient_store.cpp
+    tests/test_console_app.cpp
+    # issue #3
     tests/test_authentication.cpp
   )
   add_executable(hms_tests ${HMS_TEST_SOURCES} ${HMS_FEATURE_TEST_SOURCES})
