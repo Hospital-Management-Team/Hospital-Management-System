@@ -6,7 +6,7 @@ Requirements, design and tests are in [`SRS_Hospital_Management_System_Team2.md`
 
 ## Build and run
 
-You need a C++17 compiler and CMake 3.16 or later. SQLite and doctest are included in `third_party/`, so nothing else has to be installed.
+You need a C++17 compiler and CMake 3.16 or later. SQLite, Argon2 and doctest are included in `third_party/`, so nothing else has to be installed.
 
 **Linux (Ubuntu 24.04)**
 
@@ -34,19 +34,19 @@ Options: `--store PATH` uses another data store file. To cancel at any prompt, p
 ## Project layout
 
 ```
-src/app/         main.cpp: start-up, store lock, store opening
+src/app/         main.cpp: start-up, store lock, store opening, first-run Administrator setup, login, Admin menu
 src/core/        Result<T> error contract, Clock (replaceable in tests), text and ID helpers
 src/data/        SQLite wrapper (Database, Statement, Transaction), schema migrations, store opening
-src/platform/    the only OS-specific code: per-store lock, owner-only file creation, UTF-8 console
+src/platform/    the only OS-specific code: per-store lock, owner-only file creation, UTF-8 console, hidden password input
 src/validation/  input layer (SRS 3.1): line checks, DD-MM-YYYY dates, whole numbers, money
 src/ui/          ConsoleIO: prompts, re-asking on invalid input, end of input cancels
 src/config/      build-time policy values ([TEAM DECISION] items in the SRS)
 src/patient/     patient registration, duplicate review, search (issue #2)
 src/audit/       append-only audit trail, written in the same transaction as each change
-src/auth/        Session and role check (stand-in until login, issue #3)
+src/auth/        Session, role check, staff login, password hashing and policy (issue #3)
 tools/           hms_seed: synthetic test data and search timings
 tests/           doctest suites (run by CI on every push and pull request)
-third_party/     SQLite 3.50.4 amalgamation, doctest 2.4.11
+third_party/     SQLite 3.50.4 amalgamation, Argon2 reference implementation, doctest 2.4.11
 ```
 
 ## Rules for every module
@@ -60,9 +60,22 @@ third_party/     SQLite 3.50.4 amalgamation, doctest 2.4.11
 
 ## Features
 
+### Staff login and roles (issue #3)
+
+Only staff log in. Patients are records, not users (SRS 2.3).
+
+1. **First run:** on an empty data store the app asks you to create the Administrator account. Passwords need 8+ characters with an upper-case letter, a lower-case letter, a digit and a symbol.
+2. **Login:** everyone, including the Administrator, logs in with a username and password. The role comes from the stored account and is never chosen by the user. After 5 failed attempts the account is locked.
+3. **Administrator** can create staff accounts (Doctor, Receptionist, Administrator).
+4. **Receptionist** registers and searches patients. **Doctor** searches and opens patient records.
+
+Passwords are stored only as salted Argon2id hashes.
+
+Not built yet (see `docs/deviation-log.md`, D-15 to D-18): lockout cooldown, audit entries for login events, account management beyond creating accounts.
+Test evidence: `docs/test-results-sprint1.md`.
 ### Patient registration and search (issue #2)
 
-Choose **1. Receptionist** at start-up. Login arrives with issue #3; until then the role is simulated (see `docs/deviation-log.md`, D-01).
+Log in as a **Receptionist** (see Staff login above) to register patients. The role now comes from the logged-in account (D-01 is closed by #3).
 
 **Register a patient** (HMS-F-001, HMS-F-002)
 - Fields: full name, date of birth (or age if it isn't known), gender, address, and an optional mobile number.
@@ -75,7 +88,7 @@ Choose **1. Receptionist** at start-up. Login arrives with issue #3; until then 
 
 **Search** (HMS-F-004): by UHID, by any part of the name (case doesn't matter), or by mobile number in any format. Everyone who shares a number is returned.
 
-**Doctor** (choose 2): can search and view demographic details only.
+**Doctor** (logs in as a Doctor account): can search and view demographic details only.
 
 **Audit** (HMS-SR-004): every registration and decision is written in the same transaction as the change. The store refuses any edit or deletion of an audit entry.
 
