@@ -110,6 +110,7 @@ if(HMS_BUILD_TESTS)
   )
   # Feature pull requests add their test files here.
   set(HMS_FEATURE_TEST_SOURCES
+    tests/test_authentication.cpp
   )
   add_executable(hms_tests ${HMS_TEST_SOURCES} ${HMS_FEATURE_TEST_SOURCES})
   target_include_directories(hms_tests SYSTEM PRIVATE third_party/doctest)
