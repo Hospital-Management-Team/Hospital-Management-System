@@ -84,7 +84,7 @@ CREATE TABLE staff_accounts (
 const std::vector<Migration>& migrations() {
     static const std::vector<Migration> kAll = {
         {1, "Patients, audit trail, duplicate reviews (#2)", kV1},
-        // {2, "Staff accounts and authentication (#3)", kV2},   <- the next feature appends here
+        {2, "Staff accounts and authentication (#3)", kV2},
     };
     return kAll;
 }
