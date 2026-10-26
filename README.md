@@ -41,6 +41,10 @@ src/platform/    the only OS-specific code: per-store lock, owner-only file crea
 src/validation/  input layer (SRS 3.1): line checks, DD-MM-YYYY dates, whole numbers, money
 src/ui/          ConsoleIO: prompts, re-asking on invalid input, end of input cancels
 src/config/      build-time policy values ([TEAM DECISION] items in the SRS)
+src/patient/     patient registration, duplicate review, search (issue #2)
+src/audit/       append-only audit trail, written in the same transaction as each change
+src/auth/        Session and role check (stand-in until login, issue #3)
+tools/           hms_seed: synthetic test data and search timings
 tests/           doctest suites (run by CI on every push and pull request)
 third_party/     SQLite 3.50.4 amalgamation, doctest 2.4.11
 ```
@@ -53,6 +57,29 @@ third_party/     SQLite 3.50.4 amalgamation, doctest 2.4.11
 4. **Schema:** schema changes are new entries appended to `src/data/schema.cpp`. Never edit a merged migration. Older stores upgrade on opening; newer ones are refused unchanged.
 5. **Input:** input is checked with the functions in `src/validation/` before it reaches business rules. Each error names the field and the rule.
 6. **Build and tests:** add new sources to `HMS_FEATURE_SOURCES` and new tests to `HMS_FEATURE_TEST_SOURCES` in `CMakeLists.txt`.
+
+## Features
+
+### Patient registration and search (issue #2)
+
+Choose **1. Receptionist** at start-up. Login arrives with issue #3; until then the role is simulated (see `docs/deviation-log.md`, D-01).
+
+**Register a patient** (HMS-F-001, HMS-F-002)
+- Fields: full name, date of birth (or age if it isn't known), gender, address, and an optional mobile number.
+- Each field is checked as it is typed and asked again if it's wrong. The details are read back for confirmation before saving.
+- **Possible duplicates** are shown before anything is saved:
+  - *STRONG*: same name, date of birth and gender.
+  - *SAME PHONE*: shares the mobile number, for example a family member.
+- Staff choose either "same patient", which uses the existing UHID and creates nothing, or "different person". A different person with a STRONG match needs a reason code. The decision is recorded in the audit trail with the patients that were reviewed.
+- The new patient gets a UHID such as `HMS-000001`.
+
+**Search** (HMS-F-004): by UHID, by any part of the name (case doesn't matter), or by mobile number in any format. Everyone who shares a number is returned.
+
+**Doctor** (choose 2): can search and view demographic details only.
+
+**Audit** (HMS-SR-004): every registration and decision is written in the same transaction as the change. The store refuses any edit or deletion of an audit entry.
+
+**Test data:** `./build/hms_seed --store perf.db --count 100000 --bench` creates synthetic patients and times the searches.
 
 ## Continuous integration
 
