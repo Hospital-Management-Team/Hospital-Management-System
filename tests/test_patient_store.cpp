@@ -11,7 +11,7 @@ namespace fs = std::filesystem;
 
 TEST_CASE("a new store has the patient, audit and duplicate-review tables") {
     test::StoreFixture f;
-    CHECK(f.count("PRAGMA user_version") == 1);
+    CHECK(f.count("PRAGMA user_version") >= 1);
     for (const char* t : {"patient", "audit_entry", "duplicate_review", "duplicate_review_candidate"}) {
         CAPTURE(t);
         CHECK(f.count(std::string("SELECT count(*) FROM sqlite_master WHERE type='table' AND name='") + t + "'") == 1);

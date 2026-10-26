@@ -64,7 +64,19 @@ CREATE TABLE duplicate_review_candidate (
     PRIMARY KEY (event_id, uhid)
 );
 )SQL";
-
+// Version 2 - issue #3: staff accounts for login.
+const char* kV2 = R"SQL(
+CREATE TABLE staff_accounts (
+    staff_id        INTEGER PRIMARY KEY AUTOINCREMENT,
+    username        TEXT NOT NULL COLLATE NOCASE UNIQUE,
+    password_hash   TEXT NOT NULL,
+    role            TEXT NOT NULL
+                    CHECK (role IN ('administrator', 'doctor', 'receptionist')),
+    failed_attempts INTEGER NOT NULL DEFAULT 0 CHECK (failed_attempts >= 0),
+    locked          INTEGER NOT NULL DEFAULT 0 CHECK (locked IN (0, 1)),
+    created_at      TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP
+);
+)SQL";
 }  // namespace
 
 // Each feature appends its tables as the next numbered migration.
@@ -72,7 +84,7 @@ CREATE TABLE duplicate_review_candidate (
 const std::vector<Migration>& migrations() {
     static const std::vector<Migration> kAll = {
         {1, "Patients, audit trail, duplicate reviews (#2)", kV1},
-        // {2, "...", kV2},   <- the next feature appends here
+        {2, "Staff accounts and authentication (#3)", kV2},
     };
     return kAll;
 }
