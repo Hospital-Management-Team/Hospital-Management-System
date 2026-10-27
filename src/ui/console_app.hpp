@@ -24,6 +24,9 @@ private:
     void registerPatientScreen();
     void searchPatientsScreen();
     void viewPatientByUhidScreen();
+    void findReturningPatientScreen();
+    bool nameAndDobSearch();
+    bool pickFromResults(const SearchResult& r, const std::string& prompt);
 
     // Duplicate review screen (HMS-F-002(9)); loops until staff register,
     // use an existing record, or cancel.

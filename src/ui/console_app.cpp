@@ -13,8 +13,23 @@ namespace hms {
 namespace {
 const char* kRule = "------------------------------------------------------------------------------";
 
-std::string phoneText(const std::optional<std::string>& p) {
-    return p ? phone::display(*p) : std::string("no phone recorded");
+// Full text for record screens.
+std::string phoneText(const PatientRecord& p) {
+    if (p.phone) return phone::display(*p.phone);
+    if (p.noPhoneConfirmed) return "No phone (confirmed at registration)";
+    return "Not recorded (older record)";
+}
+
+// Short text for table columns.
+std::string phoneCell(const PatientRecord& p) {
+    if (p.phone) return phone::display(*p.phone);
+    return p.noPhoneConfirmed ? "No phone" : "Not recorded";
+}
+
+// Typed at the mobile prompt to choose "no phone available".
+bool meansNoPhone(const std::string& s) {
+    const std::string v = text::asciiLower(text::trimSpaces(s));
+    return v == "n" || v == "none" || v == "no phone";
 }
 }  // namespace
 
@@ -39,10 +54,11 @@ int ConsoleApp::run() {
         out << "\n" << kRule << "\n";
         if (reception) {
             out << "  1. Register a new patient\n"
-                   "  2. Search patients (UHID, name or mobile number)\n"
-                   "  3. Open a patient record by UHID\n";
+                   "  2. Search patients (UHID, name, mobile number, or name and date of birth)\n"
+                   "  3. Open a patient record by UHID\n"
+                   "  4. Find a returning patient (mobile number first, then name and date of birth)\n";
         } else {
-            out << "  1. Search patients (UHID, name or mobile number)\n"
+            out << "  1. Search patients (UHID, name, mobile number, or name and date of birth)\n"
                    "  2. Open a patient record by UHID\n";
         }
         out << "  0. Exit\n";
@@ -54,7 +70,8 @@ int ConsoleApp::run() {
             if (c == "1") registerPatientScreen();
             else if (c == "2") searchPatientsScreen();
             else if (c == "3") viewPatientByUhidScreen();
-            else out << "  Please choose 0, 1, 2 or 3.\n";
+            else if (c == "4") findReturningPatientScreen();
+            else out << "  Please choose 0, 1, 2, 3 or 4.\n";
         } else {
             if (c == "1") searchPatientsScreen();
             else if (c == "2") viewPatientByUhidScreen();
@@ -132,12 +149,34 @@ void ConsoleApp::registerPatientScreen() {
     if (!address) { out << "Registration cancelled. Nothing was saved.\n"; return; }
     draft.address = *address;
 
-    // Mobile number (optional)
-    auto mobile = io_.ask<std::optional<std::string>>(
-        "  Mobile number (optional; press Enter if none): ",
-        [](const std::string& s) { return patient_rules::validateOptionalPhone(s); });
-    if (!mobile) { out << "Registration cancelled. Nothing was saved.\n"; return; }
-    draft.phone = mobile->value_or("");
+    // * Mobile number (deviation D-04): the patient's, or a family member's or
+    //   carer's. Only when nobody has one, staff confirm "no phone available".
+    //   A made-up number is never entered: it would match other patients.
+    out << "  For a child or an elderly patient, a family member's or carer's number is fine.\n"
+           "  If neither the patient nor anyone with them has a phone, type N.\n";
+    while (true) {
+        auto mobile = io_.ask<std::optional<std::string>>(
+            "* Mobile number (or N if no phone is available): ",
+            [](const std::string& s) -> Result<std::optional<std::string>> {
+                if (meansNoPhone(s)) return std::optional<std::string>{};
+                auto r = patient_rules::validatePhone(s);
+                if (!r) return r.error();
+                return std::optional<std::string>{r.value()};
+            });
+        if (!mobile) { out << "Registration cancelled. Nothing was saved.\n"; return; }
+        if (*mobile) {
+            draft.phone = **mobile;
+            draft.noPhone = false;
+            break;
+        }
+        auto sure = io_.askYesNo("Confirm: the patient AND everyone with them have no mobile number? (Y/N): ");
+        if (!sure) { out << "Registration cancelled. Nothing was saved.\n"; return; }
+        if (*sure) {
+            draft.phone.clear();
+            draft.noPhone = true;
+            break;
+        }
+    }
 
     // Confirmation before any data-changing action (SRS 3.1).
     auto preview = patient_rules::validatePatient(draft, today, policy);
@@ -149,13 +188,14 @@ void ConsoleApp::registerPatientScreen() {
     shown.gender = preview.value().gender;
     shown.address = preview.value().address;
     shown.phone = preview.value().phone;
+    shown.noPhoneConfirmed = preview.value().noPhoneConfirmed;
 
     out << "\nPlease read these details back to the patient:\n";
     out << "  Name          : " << shown.fullName << "\n"
         << "  Date of birth : " << dobText(shown) << "\n"
         << "  Gender        : " << to_string(shown.gender) << "\n"
         << "  Address       : " << shown.address << "\n"
-        << "  Mobile        : " << phoneText(shown.phone) << "\n";
+        << "  Mobile        : " << phoneText(shown) << "\n";
     auto confirm = io_.askYesNo("Save this patient? (Y/N): ");
     if (!confirm || !*confirm) { out << "Registration cancelled. Nothing was saved.\n"; return; }
 
@@ -183,7 +223,7 @@ void ConsoleApp::showCandidates(const std::vector<Candidate>& candidates) {
             << text::fitWidth(p.dateOfBirth.toDisplay() + (p.dobEstimated ? "*" : ""), 12)
             << text::fitWidth(std::to_string(ageInYears(p.dateOfBirth, today)), 5)
             << text::fitWidth(to_string(p.gender), 7)
-            << text::fitWidth(p.phone ? phone::display(*p.phone) : "-", 16) << text::fitWidth(p.address, 24)
+            << text::fitWidth(phoneCell(p), 16) << text::fitWidth(p.address, 24)
             << (c.newSinceReview ? "  << NEW since last review" : "") << "\n";
     }
     out << "  STRONG = same name, date of birth and gender.  SAME PHONE = shares this mobile number.\n"
@@ -277,16 +317,18 @@ void ConsoleApp::showPatientTable(const std::vector<PatientRecord>& rows) {
             << text::fitWidth(p.fullName, 26) << " "
             << text::fitWidth(p.dateOfBirth.toDisplay() + (p.dobEstimated ? "*" : ""), 13)
             << text::fitWidth(std::to_string(ageInYears(p.dateOfBirth, today)), 5)
-            << text::fitWidth(to_string(p.gender), 7) << phoneText(p.phone) << "\n";
+            << text::fitWidth(to_string(p.gender), 7) << phoneCell(p) << "\n";
     }
 }
 
 void ConsoleApp::searchPatientsScreen() {
     auto& out = io_.out();
-    out << "\nSEARCH PATIENTS\n  1. By UHID\n  2. By name (any part of the name)\n  3. By mobile number\n  0. Back\n";
+    out << "\nSEARCH PATIENTS\n  1. By UHID\n  2. By name (any part of the name)\n  3. By mobile number\n"
+           "  4. By name and date of birth\n  0. Back\n";
     auto mode = io_.readLine("Search by: ");
     if (!mode) return;
     const std::string m = text::trimSpaces(*mode);
+    if (m == "4") { nameAndDobSearch(); return; }
     SearchMode searchMode;
     std::string prompt;
     if (m == "1") { searchMode = SearchMode::Uhid; prompt = "UHID (e.g. HMS-000123): "; }
@@ -303,22 +345,100 @@ void ConsoleApp::searchPatientsScreen() {
             if (result.error().kind == ErrorKind::Validation) continue;
             return;
         }
-        const auto& r = result.value();
-        if (r.rows.empty()) { out << "  No patient found.\n"; return; }
-        out << "\n";
-        showPatientTable(r.rows);
-        if (r.truncated()) {
-            out << "  Showing the first " << r.rows.size() << " of " << r.totalMatches
-                << " matches. Type more of the name to narrow the search.\n";
-        } else {
-            out << "  " << r.totalMatches << (r.totalMatches == 1 ? " patient" : " patients") << " found.\n";
-        }
-        auto pick = io_.readLine("Enter a row number to open the record, or press Enter to go back: ");
-        if (!pick || text::trimSpaces(*pick).empty()) return;
-        auto idx = input::parseWholeNumber(text::trimSpaces(*pick), "Row", 1, static_cast<std::int64_t>(r.rows.size()));
-        if (!idx) { io_.showError(idx.error()); return; }
-        showPatient(r.rows[static_cast<std::size_t>(idx.value() - 1)]);
+        if (result.value().rows.empty()) { out << "  No patient found.\n"; return; }
+        pickFromResults(result.value(), "Enter a row number to open the record, or press Enter to go back: ");
         return;
+    }
+}
+
+// Shows the rows and lets staff open one. Returns true if a record was opened.
+bool ConsoleApp::pickFromResults(const SearchResult& r, const std::string& prompt) {
+    auto& out = io_.out();
+    out << "\n";
+    showPatientTable(r.rows);
+    if (r.truncated()) {
+        out << "  Showing the first " << r.rows.size() << " of " << r.totalMatches
+            << " matches. Type more of the name to narrow the search.\n";
+    } else {
+        out << "  " << r.totalMatches << (r.totalMatches == 1 ? " patient" : " patients") << " found.\n";
+    }
+    while (true) {
+        auto pick = io_.readLine(prompt);
+        if (!pick || text::trimSpaces(*pick).empty()) return false;
+        auto idx = input::parseWholeNumber(text::trimSpaces(*pick), "Row", 1,
+                                           static_cast<std::int64_t>(r.rows.size()));
+        if (!idx) { io_.showError(idx.error()); continue; }
+        showPatient(r.rows[static_cast<std::size_t>(idx.value() - 1)]);
+        return true;
+    }
+}
+
+// Name + date of birth. Returns true if a record was opened.
+bool ConsoleApp::nameAndDobSearch() {
+    auto& out = io_.out();
+    while (true) {
+        NameDobQuery q;
+        auto name = io_.readLine("Name or part of the name: ");
+        if (!name) return false;
+        q.name = *name;
+        auto dob = io_.readLine("Date of birth (DD-MM-YYYY): ");
+        if (!dob) return false;
+        q.dateOfBirth = *dob;
+        auto result = patients_.searchByNameAndDob(session_, q);
+        if (!result) {
+            handleFailure(result.error());
+            if (result.error().kind == ErrorKind::Validation) continue;
+            return false;
+        }
+        if (result.value().rows.empty()) {
+            out << "  No patient found with that name and date of birth.\n";
+            return false;
+        }
+        out << "  (* = date of birth estimated from age; it matches within one year.)\n";
+        return pickFromResults(result.value(),
+                               "Confirm the name and date of birth with the patient, then enter the row number "
+                               "(or press Enter if none of these is the patient): ");
+    }
+}
+
+// Returning patient at the desk (HMS-F-004): ask for the mobile number first;
+// one number can belong to a whole family, so staff pick the person from the
+// list by name and date of birth. No number, or not in the list: search by
+// name and date of birth.
+void ConsoleApp::findReturningPatientScreen() {
+    auto& out = io_.out();
+    out << "\nFIND A RETURNING PATIENT\n"
+           "  Ask for the mobile number registered with the hospital. If the patient has a UHID card,\n"
+           "  use option 3 on the menu instead.\n";
+    while (true) {
+        auto line = io_.readLine("Mobile number (or press Enter if the patient has no phone): ");
+        if (!line) return;
+        if (text::trimSpaces(*line).empty()) break;
+        auto result = patients_.searchPatients(session_, SearchMode::Phone, *line);
+        if (!result) {
+            handleFailure(result.error());
+            if (result.error().kind == ErrorKind::Validation) continue;
+            return;
+        }
+        if (result.value().rows.empty()) {
+            out << "  No patient is registered with this number.\n";
+            break;
+        }
+        if (result.value().rows.size() > 1) {
+            out << "  This number is shared by " << result.value().rows.size()
+                << " patients. Pick the person by name and date of birth.\n";
+        }
+        if (pickFromResults(result.value(),
+                            "Confirm the name and date of birth with the patient, then enter the row number "
+                            "(or press Enter if the patient is not listed): ")) {
+            return;
+        }
+        out << "  Not in this list.\n";
+        break;
+    }
+    out << "\nSearch by name and date of birth instead:\n";
+    if (!nameAndDobSearch()) {
+        out << "  If the patient has never been registered, use option 1 to register them.\n";
     }
 }
 
@@ -341,7 +461,7 @@ void ConsoleApp::showPatient(const PatientRecord& p) {
         << "  Date of birth : " << dobText(p) << "\n"
         << "  Gender        : " << to_string(p.gender) << "\n"
         << "  Address       : " << p.address << "\n"
-        << "  Mobile        : " << phoneText(p.phone) << "\n";
+        << "  Mobile        : " << phoneText(p) << "\n";
 }
 
 }  // namespace hms

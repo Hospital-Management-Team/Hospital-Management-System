@@ -104,13 +104,10 @@ Result<std::string> validateAddress(std::string_view raw, const PatientPolicy& p
     return line;
 }
 
-Result<std::optional<std::string>> validateOptionalPhone(std::string_view raw) {
-    auto line = input::cleanLine(raw, phone::kField);
-    if (!line) return line.error();
-    if (line.value().empty()) return std::optional<std::string>{};
-    auto canon = phone::canonicalise(line.value());
-    if (!canon) return canon.error();
-    return std::optional<std::string>{canon.value()};
+Result<std::string> validatePhone(std::string_view raw) {
+    auto line = input::requireLine(raw, phone::kField);
+    if (!line) return line;
+    return phone::canonicalise(line.value());
 }
 
 Result<NewPatient> validatePatient(const PatientDraft& draft, const Date& today, const PatientPolicy& policy) {
@@ -142,7 +139,17 @@ Result<NewPatient> validatePatient(const PatientDraft& draft, const Date& today,
     } else {
         collect(r.error());
     }
-    if (auto r = validateOptionalPhone(draft.phone)) {
+    if (draft.noPhone) {
+        // "No phone available" was confirmed: a number must not be given as well.
+        auto line = input::cleanLine(draft.phone, phone::kField);
+        if (!line) {
+            collect(line.error());
+        } else if (!line.value().empty()) {
+            collect(Error::validation(phone::kField, "must be empty when \"no phone available\" is chosen"));
+        } else {
+            p.noPhoneConfirmed = true;
+        }
+    } else if (auto r = validatePhone(draft.phone)) {
         p.phone = r.value();
     } else {
         collect(r.error());

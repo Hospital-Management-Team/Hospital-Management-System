@@ -93,7 +93,9 @@ int main(int argc, char** argv) {
                                  1 + static_cast<int>(rng() % 28)};
             p.gender = (rng() % 2) ? Gender::Male : Gender::Female;
             p.address = std::to_string(1 + rng() % 400) + ", " + pick(kAreas) + ", Bengaluru";
+            // About 1 in 10 synthetic patients has "no phone available" confirmed.
             if (rng() % 10 != 0) p.phone = std::to_string(6 + rng() % 4) + std::to_string(100000000 + rng() % 900000000);
+            else p.noPhoneConfirmed = true;
             repo.insert(p);
         }
         tx.commit();

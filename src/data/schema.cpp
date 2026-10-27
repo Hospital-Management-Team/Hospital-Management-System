@@ -77,6 +77,28 @@ CREATE TABLE staff_accounts (
     created_at      TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP
 );
 )SQL";
+
+// Version 3 - mobile number required unless staff confirm "no phone available"
+// (deviation D-04), and the name + date-of-birth lookup for returning patients.
+// Migration 1 is merged and is not edited: patient.phone stays nullable and the
+// rule is added with a flag and triggers. The triggers check new and changed
+// rows only, so records saved before this version (phone NULL, flag 0) stay
+// valid and are shown as "not recorded".
+const char* kV3 = R"SQL(
+ALTER TABLE patient ADD COLUMN no_phone_confirmed INTEGER NOT NULL DEFAULT 0
+    CHECK (no_phone_confirmed IN (0, 1));
+
+CREATE TRIGGER patient_phone_rule_insert BEFORE INSERT ON patient
+WHEN (NEW.phone IS NULL) = (NEW.no_phone_confirmed = 0)
+BEGIN SELECT RAISE(ABORT, 'a patient needs a mobile number or a confirmed "no phone available"'); END;
+
+CREATE TRIGGER patient_phone_rule_update BEFORE UPDATE OF phone, no_phone_confirmed ON patient
+WHEN (NEW.phone IS NULL) = (NEW.no_phone_confirmed = 0)
+BEGIN SELECT RAISE(ABORT, 'a patient needs a mobile number or a confirmed "no phone available"'); END;
+
+-- Returning-patient lookup by name and date of birth.
+CREATE INDEX idx_patient_dob ON patient (date_of_birth);
+)SQL";
 }  // namespace
 
 // Each feature appends its tables as the next numbered migration.
@@ -85,6 +107,7 @@ const std::vector<Migration>& migrations() {
     static const std::vector<Migration> kAll = {
         {1, "Patients, audit trail, duplicate reviews (#2)", kV1},
         {2, "Staff accounts and authentication (#3)", kV2},
+        {3, "Mobile number or confirmed no phone; date-of-birth lookup (#2 follow-up)", kV3},
     };
     return kAll;
 }

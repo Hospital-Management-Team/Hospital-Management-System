@@ -87,10 +87,60 @@ TEST_CASE("store constraints back up the business rules") {
     CHECK_THROWS_AS(f.db().exec("INSERT INTO patient (full_name, normalised_name, date_of_birth, gender, address, "
                                 "phone) VALUES ('A', 'a', '1990-01-01', 'Male', 'x', '12345')"),
                     DbError);
-    // A phone number may be shared (no unique constraint) and may be absent.
+    // A phone number may be shared (no unique constraint).
     f.db().exec("INSERT INTO patient (full_name, normalised_name, date_of_birth, gender, address, phone) "
                 "VALUES ('A', 'a', '1990-01-01', 'Male', 'x', '9876543210'), "
-                "('B', 'b', '1991-01-01', 'Female', 'x', '9876543210'), "
-                "('C', 'c', '1992-01-01', 'Other', 'x', NULL)");
-    CHECK(f.count("SELECT count(*) FROM patient") == 3);
+                "('B', 'b', '1991-01-01', 'Female', 'x', '9876543210')");
+    CHECK(f.count("SELECT count(*) FROM patient") == 2);
+}
+
+TEST_CASE("D-04 the store requires a mobile number or a confirmed \"no phone available\"") {
+    test::StoreFixture f;
+    const std::string cols = "INSERT INTO patient (full_name, normalised_name, date_of_birth, gender, address, ";
+    // Neither a number nor the confirmation: refused.
+    CHECK_THROWS_AS(f.db().exec(cols + "phone) VALUES ('A', 'a', '1990-01-01', 'Male', 'x', NULL)"), DbError);
+    CHECK_THROWS_AS(f.db().exec("INSERT INTO patient (full_name, normalised_name, date_of_birth, gender, address) "
+                                "VALUES ('A', 'a', '1990-01-01', 'Male', 'x')"),
+                    DbError);
+    // Both a number and "no phone": refused.
+    CHECK_THROWS_AS(f.db().exec(cols + "phone, no_phone_confirmed) VALUES ('A', 'a', '1990-01-01', 'Male', 'x', "
+                                       "'9876543210', 1)"),
+                    DbError);
+    // Either one alone: accepted.
+    f.db().exec(cols + "phone) VALUES ('A', 'a', '1990-01-01', 'Male', 'x', '9876543210')");
+    f.db().exec(cols + "phone, no_phone_confirmed) VALUES ('B', 'b', '1990-01-01', 'Male', 'x', NULL, 1)");
+    CHECK(f.count("SELECT count(*) FROM patient") == 2);
+    // Removing the number later without the confirmation: refused.
+    CHECK_THROWS_AS(f.db().exec("UPDATE patient SET phone = NULL WHERE full_name = 'A'"), DbError);
+}
+
+TEST_CASE("D-04 a version-2 store with a patient who has no phone upgrades and keeps the record") {
+    auto dir = test::uniqueTempDir();
+    const auto path = (dir / "v2.db").string();
+    {
+        // A store as Sprint 1 left it: migrations 1 and 2, a patient without a phone.
+        Database db(path, Database::Mode::ReadWriteCreate);
+        for (const auto& m : schema::migrations()) {
+            if (m.version > 2) break;
+            db.exec(m.sql);
+        }
+        db.exec("PRAGMA user_version = 2");
+        db.exec("INSERT INTO patient (full_name, normalised_name, date_of_birth, gender, address, phone) "
+                "VALUES ('Old Record', 'old record', '1980-01-01', 'Male', 'x', NULL)");
+    }
+    {
+        auto r = openStore(path, false);
+        REQUIRE(r.status == StoreStatus::Opened);
+        CHECK(r.migrated);
+        CHECK(r.db->queryInt("PRAGMA user_version").value_or(0) == schema::currentVersion());
+        CHECK(r.db->queryInt("SELECT count(*) FROM patient WHERE phone IS NULL AND no_phone_confirmed = 0")
+                  .value_or(-1) == 1);
+        // The old record can still be read through the repository.
+        PatientRepository repo(*r.db);
+        auto rec = repo.findByUhid(1);
+        REQUIRE(rec.has_value());
+        CHECK_FALSE(rec->phone.has_value());
+        CHECK_FALSE(rec->noPhoneConfirmed);
+    }
+    fs::remove_all(dir);
 }

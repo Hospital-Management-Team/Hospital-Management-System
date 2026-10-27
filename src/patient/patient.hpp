@@ -28,7 +28,8 @@ struct PatientDraft {
     std::string ageYears;     // whole years, or empty when the date of birth is given
     std::string gender;       // M / F / O or Male / Female / Other
     std::string address;
-    std::string phone;        // optional
+    std::string phone;        // required, unless noPhone is set
+    bool noPhone = false;     // staff confirmed: no phone for the patient or anyone with them
 };
 
 // A draft that passed validation, in stored form.
@@ -39,7 +40,8 @@ struct NewPatient {
     bool dobEstimated = false;   // true when entered as an age
     Gender gender = Gender::Other;
     std::string address;
-    std::optional<std::string> phone;  // canonical 10 digits
+    std::optional<std::string> phone;  // canonical 10 digits; empty only when noPhoneConfirmed
+    bool noPhoneConfirmed = false;
 };
 
 struct PatientRecord {
@@ -49,7 +51,10 @@ struct PatientRecord {
     bool dobEstimated = false;
     Gender gender = Gender::Other;
     std::string address;
+    // Empty with noPhoneConfirmed: staff confirmed "no phone available".
+    // Empty without it: a record saved before the number became required.
     std::optional<std::string> phone;
+    bool noPhoneConfirmed = false;
 };
 
 enum class CandidateKind { Strong, SamePhone };
@@ -81,6 +86,14 @@ struct RegistrationOutcome {
 };
 
 enum class SearchMode { Uhid, Name, Phone };
+
+// Returning-patient lookup by name and date of birth (HMS-F-004).
+// A record whose date of birth was estimated from an age also matches when its
+// year is within one year of the date given (the estimate is 1 January).
+struct NameDobQuery {
+    std::string name;         // any part of the name
+    std::string dateOfBirth;  // DD-MM-YYYY
+};
 
 struct SearchResult {
     std::vector<PatientRecord> rows;
