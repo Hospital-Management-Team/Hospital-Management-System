@@ -3,6 +3,7 @@
 // PatientService, the sessions used by the tests, and a draft builder.
 
 #include <memory>
+#include <optional>
 #include <string>
 
 #include "config/policy.hpp"
@@ -25,14 +26,30 @@ struct StoreFixture : TempStore {
     ~StoreFixture() override { service.reset(); }
 };
 
-inline PatientDraft draft(std::string name, std::string dob, std::string gender, std::string phoneNo = "",
+// Every patient needs a mobile number (or a confirmed "no phone available").
+// When a test does not care which number, each call gets a different valid one,
+// so no accidental "same phone" review appears.
+inline std::string nextPhone() {
+    static long long n = 0;
+    return "9" + std::to_string(100000000 + ++n);
+}
+
+inline PatientDraft draft(std::string name, std::string dob, std::string gender,
+                          std::optional<std::string> phoneNo = std::nullopt,
                           std::string address = "12 MG Road, Bengaluru") {
     PatientDraft d;
     d.fullName = std::move(name);
     d.dateOfBirth = std::move(dob);
     d.gender = std::move(gender);
     d.address = std::move(address);
-    d.phone = std::move(phoneNo);
+    d.phone = phoneNo ? std::move(*phoneNo) : nextPhone();
+    return d;
+}
+
+// A draft for a patient with "no phone available" confirmed.
+inline PatientDraft draftNoPhone(std::string name, std::string dob, std::string gender) {
+    PatientDraft d = draft(std::move(name), std::move(dob), std::move(gender), std::string());
+    d.noPhone = true;
     return d;
 }
 

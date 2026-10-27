@@ -215,6 +215,27 @@ Result<SearchResult> PatientService::searchPatients(const Session& session, Sear
     }
 }
 
+Result<SearchResult> PatientService::searchByNameAndDob(const Session& session, const NameDobQuery& query) {
+    if (!authorize(session, Permission::SearchPatients)) {
+        return Error::accessDenied("Your role (" + to_string(session.role) + ") may not search patients.");
+    }
+    std::vector<FieldError> errors;
+    auto name = input::requireLine(query.name, "Name");
+    if (!name) errors.insert(errors.end(), name.error().fields.begin(), name.error().fields.end());
+    auto dob = input::parseDate(query.dateOfBirth, "Date of birth");
+    if (!dob) errors.insert(errors.end(), dob.error().fields.begin(), dob.error().fields.end());
+    if (!errors.empty()) return Error::validation(std::move(errors));
+    try {
+        const std::string norm = text::normaliseName(name.value());
+        SearchResult result;
+        result.totalMatches = repo_.countByNameAndDob(norm, dob.value());
+        result.rows = repo_.findByNameAndDob(norm, dob.value(), policy_.patient.maxSearchResults);
+        return result;
+    } catch (const DbError&) {
+        return Error::storageFailure("The data store reported an error while searching. Please try again.");
+    }
+}
+
 Result<PatientRecord> PatientService::getPatient(const Session& session, std::int64_t uhid) {
     if (!authorize(session, Permission::ViewPatientDemographics)) {
         return Error::accessDenied("Your role (" + to_string(session.role) + ") may not view patient records.");

@@ -44,6 +44,10 @@ public:
 
     Result<SearchResult> searchPatients(const Session& session, SearchMode mode, std::string_view query);
 
+    // Returning patient without a usable mobile number: name and date of birth
+    // together (two identifiers, so the right person is picked from a short list).
+    Result<SearchResult> searchByNameAndDob(const Session& session, const NameDobQuery& query);
+
     Result<PatientRecord> getPatient(const Session& session, std::int64_t uhid);
 
     // Hospital-local "today" from the injected clock.

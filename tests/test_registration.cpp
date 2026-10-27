@@ -257,3 +257,27 @@ TEST_CASE("Validation errors are returned before anything is written") {
     CHECK(f.count("SELECT count(*) FROM patient") == 0);
     CHECK(f.count("SELECT count(*) FROM audit_entry") == 0);
 }
+
+TEST_CASE("TC-Reg-01/02 no phone available: registered, flagged, and strong duplicates still caught") {
+    test::StoreFixture f;
+    auto first = f.service->registerPatient(test::receptionist(), test::draftNoPhone("Kamala Bai", "03-02-1950", "F"),
+                                            DuplicateDecision::none());
+    REQUIRE(first.ok());
+    REQUIRE(first.value().status == RegistrationOutcome::Status::Registered);
+    CHECK(f.count("SELECT count(*) FROM patient WHERE phone IS NULL AND no_phone_confirmed = 1") == 1);
+
+    // The same person again (no phone again): the strong check still finds her.
+    auto again = f.service->registerPatient(test::receptionist(),
+                                            test::draftNoPhone("kamala  bai", "03-02-1950", "F"),
+                                            DuplicateDecision::none());
+    REQUIRE(again.ok());
+    REQUIRE(again.value().status == RegistrationOutcome::Status::NeedsDecision);
+    REQUIRE(again.value().candidates.size() == 1);
+    CHECK(again.value().candidates[0].kind == CandidateKind::Strong);
+
+    // Two no-phone patients are never "same phone" candidates for each other.
+    auto other = f.service->registerPatient(test::receptionist(), test::draftNoPhone("Ramaiah", "01-01-1948", "M"),
+                                            DuplicateDecision::none());
+    REQUIRE(other.ok());
+    CHECK(other.value().status == RegistrationOutcome::Status::Registered);
+}

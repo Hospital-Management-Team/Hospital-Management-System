@@ -31,6 +31,12 @@ public:
     std::size_t countByNameContains(const std::string& normalisedQuery);
     std::vector<PatientRecord> findByNameContains(const std::string& normalisedQuery, std::size_t limit);
 
+    // Name contains the query and the date of birth matches (estimated dates of
+    // birth match within one year). Exact matches are listed first.
+    std::size_t countByNameAndDob(const std::string& normalisedQuery, const Date& dob);
+    std::vector<PatientRecord> findByNameAndDob(const std::string& normalisedQuery, const Date& dob,
+                                                std::size_t limit);
+
     std::size_t count();
 
     // Duplicate-review decision with its reviewed set (HMS-F-002(4),(9)).

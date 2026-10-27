@@ -42,8 +42,8 @@ Result<Gender> validateGender(std::string_view raw);
 
 Result<std::string> validateAddress(std::string_view raw, const PatientPolicy& policy);
 
-// Empty means "no phone recorded" (the phone is optional).
-Result<std::optional<std::string>> validateOptionalPhone(std::string_view raw);
+// The mobile number is required (deviation D-04). Returns the canonical 10 digits.
+Result<std::string> validatePhone(std::string_view raw);
 
 Result<NewPatient> validatePatient(const PatientDraft& draft, const Date& today, const PatientPolicy& policy);
 

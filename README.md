@@ -78,7 +78,7 @@ Test evidence: `docs/test-results-sprint1.md`.
 Log in as a **Receptionist** (see Staff login above) to register patients. The role now comes from the logged-in account (D-01 is closed by #3).
 
 **Register a patient** (HMS-F-001, HMS-F-002)
-- Fields: full name, date of birth (or age if it isn't known), gender, address, and an optional mobile number.
+- Fields: full name, date of birth (or age if it isn't known), gender, address and mobile number. For a child or an elderly patient, a family member's or carer's number is fine. If nobody has a phone, staff type N and confirm "no phone available"; the record then shows "No phone (confirmed at registration)". Never enter a made-up number (D-04).
 - Each field is checked as it is typed and asked again if it's wrong. The details are read back for confirmation before saving.
 - **Possible duplicates** are shown before anything is saved:
   - *STRONG*: same name, date of birth and gender.
@@ -86,7 +86,9 @@ Log in as a **Receptionist** (see Staff login above) to register patients. The r
 - Staff choose either "same patient", which uses the existing UHID and creates nothing, or "different person". A different person with a STRONG match needs a reason code. The decision is recorded in the audit trail with the patients that were reviewed.
 - The new patient gets a UHID such as `HMS-000001`.
 
-**Search** (HMS-F-004): by UHID, by any part of the name (case doesn't matter), or by mobile number in any format. Everyone who shares a number is returned.
+**Search** (HMS-F-004): by UHID, by any part of the name (case doesn't matter), by mobile number in any format (everyone who shares the number is returned), or by name and date of birth together (D-24).
+
+**Find a returning patient** (Receptionist, option 4): ask for the mobile number first. The list shows everyone registered with that number; confirm the person by name and date of birth, then open the record. If the patient has no phone or isn't listed, the screen moves on to a name and date-of-birth search. A date of birth estimated from an age matches within one year.
 
 **Doctor** (logs in as a Doctor account): can search and view demographic details only.
 

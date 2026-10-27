@@ -31,10 +31,31 @@ TEST_CASE("TC-Reg-01 valid draft is accepted and normalised") {
     CHECK(r.value().phone.value() == "9876543210");
 }
 
-TEST_CASE("TC-Reg-01 phone is optional") {
-    auto r = validatePatient(test::draft("Ravi Kumar", "05-03-1990", "M", ""), kToday, kPolicy);
-    REQUIRE(r.ok());
-    CHECK_FALSE(r.value().phone.has_value());
+TEST_CASE("TC-Reg-01 mobile number is required (D-04)") {
+    auto r = validatePatient(test::draft("Ravi Kumar", "05-03-1990", "M", std::string("")), kToday, kPolicy);
+    REQUIRE_FALSE(r.ok());
+    CHECK(r.error().kind == ErrorKind::Validation);
+    CHECK(namesField(r.error(), "Mobile number"));
+    CHECK_FALSE(validatePhone("   ").ok());
+    CHECK(validatePhone("98765 43210").value() == "9876543210");
+}
+
+TEST_CASE("TC-Reg-01 \"no phone available\" is accepted only with the number left empty") {
+    auto ok = validatePatient(test::draftNoPhone("Geeta Bai", "01-01-1956", "F"), kToday, kPolicy);
+    REQUIRE(ok.ok());
+    CHECK_FALSE(ok.value().phone.has_value());
+    CHECK(ok.value().noPhoneConfirmed);
+
+    auto both = test::draftNoPhone("Geeta Bai", "01-01-1956", "F");
+    both.phone = "9876543210";
+    auto r = validatePatient(both, kToday, kPolicy);
+    REQUIRE_FALSE(r.ok());
+    CHECK(namesField(r.error(), "Mobile number"));
+
+    auto withNumber = validatePatient(test::draft("Ravi Kumar", "05-03-1990", "M", std::string("9876543210")),
+                                      kToday, kPolicy);
+    REQUIRE(withNumber.ok());
+    CHECK_FALSE(withNumber.value().noPhoneConfirmed);
 }
 
 TEST_CASE("TC-Reg-01 every invalid field is named in one error") {
@@ -46,7 +67,7 @@ TEST_CASE("TC-Reg-01 every invalid field is named in one error") {
     CHECK(namesField(r.error(), kDateOfBirth));
     CHECK(namesField(r.error(), kGender));
     CHECK(namesField(r.error(), kAddress));
-    CHECK_FALSE(namesField(r.error(), "Mobile number"));  // empty phone is allowed
+    CHECK(namesField(r.error(), "Mobile number"));  // required
 
     auto bad = validatePatient(test::draft("Ravi", "05-03-1990", "M", "12345"), kToday, kPolicy);
     REQUIRE_FALSE(bad.ok());

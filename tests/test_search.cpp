@@ -134,3 +134,60 @@ TEST_CASE("getPatient returns the record or NotFound") {
     REQUIRE_FALSE(missing.ok());
     CHECK(missing.error().kind == ErrorKind::NotFound);
 }
+
+// ------------------------------------------- name + date of birth (returning patient)
+
+namespace {
+NameDobQuery q(std::string name, std::string dob) { return NameDobQuery{std::move(name), std::move(dob)}; }
+bool namesField(const Error& e, const std::string& field) {
+    for (const auto& fe : e.fields)
+        if (fe.field == field) return true;
+    return false;
+}
+}  // namespace
+
+TEST_CASE("TC-Rec-02 name and date of birth: both must match; exact dates of birth first") {
+    StoreFixture f;
+    const auto kamala = add(f, test::draftNoPhone("Kamala Bai", "03-02-1950", "F"));
+    add(f, test::draft("Kamala Rao", "03-02-1951", "F"));    // name matches, date does not
+    add(f, test::draft("Shanti Bai", "03-02-1950", "F"));    // date matches, name does not
+    auto r = f.service->searchByNameAndDob(test::receptionist(), q("KAMALA", "3-2-1950"));
+    REQUIRE(r.ok());
+    REQUIRE(r.value().rows.size() == 1);
+    CHECK(r.value().rows[0].uhid == kamala);
+    CHECK(r.value().rows[0].noPhoneConfirmed);
+}
+
+TEST_CASE("TC-Rec-02 name and date of birth: a date estimated from an age matches within one year") {
+    StoreFixture f;
+    // Registered by age: stored as 01-01 of the birth year, flagged as estimated.
+    PatientDraft byAge = test::draft("Geeta Bai", "", "F");
+    byAge.ageYears = "70";  // FixedClock year 2026 -> 1956-01-01
+    const auto geeta = add(f, byAge);
+    add(f, test::draft("Geeta Bai", "20-07-1940", "F"));  // exact, but a different year
+    for (const char* dob : {"15-08-1955", "15-08-1956", "15-08-1957"}) {
+        CAPTURE(dob);
+        auto r = f.service->searchByNameAndDob(test::receptionist(), q("geeta", dob));
+        REQUIRE(r.ok());
+        REQUIRE(r.value().rows.size() == 1);
+        CHECK(r.value().rows[0].uhid == geeta);
+    }
+    auto far = f.service->searchByNameAndDob(test::receptionist(), q("geeta", "15-08-1960"));
+    REQUIRE(far.ok());
+    CHECK(far.value().rows.empty());
+}
+
+TEST_CASE("TC-Rec-02 name and date of birth: every invalid field is named; other roles denied") {
+    StoreFixture f;
+    auto bad = f.service->searchByNameAndDob(test::receptionist(), q("", "31-02-1990"));
+    REQUIRE_FALSE(bad.ok());
+    CHECK(bad.error().kind == ErrorKind::Validation);
+    CHECK(namesField(bad.error(), "Name"));
+    CHECK(namesField(bad.error(), "Date of birth"));
+
+    CHECK(f.service->searchByNameAndDob(test::doctor(), q("a", "01-01-1990")).ok());
+    auto denied = f.service->searchByNameAndDob(test::pharmacist(), q("a", "01-01-1990"));
+    REQUIRE_FALSE(denied.ok());
+    CHECK(denied.error().kind == ErrorKind::AccessDenied);
+    CHECK(f.count("SELECT count(*) FROM audit_entry WHERE outcome = 'DENIED'") == 1);
+}
