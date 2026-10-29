@@ -2,6 +2,7 @@
 
 #include <ostream>
 
+#include "consultation/consultation_service.hpp"
 #include "patient/uhid.hpp"
 #include "core/text.hpp"
 #include "patient/patient_validation.hpp"
@@ -66,6 +67,12 @@ int ConsoleApp::run() {
             out << "  1. Search patients (UHID, name, mobile number, or name and date of birth)\n"
                    "  2. Open a patient record by UHID\n"
                    "  3. My appointments (OPD queue)\n";
+            if (consultations_) {
+                out << "  4. My appointments for the week\n"
+                       "  5. Record a consultation\n"
+                       "  6. Past consultations of a patient\n"
+                       "  7. My weekly working hours\n";
+            }
         }
         out << "  0. Exit\n";
         auto choice = io_.readLine("Choose an option: ");
@@ -85,7 +92,11 @@ int ConsoleApp::run() {
             if (c == "1") searchPatientsScreen();
             else if (c == "2") viewPatientByUhidScreen();
             else if (c == "3") myQueueScreen();
-            else out << "  Please choose 0, 1, 2 or 3.\n";
+            else if (consultations_ && c == "4") myWeekScreen();
+            else if (consultations_ && c == "5") recordConsultationScreen();
+            else if (consultations_ && c == "6") patientHistoryScreen();
+            else if (consultations_ && c == "7") ownHoursScreen();
+            else out << (consultations_ ? "  Please choose a number from 0 to 7.\n" : "  Please choose 0, 1, 2 or 3.\n");
         }
     }
     out << "Goodbye.\n";

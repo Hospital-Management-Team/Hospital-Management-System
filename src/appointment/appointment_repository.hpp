@@ -45,6 +45,8 @@ public:
     std::int64_t insertAppointment(std::int64_t uhid, std::int64_t staffId, const LocalSlot& start, int slotMinutes,
                                    const std::string& createdAtUtc, const std::string& createdBy);
     void markCancelled(std::int64_t id, const std::string& atUtc, const std::string& by);
+    // Set by the consultation feature (#5) when the doctor records the visit.
+    void markCompleted(std::int64_t id);
     void setReplacedBy(std::int64_t id, std::int64_t replacementId);
     void insertReminder(std::int64_t id, const std::string& atUtc, const std::string& by);
 

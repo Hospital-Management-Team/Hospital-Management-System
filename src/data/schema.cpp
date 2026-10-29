@@ -158,6 +158,48 @@ CREATE TABLE appointment_reminder (
     generated_by    TEXT    NOT NULL
 );
 )SQL";
+
+// Version 5 - issue #5: consultations (HMS-F-022). A consultation belongs to one
+// appointment, one patient and one doctor, and holds the diagnosis, the
+// prescription lines and the recommended laboratory tests. Medicine and test
+// names are free text here; the laboratory and pharmacy features (#8) link
+// results and dispensing to these rows.
+const char* kV5 = R"SQL(
+CREATE TABLE consultation (
+    consultation_id  INTEGER PRIMARY KEY AUTOINCREMENT,
+    appointment_id   INTEGER NOT NULL UNIQUE REFERENCES appointment (appointment_id),
+    uhid             INTEGER NOT NULL REFERENCES patient (uhid),
+    doctor_staff_id  INTEGER NOT NULL REFERENCES doctor_profile (staff_id),
+    diagnosis        TEXT    NOT NULL CHECK (length(diagnosis) BETWEEN 1 AND 1000),
+    recorded_by      TEXT    NOT NULL,
+    recorded_at      TEXT    NOT NULL                        -- UTC, ISO 8601
+);
+CREATE INDEX idx_consultation_patient ON consultation (uhid, consultation_id);
+
+-- The store itself refuses a consultation whose patient or doctor differ from its appointment.
+CREATE TRIGGER consultation_matches_appointment BEFORE INSERT ON consultation
+WHEN NOT EXISTS (SELECT 1 FROM appointment a WHERE a.appointment_id = NEW.appointment_id
+                 AND a.uhid = NEW.uhid AND a.doctor_staff_id = NEW.doctor_staff_id)
+BEGIN SELECT RAISE(ABORT, 'a consultation must match its appointment'); END;
+
+CREATE TABLE prescription_item (
+    item_id          INTEGER PRIMARY KEY AUTOINCREMENT,
+    consultation_id  INTEGER NOT NULL REFERENCES consultation (consultation_id),
+    medicine_name    TEXT    NOT NULL CHECK (length(medicine_name) BETWEEN 1 AND 100),
+    dosage           TEXT    NOT NULL CHECK (length(dosage) BETWEEN 1 AND 100),
+    quantity         INTEGER NOT NULL CHECK (quantity BETWEEN 1 AND 1000)
+);
+CREATE INDEX idx_prescription_consultation ON prescription_item (consultation_id);
+
+CREATE TABLE lab_order (
+    order_id         INTEGER PRIMARY KEY AUTOINCREMENT,
+    consultation_id  INTEGER NOT NULL REFERENCES consultation (consultation_id),
+    test_name        TEXT    NOT NULL CHECK (length(test_name) BETWEEN 1 AND 100),
+    instructions     TEXT    CHECK (instructions IS NULL OR length(instructions) <= 200),
+    ordered_at       TEXT    NOT NULL                        -- UTC, ISO 8601
+);
+CREATE INDEX idx_lab_order_consultation ON lab_order (consultation_id);
+)SQL";
 }  // namespace
 
 // Each feature appends its tables as the next numbered migration.
@@ -168,6 +210,7 @@ const std::vector<Migration>& migrations() {
         {2, "Staff accounts and authentication (#3)", kV2},
         {3, "Mobile number or confirmed no phone; date-of-birth lookup (#2 follow-up)", kV3},
         {4, "Doctor schedules, appointments and reminders (#4)", kV4},
+        {5, "Consultations: diagnosis, prescriptions, test orders (#5)", kV5},
     };
     return kAll;
 }
