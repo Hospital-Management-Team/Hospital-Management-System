@@ -105,6 +105,10 @@ set(HMS_FEATURE_SOURCES
   src/appointment/appointment_service.cpp
   src/ui/appointment_screens.cpp
   src/ui/doctor_schedule_screen.cpp
+  src/ui/doctor_workspace_screens.cpp
+  # Consultations (issue #5)
+  src/consultation/consultation_repository.cpp
+  src/consultation/consultation_service.cpp
 )
 
 add_library(hms_core STATIC ${HMS_FOUNDATION_SOURCES} ${HMS_FEATURE_SOURCES})
@@ -145,6 +149,9 @@ if(HMS_BUILD_TESTS)
     # issue #4
     tests/test_appointment.cpp
     tests/test_appointment_console.cpp
+    # issue #5
+    tests/test_consultation.cpp
+    tests/test_doctor_workspace_console.cpp
   )
   add_executable(hms_tests ${HMS_TEST_SOURCES} ${HMS_FEATURE_TEST_SOURCES})
   target_include_directories(hms_tests SYSTEM PRIVATE third_party/doctest)

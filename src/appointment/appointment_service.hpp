@@ -35,6 +35,11 @@ public:
     Result<std::vector<DoctorSummary>> listDoctors(const Session& session);
     Result<ScheduleSaved> setDoctorSchedule(const Session& session, std::int64_t doctorStaffId,
                                             const DoctorScheduleDraft& draft);
+    // Issue #5: a Doctor keeps their own weekly hours up to date (for example after
+    // an emergency). Only the logged-in doctor's hours change; the department and
+    // specialization the Admin set stay as they are.
+    Result<DoctorSummary> myProfile(const Session& session);
+    Result<ScheduleSaved> setOwnHours(const Session& session, const std::vector<WeeklyHours>& hours);
 
     // ---- Booking (HMS-F-010, F-011, Receptionist) ----
     // Doctors who work on `date`, each with that day's free slots. A doctor
@@ -61,6 +66,8 @@ public:
     // The logged-in doctor's appointments on `date`, in time order; other
     // doctors' patients are never included.
     Result<std::vector<AppointmentRecord>> myQueue(const Session& session, const Date& date);
+    // Issue #5: the same queue for `from` and the next six days, in time order.
+    Result<std::vector<AppointmentRecord>> myWeekQueue(const Session& session, const Date& from);
 
     Date today() const;
     LocalSlot now() const;
@@ -80,6 +87,9 @@ private:
     // The cutoff rule for a change to an existing appointment.
     std::optional<Error> checkChangeAllowed(const AppointmentRecord& a, const char* verb) const;
     std::optional<Error> validateSchedule(const DoctorScheduleDraft& draft) const;
+    // Validates, saves and audits one doctor's schedule; the caller has checked the role.
+    Result<ScheduleSaved> applySchedule(const Session& session, std::int64_t doctorStaffId,
+                                        const DoctorScheduleDraft& draft);
 
     Database& db_;
     const Clock& clock_;

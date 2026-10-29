@@ -19,6 +19,7 @@
 #include "platform/console_setup.hpp"
 #include "platform/password_input.hpp"
 #include "platform/store_lock.hpp"
+#include "consultation/consultation_service.hpp"
 #include "ui/console_app.hpp"
 #include "ui/console_io.hpp"
 #include "ui/doctor_schedule_screen.hpp"
@@ -189,6 +190,7 @@ int main(int argc, char** argv) {
     AppPolicy policy;
     PatientService patients(*store.db, clock, policy);
     AppointmentService appointments(*store.db, clock, policy);
+    ConsultationService consultations(*store.db, clock, policy);
 
     while (true) {
         out << "\n=== Staff Login ===   (Ctrl+Z then Enter to quit)\n";
@@ -234,6 +236,7 @@ int main(int argc, char** argv) {
             adminMenu(io, *store.db, appointments, session);
         } else {
             ConsoleApp app(io, patients, appointments, session);
+            app.setConsultationService(consultations);
             app.run();
         }
         out << "Logged out.\n";

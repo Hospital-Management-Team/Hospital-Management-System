@@ -34,6 +34,35 @@ Result<WeeklyHours> parseWindow(const std::string& text, int weekday) {
     return WeeklyHours{weekday, start.value(), end.value()};
 }
 
+
+// Asks for the hours of each weekday; Enter keeps the current value. Returns
+// nullopt if input ends.
+std::optional<std::vector<WeeklyHours>> askWeeklyHours(ConsoleIO& io, const DoctorSummary& current) {
+    auto& out = io.out();
+    std::vector<WeeklyHours> hours;
+    out << "Weekly hours: type HH:MM-HH:MM (for example 09:00-13:00), 'off' if not working that day,\n"
+           "or press Enter to keep the value in [brackets].\n";
+    for (int day = 1; day <= 7; ++day) {
+        const auto cur = current.hoursOn(day);
+        const std::string curText = cur ? minuteText(cur->startMinute) + "-" + minuteText(cur->endMinute) : "off";
+        while (true) {
+            auto line = io.readLine("  " + text::fitWidth(weekdayName(day), 10) + "[" + curText + "]: ");
+            if (!line) return std::nullopt;
+            const std::string v = text::asciiLower(text::trimSpaces(*line));
+            if (v.empty()) {
+                if (cur) hours.push_back(*cur);
+                break;
+            }
+            if (v == "off") break;
+            auto w = parseWindow(v, day);
+            if (!w) { io.showError(w.error()); continue; }
+            hours.push_back(w.value());
+            break;
+        }
+    }
+    return hours;
+}
+
 }  // namespace
 
 void doctorScheduleScreen(ConsoleIO& io, AppointmentService& appointments, const Session& session) {
@@ -79,26 +108,9 @@ void doctorScheduleScreen(ConsoleIO& io, AppointmentService& appointments, const
         draft.specialization = v;
     }
 
-    out << "Weekly hours: type HH:MM-HH:MM (for example 09:00-13:00), 'off' if not working that day,\n"
-           "or press Enter to keep the value in [brackets].\n";
-    for (int day = 1; day <= 7; ++day) {
-        const auto cur = current.hoursOn(day);
-        const std::string curText = cur ? minuteText(cur->startMinute) + "-" + minuteText(cur->endMinute) : "off";
-        while (true) {
-            auto line = io.readLine("  " + text::fitWidth(weekdayName(day), 10) + "[" + curText + "]: ");
-            if (!line) return;
-            const std::string v = text::asciiLower(text::trimSpaces(*line));
-            if (v.empty()) {
-                if (cur) draft.hours.push_back(*cur);
-                break;
-            }
-            if (v == "off") break;
-            auto w = parseWindow(v, day);
-            if (!w) { io.showError(w.error()); continue; }
-            draft.hours.push_back(w.value());
-            break;
-        }
-    }
+    auto hours = askWeeklyHours(io, current);
+    if (!hours) return;
+    draft.hours = *hours;
 
     DoctorSummary preview = current;
     preview.hours = draft.hours;
@@ -109,6 +121,36 @@ void doctorScheduleScreen(ConsoleIO& io, AppointmentService& appointments, const
     if (!yes || !*yes) { out << "  Nothing was changed.\n"; return; }
 
     auto saved = appointments.setDoctorSchedule(session, current.staffId, draft);
+    if (!saved) { io.showError(saved.error()); return; }
+    out << "  Saved. The booking screen uses these hours from now on.\n";
+    if (saved.value().bookedOutsideHours > 0) {
+        out << "  ! " << saved.value().bookedOutsideHours
+            << " booked appointment(s) now fall outside these hours. They were kept; ask reception to "
+               "reschedule them.\n";
+    }
+}
+
+
+void ownHoursScreen(ConsoleIO& io, AppointmentService& appointments, const Session& session) {
+    auto& out = io.out();
+    auto me = appointments.myProfile(session);
+    if (!me) { io.showError(me.error()); return; }
+    const DoctorSummary& current = me.value();
+    out << "\nMY WEEKLY WORKING HOURS - Dr " << current.username << "\n";
+    if (!current.hasProfile) {
+        out << "  Your doctor profile has not been set up yet. Ask an Administrator to set your department first.\n";
+        return;
+    }
+    out << "  Department: " << current.department << "\n  " << hoursSummary(current) << "\n"
+        << "Change the days that differ. Reception books only inside these hours, and the Administrator can see the change.\n";
+    auto hours = askWeeklyHours(io, current);
+    if (!hours) return;
+    DoctorSummary preview = current;
+    preview.hours = *hours;
+    out << "\n  " << hoursSummary(preview) << "\n";
+    auto yes = io.askYesNo("  Save? (Y/N): ");
+    if (!yes || !*yes) { out << "  Nothing was changed.\n"; return; }
+    auto saved = appointments.setOwnHours(session, *hours);
     if (!saved) { io.showError(saved.error()); return; }
     out << "  Saved. The booking screen uses these hours from now on.\n";
     if (saved.value().bookedOutsideHours > 0) {

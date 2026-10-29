@@ -124,6 +124,50 @@ Result<ScheduleSaved> AppointmentService::setDoctorSchedule(const Session& sessi
     if (!authorize(session, Permission::ManageDoctorSchedule)) {
         return Error::accessDenied("Your role (" + to_string(session.role) + ") may not change doctor schedules.");
     }
+    return applySchedule(session, doctorStaffId, draft);
+}
+
+Result<DoctorSummary> AppointmentService::myProfile(const Session& session) {
+    if (!authorize(session, Permission::ManageOwnHours)) {
+        return Error::accessDenied("Your role (" + to_string(session.role) + ") has no working hours to change.");
+    }
+    try {
+        auto staffId = repo_.doctorIdForUsername(session.userId);
+        auto doctor = staffId ? repo_.findDoctor(*staffId) : std::nullopt;
+        if (!doctor) return Error::notFound("No Doctor account was found for your login.");
+        return *doctor;
+    } catch (const DbError&) {
+        return Error::storageFailure(kReadFailed);
+    }
+}
+
+Result<ScheduleSaved> AppointmentService::setOwnHours(const Session& session, const std::vector<WeeklyHours>& hours) {
+    if (!authorize(session, Permission::ManageOwnHours)) {
+        return Error::accessDenied("Your role (" + to_string(session.role) + ") may not change working hours.");
+    }
+    DoctorScheduleDraft draft;
+    std::int64_t staffId = 0;
+    try {
+        // The doctor is the logged-in account; no other doctor's hours can be named.
+        auto id = repo_.doctorIdForUsername(session.userId);
+        auto doctor = id ? repo_.findDoctor(*id) : std::nullopt;
+        if (!doctor) return Error::notFound("No Doctor account was found for your login.");
+        if (!doctor->hasProfile) {
+            return Error::conflict("Your doctor profile has not been set up yet. Ask an Administrator to set your "
+                                   "department first.");
+        }
+        staffId = *id;
+        draft.department = doctor->department;
+        draft.specialization = doctor->specialization.value_or("");
+    } catch (const DbError&) {
+        return Error::storageFailure(kReadFailed);
+    }
+    draft.hours = hours;
+    return applySchedule(session, staffId, draft);
+}
+
+Result<ScheduleSaved> AppointmentService::applySchedule(const Session& session, std::int64_t doctorStaffId,
+                                                        const DoctorScheduleDraft& draft) {
     if (auto e = validateSchedule(draft)) return *e;
 
     DoctorScheduleDraft clean = draft;
@@ -470,6 +514,24 @@ Result<std::vector<ReminderItem>> AppointmentService::remindersDue(const Session
 }
 
 // ------------------------------------------------------------ doctor's queue
+
+Result<std::vector<AppointmentRecord>> AppointmentService::myWeekQueue(const Session& session, const Date& from) {
+    if (!authorize(session, Permission::ViewOwnQueue)) {
+        return Error::accessDenied("Your role (" + to_string(session.role) + ") has no appointment queue.");
+    }
+    try {
+        auto staffId = repo_.doctorIdForUsername(session.userId);
+        std::vector<AppointmentRecord> week;
+        if (!staffId) return week;
+        const std::int64_t first = daysFromCivil(from.year, from.month, from.day);
+        for (int i = 0; i < 7; ++i) {
+            for (auto& a : repo_.queueFor(*staffId, civilFromDays(first + i))) week.push_back(std::move(a));
+        }
+        return week;
+    } catch (const DbError&) {
+        return Error::storageFailure(kReadFailed);
+    }
+}
 
 Result<std::vector<AppointmentRecord>> AppointmentService::myQueue(const Session& session, const Date& date) {
     if (!authorize(session, Permission::ViewOwnQueue)) {

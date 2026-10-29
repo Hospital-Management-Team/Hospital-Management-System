@@ -14,12 +14,19 @@
 
 namespace hms {
 
+class ConsultationService;
+
 class ConsoleApp {
 public:
     ConsoleApp(ConsoleIO& io, PatientService& patients, AppointmentService& appointments, Session session);
 
     // Runs the role menu until the user exits. Returns the process exit code.
     int run();
+
+    // Issue #5: gives the Doctor menu its workspace entries (weekly queue, record a
+    // consultation, past consultations, own weekly hours). Without it the Doctor
+    // menu is the one from issue #4.
+    void setConsultationService(ConsultationService& consultations) { consultations_ = &consultations; }
 
 private:
     void registerPatientScreen();
@@ -38,6 +45,11 @@ private:
     void changeAppointmentScreen();
     void remindersScreen();
     void myQueueScreen();
+    // Doctor workspace (issue #5)
+    void myWeekScreen();
+    void recordConsultationScreen();
+    void patientHistoryScreen();
+    void ownHoursScreen();
     std::optional<PatientRecord> askPatient();
     std::optional<Date> askDate(const std::string& prompt, std::optional<Date> enterMeans);
     std::optional<LocalSlot> pickSlot(const std::vector<LocalSlot>& slots);
@@ -52,6 +64,7 @@ private:
     ConsoleIO& io_;
     PatientService& patients_;
     AppointmentService& appointments_;
+    ConsultationService* consultations_ = nullptr;
     Session session_;
     bool changesBlocked_ = false;  // set after an "outcome uncertain" result (SRS 2.5)
 };

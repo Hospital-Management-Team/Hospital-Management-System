@@ -34,6 +34,9 @@ bool isAllowed(Role role, Permission permission) {
         case Permission::GenerateReminders:
             return role == Role::Receptionist;
         case Permission::ViewOwnQueue:
+        case Permission::ManageOwnHours:
+        case Permission::RecordConsultation:
+        case Permission::ViewConsultations:
             return role == Role::Doctor;
     }
     return false;  // deny anything not listed
@@ -53,6 +56,9 @@ std::string auditActionFor(Permission permission) {
         case Permission::RescheduleAppointment: return audit_action::kAppointmentReschedule;
         case Permission::GenerateReminders: return audit_action::kAppointmentReminder;
         case Permission::ViewOwnQueue: return audit_action::kAppointmentQueueView;
+        case Permission::ManageOwnHours: return audit_action::kDoctorScheduleSet;
+        case Permission::RecordConsultation: return audit_action::kConsultationRecord;
+        case Permission::ViewConsultations: return audit_action::kConsultationView;
     }
     return "UNKNOWN";
 }

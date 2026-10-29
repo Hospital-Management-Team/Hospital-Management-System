@@ -189,6 +189,12 @@ std::int64_t AppointmentRepository::insertAppointment(std::int64_t uhid, std::in
     return db_.lastInsertRowId();
 }
 
+void AppointmentRepository::markCompleted(std::int64_t id) {
+    auto st = db_.prepare("UPDATE appointment SET status = 'COMPLETED' WHERE appointment_id = ? AND status = 'BOOKED'");
+    st.bind(1, id);
+    st.run();
+}
+
 void AppointmentRepository::markCancelled(std::int64_t id, const std::string& atUtc, const std::string& by) {
     auto st = db_.prepare(
         "UPDATE appointment SET status = 'CANCELLED', cancelled_at = ?, cancelled_by = ? "

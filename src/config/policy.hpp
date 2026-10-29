@@ -8,6 +8,7 @@
 // lockout cooldown, low-stock threshold) belong in a system_parameter table.
 
 #include <cstddef>
+#include <cstdint>
 
 #include "core/clock.hpp"
 
@@ -63,11 +64,22 @@ struct AppointmentPolicy {
     std::size_t maxDepartmentChars = 60;
 };
 
+// Consultation records (issue #5, HMS-F-022).
+struct ConsultationPolicy {
+    std::size_t maxDiagnosisChars = 1000;
+    std::size_t maxNameChars = 100;          // medicine name, test name
+    std::size_t maxDosageChars = 100;
+    std::size_t maxInstructionChars = 200;
+    std::int64_t maxQuantity = 1000;         // units on one prescription line
+    std::size_t maxItemsPerConsultation = 20;
+};
+
 struct AppPolicy {
     // SRS 2.5: hospital-local time is Asia/Kolkata, UTC+05:30, no DST.
     int utcOffsetMinutes = 330;
     PatientPolicy patient;
     AppointmentPolicy appointment;
+    ConsultationPolicy consultation;
 };
 
 }  // namespace hms

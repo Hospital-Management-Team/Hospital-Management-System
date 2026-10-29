@@ -11,4 +11,7 @@ namespace hms {
 
 void doctorScheduleScreen(ConsoleIO& io, AppointmentService& appointments, const Session& session);
 
+// Issue #5: a Doctor keeps their own weekly hours up to date.
+void ownHoursScreen(ConsoleIO& io, AppointmentService& appointments, const Session& session);
+
 }  // namespace hms

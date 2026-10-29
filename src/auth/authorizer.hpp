@@ -24,6 +24,10 @@ enum class Permission {
     RescheduleAppointment,     // HMS-F-012:     Receptionist
     GenerateReminders,         // HMS-F-013:     Receptionist
     ViewOwnQueue,              // HMS-F-021:     Doctor (own patients only)
+    // Doctor workspace (issue #5)
+    ManageOwnHours,            // HMS-F-020:     Doctor (own weekly hours only)
+    RecordConsultation,        // HMS-F-022:     Doctor
+    ViewConsultations,         // HMS-F-022:     Doctor (patient history)
 };
 
 bool isAllowed(Role role, Permission permission);

@@ -40,6 +40,9 @@ inline constexpr const char* kAppointmentCancel = "APPOINTMENT_CANCEL";
 inline constexpr const char* kAppointmentReschedule = "APPOINTMENT_RESCHEDULE";
 inline constexpr const char* kAppointmentReminder = "APPOINTMENT_REMINDER";
 inline constexpr const char* kAppointmentQueueView = "APPOINTMENT_QUEUE_VIEW";
+// Consultations (issue #5)
+inline constexpr const char* kConsultationRecord = "CONSULTATION_RECORD";
+inline constexpr const char* kConsultationView = "CONSULTATION_VIEW";
 }  // namespace audit_action
 
 struct AuditEntryInput {
