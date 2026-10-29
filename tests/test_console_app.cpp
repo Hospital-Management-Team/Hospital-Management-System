@@ -14,7 +14,7 @@ std::string runScript(test::StoreFixture& f, const std::string& script, Session 
     std::istringstream in(script);
     std::ostringstream out;
     ConsoleIO io(in, out);
-    ConsoleApp app(io, *f.service, s);
+    ConsoleApp app(io, *f.service, *f.appointments, s);
     app.run();
     return out.str();
 }

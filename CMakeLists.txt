@@ -99,6 +99,12 @@ set(HMS_FEATURE_SOURCES
   src/ui/console_app.cpp
   # Staff authentication (issue #3)
   src/auth/authentication.cpp
+  # Appointments (issue #4)
+  src/appointment/appointment.cpp
+  src/appointment/appointment_repository.cpp
+  src/appointment/appointment_service.cpp
+  src/ui/appointment_screens.cpp
+  src/ui/doctor_schedule_screen.cpp
 )
 
 add_library(hms_core STATIC ${HMS_FOUNDATION_SOURCES} ${HMS_FEATURE_SOURCES})
@@ -136,6 +142,9 @@ if(HMS_BUILD_TESTS)
     tests/test_console_app.cpp
     # issue #3
     tests/test_authentication.cpp
+    # issue #4
+    tests/test_appointment.cpp
+    tests/test_appointment_console.cpp
   )
   add_executable(hms_tests ${HMS_TEST_SOURCES} ${HMS_FEATURE_TEST_SOURCES})
   target_include_directories(hms_tests SYSTEM PRIVATE third_party/doctest)

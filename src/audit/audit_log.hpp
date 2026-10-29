@@ -30,6 +30,16 @@ inline constexpr const char* kPatientUseExisting = "PATIENT_DUPLICATE_USE_EXISTI
 inline constexpr const char* kPatientUpdateDemographics = "PATIENT_UPDATE_DEMOGRAPHICS";
 inline constexpr const char* kPatientSearch = "PATIENT_SEARCH";
 inline constexpr const char* kPatientView = "PATIENT_VIEW";
+// Issue #4. BOOK, CANCEL, RESCHEDULE, REMINDER and SCHEDULE_SET are written for
+// every successful change; LIST, VIEW and QUEUE_VIEW only when denied.
+inline constexpr const char* kDoctorScheduleSet = "DOCTOR_SCHEDULE_SET";
+inline constexpr const char* kDoctorList = "DOCTOR_LIST";
+inline constexpr const char* kAppointmentBook = "APPOINTMENT_BOOK";
+inline constexpr const char* kAppointmentView = "APPOINTMENT_VIEW";
+inline constexpr const char* kAppointmentCancel = "APPOINTMENT_CANCEL";
+inline constexpr const char* kAppointmentReschedule = "APPOINTMENT_RESCHEDULE";
+inline constexpr const char* kAppointmentReminder = "APPOINTMENT_REMINDER";
+inline constexpr const char* kAppointmentQueueView = "APPOINTMENT_QUEUE_VIEW";
 }  // namespace audit_action
 
 struct AuditEntryInput {
