@@ -6,6 +6,7 @@
 #include <optional>
 #include <string>
 
+#include "appointment/appointment_service.hpp"
 #include "config/policy.hpp"
 #include "patient/patient_service.hpp"
 #include "test_support.hpp"
@@ -19,11 +20,16 @@ inline Session pharmacist() { return Session{"STAFF-P1", "Test pharmacist", Role
 struct StoreFixture : TempStore {
     AppPolicy policy;
     std::unique_ptr<PatientService> service;
+    std::unique_ptr<AppointmentService> appointments;  // issue #4
 
     explicit StoreFixture(AppPolicy p = AppPolicy{}) : policy(p) {
         service = std::make_unique<PatientService>(db(), clock, policy);
+        appointments = std::make_unique<AppointmentService>(db(), clock, policy);
     }
-    ~StoreFixture() override { service.reset(); }
+    ~StoreFixture() override {
+        appointments.reset();
+        service.reset();
+    }
 };
 
 // Every patient needs a mobile number (or a confirmed "no phone available").

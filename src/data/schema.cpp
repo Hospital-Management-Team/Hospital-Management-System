@@ -99,6 +99,65 @@ BEGIN SELECT RAISE(ABORT, 'a patient needs a mobile number or a confirmed "no ph
 -- Returning-patient lookup by name and date of birth.
 CREATE INDEX idx_patient_dob ON patient (date_of_birth);
 )SQL";
+
+// Version 4 - issue #4: doctor schedules (HMS-F-020, minimal), appointments
+// (HMS-F-010..F-012) and reminder entries (HMS-F-013).
+// Times of day are hospital-local minutes after midnight; slot_start is the
+// hospital-local start "YYYY-MM-DDTHH:MM", which sorts in time order.
+const char* kV4 = R"SQL(
+CREATE TABLE doctor_profile (
+    staff_id        INTEGER PRIMARY KEY REFERENCES staff_accounts (staff_id),
+    department      TEXT    NOT NULL CHECK (length(department) BETWEEN 1 AND 60),
+    specialization  TEXT    CHECK (specialization IS NULL OR length(specialization) BETWEEN 1 AND 60),
+    updated_at      TEXT    NOT NULL
+);
+-- A profile can only belong to a Doctor account.
+CREATE TRIGGER doctor_profile_role_insert BEFORE INSERT ON doctor_profile
+WHEN (SELECT role FROM staff_accounts WHERE staff_id = NEW.staff_id) IS NOT 'doctor'
+BEGIN SELECT RAISE(ABORT, 'a doctor profile needs a doctor account'); END;
+
+-- One working window per weekday (1 = Monday ... 7 = Sunday).
+CREATE TABLE doctor_availability (
+    staff_id      INTEGER NOT NULL REFERENCES doctor_profile (staff_id),
+    weekday       INTEGER NOT NULL CHECK (weekday BETWEEN 1 AND 7),
+    start_minute  INTEGER NOT NULL CHECK (start_minute BETWEEN 0 AND 1439),
+    end_minute    INTEGER NOT NULL CHECK (end_minute BETWEEN 1 AND 1440),
+    CHECK (end_minute > start_minute),
+    PRIMARY KEY (staff_id, weekday)
+);
+
+CREATE TABLE appointment (
+    appointment_id   INTEGER PRIMARY KEY AUTOINCREMENT,      -- store counter, never reused
+    uhid             INTEGER NOT NULL REFERENCES patient (uhid),
+    doctor_staff_id  INTEGER NOT NULL REFERENCES doctor_profile (staff_id),
+    slot_start       TEXT    NOT NULL
+                     CHECK (slot_start GLOB '[0-9][0-9][0-9][0-9]-[0-9][0-9]-[0-9][0-9]T[0-9][0-9]:[0-9][0-9]'),
+    slot_minutes     INTEGER NOT NULL CHECK (slot_minutes BETWEEN 5 AND 240),
+    status           TEXT    NOT NULL CHECK (status IN ('BOOKED', 'CANCELLED', 'COMPLETED', 'NO_SHOW')),
+    replaced_by      INTEGER REFERENCES appointment (appointment_id),  -- set when rescheduled
+    created_at       TEXT    NOT NULL,                       -- UTC, ISO 8601
+    created_by       TEXT    NOT NULL,
+    cancelled_at     TEXT,
+    cancelled_by     TEXT,
+    CHECK ((status = 'CANCELLED') = (cancelled_at IS NOT NULL AND cancelled_by IS NOT NULL)),
+    CHECK (replaced_by IS NULL OR status = 'CANCELLED')
+);
+-- HMS-F-011, enforced by the store: one active appointment per doctor per
+-- slot start, and a patient cannot hold two active appointments at the same
+-- start. (Overlaps between different starts are refused by the service.)
+CREATE UNIQUE INDEX ux_appointment_doctor_slot ON appointment (doctor_staff_id, slot_start)
+    WHERE status = 'BOOKED';
+CREATE UNIQUE INDEX ux_appointment_patient_slot ON appointment (uhid, slot_start)
+    WHERE status = 'BOOKED';
+CREATE INDEX idx_appointment_slot ON appointment (slot_start);
+
+-- HMS-F-013: one reminder entry per appointment.
+CREATE TABLE appointment_reminder (
+    appointment_id  INTEGER PRIMARY KEY REFERENCES appointment (appointment_id),
+    generated_at    TEXT    NOT NULL,                        -- UTC, ISO 8601
+    generated_by    TEXT    NOT NULL
+);
+)SQL";
 }  // namespace
 
 // Each feature appends its tables as the next numbered migration.
@@ -108,6 +167,7 @@ const std::vector<Migration>& migrations() {
         {1, "Patients, audit trail, duplicate reviews (#2)", kV1},
         {2, "Staff accounts and authentication (#3)", kV2},
         {3, "Mobile number or confirmed no phone; date-of-birth lookup (#2 follow-up)", kV3},
+        {4, "Doctor schedules, appointments and reminders (#4)", kV4},
     };
     return kAll;
 }

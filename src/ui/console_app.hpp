@@ -6,6 +6,7 @@
 #include <optional>
 #include <vector>
 
+#include "appointment/appointment_service.hpp"
 #include "auth/session.hpp"
 #include "patient/patient.hpp"
 #include "patient/patient_service.hpp"
@@ -15,7 +16,7 @@ namespace hms {
 
 class ConsoleApp {
 public:
-    ConsoleApp(ConsoleIO& io, PatientService& patients, Session session);
+    ConsoleApp(ConsoleIO& io, PatientService& patients, AppointmentService& appointments, Session session);
 
     // Runs the role menu until the user exits. Returns the process exit code.
     int run();
@@ -32,6 +33,16 @@ private:
     // use an existing record, or cancel.
     void reviewDuplicates(const PatientDraft& draft, RegistrationOutcome outcome);
 
+    // Appointments (issue #4)
+    void bookAppointmentScreen();
+    void changeAppointmentScreen();
+    void remindersScreen();
+    void myQueueScreen();
+    std::optional<PatientRecord> askPatient();
+    std::optional<Date> askDate(const std::string& prompt, std::optional<Date> enterMeans);
+    std::optional<LocalSlot> pickSlot(const std::vector<LocalSlot>& slots);
+    bool blockedForChanges();
+
     void showPatient(const PatientRecord& p);
     void showPatientTable(const std::vector<PatientRecord>& rows);
     void showCandidates(const std::vector<Candidate>& candidates);
@@ -40,6 +51,7 @@ private:
 
     ConsoleIO& io_;
     PatientService& patients_;
+    AppointmentService& appointments_;
     Session session_;
     bool changesBlocked_ = false;  // set after an "outcome uncertain" result (SRS 2.5)
 };

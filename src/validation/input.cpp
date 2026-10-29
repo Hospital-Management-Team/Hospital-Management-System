@@ -72,6 +72,19 @@ Result<Date> parseDate(std::string_view text, const std::string& field) {
     return Date{year, month, day};
 }
 
+Result<int> parseTimeOfDay(std::string_view text, const std::string& field) {
+    const std::string kFormat = "must be a time in the form HH:MM (24-hour), for example 09:30 or 17:00";
+    const auto colon = text.find(':');
+    if (colon == std::string_view::npos) return Error::validation(field, kFormat);
+    const auto h = text.substr(0, colon);
+    const auto m = text.substr(colon + 1);
+    if (!allDigits(h) || !allDigits(m) || h.size() > 2 || m.size() != 2) return Error::validation(field, kFormat);
+    const int hour = static_cast<int>(toInt64(h));
+    const int minute = static_cast<int>(toInt64(m));
+    if (hour > 23 || minute > 59) return Error::validation(field, std::string(text) + " is not a real time of day");
+    return hour * 60 + minute;
+}
+
 Result<std::int64_t> parseWholeNumber(std::string_view text, const std::string& field, std::int64_t min,
                                       std::int64_t max) {
     if (!allDigits(text)) return Error::validation(field, "must be a whole number (digits only)");

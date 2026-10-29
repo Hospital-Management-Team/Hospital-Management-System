@@ -29,6 +29,10 @@ Result<std::string> requireLine(std::string_view raw, const std::string& field);
 // such as 31-02-2026 are rejected.
 Result<Date> parseDate(std::string_view text, const std::string& field);
 
+// Time of day HH:MM, 24-hour clock (the hour may have one or two digits:
+// 9:00 and 09:00 are the same). Returns minutes after midnight, 0-1439.
+Result<int> parseTimeOfDay(std::string_view text, const std::string& field);
+
 // Digits only (no sign, no spaces inside), within [min, max].
 Result<std::int64_t> parseWholeNumber(std::string_view text, const std::string& field, std::int64_t min,
                                       std::int64_t max);

@@ -33,8 +33,9 @@ bool meansNoPhone(const std::string& s) {
 }
 }  // namespace
 
-ConsoleApp::ConsoleApp(ConsoleIO& io, PatientService& patients, Session session)
-    : io_(io), patients_(patients), session_(std::move(session)) {}
+ConsoleApp::ConsoleApp(ConsoleIO& io, PatientService& patients, AppointmentService& appointments,
+                       Session session)
+    : io_(io), patients_(patients), appointments_(appointments), session_(std::move(session)) {}
 
 std::string ConsoleApp::dobText(const PatientRecord& p) const {
     const int age = ageInYears(p.dateOfBirth, patients_.today());
@@ -56,10 +57,15 @@ int ConsoleApp::run() {
             out << "  1. Register a new patient\n"
                    "  2. Search patients (UHID, name, mobile number, or name and date of birth)\n"
                    "  3. Open a patient record by UHID\n"
-                   "  4. Find a returning patient (mobile number first, then name and date of birth)\n";
+                   "  4. Find a returning patient (mobile number first, then name and date of birth)\n"
+                   "  5. Book an appointment\n"
+                   "  6. Reschedule or cancel an appointment\n"
+                   "  7. Appointment reminders (next "
+                << appointments_.policy().appointment.reminderLeadHours << " hours)\n";
         } else {
             out << "  1. Search patients (UHID, name, mobile number, or name and date of birth)\n"
-                   "  2. Open a patient record by UHID\n";
+                   "  2. Open a patient record by UHID\n"
+                   "  3. My appointments (OPD queue)\n";
         }
         out << "  0. Exit\n";
         auto choice = io_.readLine("Choose an option: ");
@@ -71,11 +77,15 @@ int ConsoleApp::run() {
             else if (c == "2") searchPatientsScreen();
             else if (c == "3") viewPatientByUhidScreen();
             else if (c == "4") findReturningPatientScreen();
-            else out << "  Please choose 0, 1, 2, 3 or 4.\n";
+            else if (c == "5") bookAppointmentScreen();
+            else if (c == "6") changeAppointmentScreen();
+            else if (c == "7") remindersScreen();
+            else out << "  Please choose a number from 0 to 7.\n";
         } else {
             if (c == "1") searchPatientsScreen();
             else if (c == "2") viewPatientByUhidScreen();
-            else out << "  Please choose 0, 1 or 2.\n";
+            else if (c == "3") myQueueScreen();
+            else out << "  Please choose 0, 1, 2 or 3.\n";
         }
     }
     out << "Goodbye.\n";

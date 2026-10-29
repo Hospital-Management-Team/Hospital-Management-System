@@ -8,6 +8,7 @@
 #include <string>
 #include <system_error>
 
+#include "appointment/appointment_service.hpp"
 #include "auth/authentication.hpp"
 #include "auth/session.hpp"
 #include "config/policy.hpp"
@@ -20,6 +21,7 @@
 #include "platform/store_lock.hpp"
 #include "ui/console_app.hpp"
 #include "ui/console_io.hpp"
+#include "ui/doctor_schedule_screen.hpp"
 
 using namespace hms;
 
@@ -50,15 +52,20 @@ const char* roleName(auth::Role r) {
     return "";
 }
 
-void adminMenu(ConsoleIO& io, Database& db) {
+// The Admin session is used by the schedule screen, whose service checks the
+// role and audits the change (issue #4). Account creation does not take it yet
+// (deviation log D-17, D-22).
+void adminMenu(ConsoleIO& io, Database& db, AppointmentService& appointments, const Session& session) {
     auto& out = io.out();
     while (true) {
         out << "\n--- ADMIN MENU ---\n"
                "  1. Create staff account\n"
+               "  2. Set a doctor's department and weekly hours\n"
                "  0. Log out\n";
         auto c = io.readLine("Choose an option: ");
         if (!c || *c == "0") return;
-        if (*c != "1") { out << "  Please choose 0 or 1.\n"; continue; }
+        if (*c == "2") { doctorScheduleScreen(io, appointments, session); continue; }
+        if (*c != "1") { out << "  Please choose 0, 1 or 2.\n"; continue; }
 
         auto u = io.readLine("New username: ");
         if (!u) return;
@@ -181,6 +188,7 @@ int main(int argc, char** argv) {
     SystemClock clock;
     AppPolicy policy;
     PatientService patients(*store.db, clock, policy);
+    AppointmentService appointments(*store.db, clock, policy);
 
     while (true) {
         out << "\n=== Staff Login ===   (Ctrl+Z then Enter to quit)\n";
@@ -217,15 +225,15 @@ int main(int argc, char** argv) {
 
         out << "\nLogin successful. Role: " << roleName(result.role) << "\n";
 
+        Session session;
+        session.userId = username;
+        session.displayName = username;
+        session.role = toSessionRole(result.role);
+        session.simulated = false;
         if (result.role == auth::Role::Administrator) {
-            adminMenu(io, *store.db);
+            adminMenu(io, *store.db, appointments, session);
         } else {
-            Session session;
-            session.userId = username;
-            session.displayName = username;
-            session.role = toSessionRole(result.role);
-            session.simulated = false;
-            ConsoleApp app(io, patients, session);
+            ConsoleApp app(io, patients, appointments, session);
             app.run();
         }
         out << "Logged out.\n";

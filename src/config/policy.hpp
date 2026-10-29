@@ -40,10 +40,34 @@ struct PatientPolicy {
     std::size_t maxSearchResults = 50;
 };
 
+// Appointments (issue #4). Until the Admin parameter screen (HMS-F-052)
+// exists, these are build-time values (deviation log).
+struct AppointmentPolicy {
+    // Every slot has this length; a doctor's day is cut into slots from the
+    // start of their working hours.
+    int slotMinutes = 15;
+
+    // HMS-F-012: an appointment can be cancelled or rescheduled only while at
+    // least this many minutes remain before it starts. Exactly at the cutoff
+    // is still allowed.
+    int cutoffMinutes = 60;
+
+    // Booking is open from now up to this many days ahead (today counts as day 0).
+    int maxDaysAhead = 90;
+
+    // HMS-F-013: the reminder list covers booked appointments that start
+    // within this many hours. Run once a day, every appointment booked more
+    // than a day ahead is reminded at least 24 hours before it starts.
+    int reminderLeadHours = 48;
+
+    std::size_t maxDepartmentChars = 60;
+};
+
 struct AppPolicy {
     // SRS 2.5: hospital-local time is Asia/Kolkata, UTC+05:30, no DST.
     int utcOffsetMinutes = 330;
     PatientPolicy patient;
+    AppointmentPolicy appointment;
 };
 
 }  // namespace hms
