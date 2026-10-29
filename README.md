@@ -44,6 +44,7 @@ src/config/      build-time policy values ([TEAM DECISION] items in the SRS)
 src/patient/     patient registration, duplicate review, search (issue #2)
 src/audit/       append-only audit trail, written in the same transaction as each change
 src/auth/        Session, role check, staff login, password hashing and policy (issue #3)
+src/appointment/ doctor schedules, booking, double-booking prevention, reschedule, cancel, reminders, doctor queue (issue #4)
 tools/           hms_seed: synthetic test data and search timings
 tests/           doctest suites (run by CI on every push and pull request)
 third_party/     SQLite 3.50.4 amalgamation, Argon2 reference implementation, doctest 2.4.11
@@ -66,7 +67,7 @@ Only staff log in. Patients are records, not users (SRS 2.3).
 
 1. **First run:** on an empty data store the app asks you to create the Administrator account. Passwords need 8+ characters with an upper-case letter, a lower-case letter, a digit and a symbol.
 2. **Login:** everyone, including the Administrator, logs in with a username and password. The role comes from the stored account and is never chosen by the user. After 5 failed attempts the account is locked.
-3. **Administrator** can create staff accounts (Doctor, Receptionist, Administrator).
+3. **Administrator** can create staff accounts (Doctor, Receptionist, Administrator) and set each doctor's department and weekly hours (issue #4).
 4. **Receptionist** registers and searches patients. **Doctor** searches and opens patient records.
 
 Passwords are stored only as salted Argon2id hashes.
@@ -95,6 +96,25 @@ Log in as a **Receptionist** (see Staff login above) to register patients. The r
 **Audit** (HMS-SR-004): every registration and decision is written in the same transaction as the change. The store refuses any edit or deletion of an audit entry.
 
 **Test data:** `./build/hms_seed --store perf.db --count 100000 --bench` creates synthetic patients and times the searches.
+
+### Appointments (issue #4)
+
+**Admin, option 2: doctor's department and weekly hours** (HMS-F-020, minimal). One working window per weekday, typed as `09:00-13:00`, or `off`. A doctor appears on the booking screen only on the days they work. If hours change, booked appointments outside the new hours are kept and the Admin is told how many to reschedule.
+
+**Receptionist**
+- **Option 5, book** (HMS-F-010, F-011): patient UHID → date → doctors working that day with their free slots → slot → confirm. You get an appointment number such as `APT-000001`.
+  - Slots are 15 minutes, from the start of the doctor's hours. Only slots that haven't started, up to 90 days ahead, are offered.
+  - A doctor, and a patient, can have only one booked appointment at any moment. A taken or overlapping slot is refused, and the existing appointment is not changed. The store's unique indexes enforce this too.
+- **Option 6, reschedule or cancel** (HMS-F-012): pick the patient's upcoming appointment, then R or C. Changes close **60 minutes** before the start. A cancelled or rescheduled slot is free again at once. A reschedule keeps the old record as Cancelled, linked to the new appointment.
+- **Option 7, reminders** (HMS-F-013): booked appointments starting in the next 48 hours, with mobile numbers. A reminder entry is recorded the first time each one is listed (marked NEW). Run it once a day and contact the NEW patients.
+
+**Doctor, option 3: my appointments** (HMS-F-021): the logged-in doctor's patients for a date, in time order.
+
+**Settings:** slot length, cutoff, booking horizon and reminder window are in `AppointmentPolicy` (`src/config/policy.hpp`) until the Admin parameter screen (HMS-F-052) exists (deviation log D-38).
+
+**Audit:** booking, cancelling, rescheduling, reminders and schedule changes are written in the same transaction as the change, with IDs only (`APT-…`, `STAFF-…`). Denied attempts are audited.
+
+Deviations: D-35 to D-41 in `docs/deviation-log.md`. Tests: `tests/test_appointment.cpp` and `tests/test_appointment_console.cpp` (TC-App-01 to 04, TC-Doc-01 and 02).
 
 ## Continuous integration
 
