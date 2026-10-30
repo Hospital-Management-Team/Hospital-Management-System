@@ -200,9 +200,15 @@ CREATE TABLE lab_order (
 );
 CREATE INDEX idx_lab_order_consultation ON lab_order (consultation_id);
 )SQL";
-// Version 6 - issue #7: consultation fee, bills, bill lines and payments (HMS-F-030..032).
-// The store refuses a payment that would take the total paid above the bill total.
+
+// Version 6 - issue #3: lockout cooldown (HMS-SR-003).
 const char* kV6 = R"SQL(
+ALTER TABLE staff_accounts ADD COLUMN locked_until TEXT;
+)SQL";
+
+// Version 7 - issue #7: consultation fee, bills, bill lines and payments (HMS-F-030..032).
+// The store refuses a payment that would take the total paid above the bill total.
+const char* kV7 = R"SQL(
 CREATE TABLE doctor_fee (
     staff_id    INTEGER PRIMARY KEY REFERENCES doctor_profile (staff_id),
     fee_paise   INTEGER NOT NULL CHECK (fee_paise >= 0),
@@ -261,7 +267,8 @@ const std::vector<Migration>& migrations() {
         {3, "Mobile number or confirmed no phone; date-of-birth lookup (#2 follow-up)", kV3},
         {4, "Doctor schedules, appointments and reminders (#4)", kV4},
         {5, "Consultations: diagnosis, prescriptions, test orders (#5)", kV5},
-        {6, "Consultation fees, bills, payments (#7)", kV6},
+        {6, "Lockout cooldown (#3)", kV6},
+        {7, "Consultation fees, bills, payments (#7)", kV7},
     };
     return kAll;
 }

@@ -74,6 +74,12 @@ struct ConsultationPolicy {
     std::size_t maxItemsPerConsultation = 20;
 };
 
+// Staff login (issue #3, HMS-SR-003). Until the Admin parameter screen
+struct AuthPolicy {
+    int maxFailedAttempts = 5;   // consecutive failures that lock the account
+    int lockoutMinutes = 15;     // cooldown before the account works again
+};
+
 // Billing (issue #7, HMS-F-030..032). Amounts are whole paise.
 struct BillingPolicy {
     std::int64_t maxUnitPricePaise = 100'000'000;   // Rs 10,00,000 per line unit
@@ -89,6 +95,7 @@ struct AppPolicy {
     PatientPolicy patient;
     AppointmentPolicy appointment;
     ConsultationPolicy consultation;
+    AuthPolicy auth;
     BillingPolicy billing;
 };
 
