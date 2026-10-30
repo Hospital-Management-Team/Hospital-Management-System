@@ -19,7 +19,9 @@
 #include "platform/console_setup.hpp"
 #include "platform/password_input.hpp"
 #include "platform/store_lock.hpp"
+#include "billing/billing_service.hpp"
 #include "consultation/consultation_service.hpp"
+#include "ui/billing_screens.hpp"
 #include "ui/console_app.hpp"
 #include "ui/console_io.hpp"
 #include "ui/doctor_schedule_screen.hpp"
@@ -56,17 +58,20 @@ const char* roleName(auth::Role r) {
 // The Admin session is used by the schedule screen, whose service checks the
 // role and audits the change (issue #4). Account creation does not take it yet
 // (deviation log D-17, D-22).
-void adminMenu(ConsoleIO& io, Database& db, AppointmentService& appointments, const Session& session) {
+void adminMenu(ConsoleIO& io, Database& db, AppointmentService& appointments, BillingService& billing,
+               const Session& session) {
     auto& out = io.out();
     while (true) {
         out << "\n--- ADMIN MENU ---\n"
                "  1. Create staff account\n"
                "  2. Set a doctor's department and weekly hours\n"
+               "  3. Set a doctor's consultation fee\n"
                "  0. Log out\n";
         auto c = io.readLine("Choose an option: ");
         if (!c || *c == "0") return;
         if (*c == "2") { doctorScheduleScreen(io, appointments, session); continue; }
-        if (*c != "1") { out << "  Please choose 0, 1 or 2.\n"; continue; }
+        if (*c == "3") { consultationFeeScreen(io, billing, session); continue; }
+        if (*c != "1") { out << "  Please choose 0, 1, 2 or 3.\n"; continue; }
 
         auto u = io.readLine("New username: ");
         if (!u) return;
@@ -191,6 +196,7 @@ int main(int argc, char** argv) {
     PatientService patients(*store.db, clock, policy);
     AppointmentService appointments(*store.db, clock, policy);
     ConsultationService consultations(*store.db, clock, policy);
+    BillingService billing(*store.db, clock, policy);
 
     while (true) {
         out << "\n=== Staff Login ===   (Ctrl+Z then Enter to quit)\n";
@@ -234,10 +240,11 @@ int main(int argc, char** argv) {
         session.role = toSessionRole(result.role);
         session.simulated = false;
         if (result.role == auth::Role::Administrator) {
-            adminMenu(io, *store.db, appointments, session);
+            adminMenu(io, *store.db, appointments, billing, session);
         } else {
             ConsoleApp app(io, patients, appointments, session);
             app.setConsultationService(consultations);
+            app.setBillingService(billing);
             app.run();
         }
         out << "Logged out.\n";

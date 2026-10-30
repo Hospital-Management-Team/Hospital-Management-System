@@ -38,6 +38,13 @@ bool isAllowed(Role role, Permission permission) {
         case Permission::RecordConsultation:
         case Permission::ViewConsultations:
             return role == Role::Doctor;
+        case Permission::SetConsultationFee:
+            return role == Role::Admin;
+        case Permission::GenerateBill:
+        case Permission::ViewBills:
+        case Permission::RecordPayment:
+        case Permission::GenerateReceipt:
+            return role == Role::Receptionist;
     }
     return false;  // deny anything not listed
 }
@@ -59,6 +66,11 @@ std::string auditActionFor(Permission permission) {
         case Permission::ManageOwnHours: return audit_action::kDoctorScheduleSet;
         case Permission::RecordConsultation: return audit_action::kConsultationRecord;
         case Permission::ViewConsultations: return audit_action::kConsultationView;
+        case Permission::SetConsultationFee: return audit_action::kConsultationFeeSet;
+        case Permission::GenerateBill: return audit_action::kBillGenerate;
+        case Permission::ViewBills: return audit_action::kBillView;
+        case Permission::RecordPayment: return audit_action::kPaymentRecord;
+        case Permission::GenerateReceipt: return audit_action::kReceiptGenerate;
     }
     return "UNKNOWN";
 }

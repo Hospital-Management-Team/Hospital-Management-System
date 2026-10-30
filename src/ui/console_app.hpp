@@ -15,6 +15,7 @@
 namespace hms {
 
 class ConsultationService;
+class BillingService;
 
 class ConsoleApp {
 public:
@@ -27,6 +28,11 @@ public:
     // consultation, past consultations, own weekly hours). Without it the Doctor
     // menu is the one from issue #4.
     void setConsultationService(ConsultationService& consultations) { consultations_ = &consultations; }
+
+    // Issue #7: gives the Reception menu its billing entries (bill a visit, record a
+    // payment, bills and balances, reprint a receipt). Without it the Reception
+    // menu is the one from issue #4.
+    void setBillingService(BillingService& billing) { billing_ = &billing; }
 
 private:
     void registerPatientScreen();
@@ -50,6 +56,12 @@ private:
     void recordConsultationScreen();
     void patientHistoryScreen();
     void ownHoursScreen();
+    // Billing (issue #7)
+    void billVisitScreen();
+    void paymentScreen();
+    void printReceipt(std::int64_t paymentId);
+    void reprintReceiptScreen();
+    void billsScreen();
     std::optional<PatientRecord> askPatient();
     std::optional<Date> askDate(const std::string& prompt, std::optional<Date> enterMeans);
     std::optional<LocalSlot> pickSlot(const std::vector<LocalSlot>& slots);
@@ -65,6 +77,7 @@ private:
     PatientService& patients_;
     AppointmentService& appointments_;
     ConsultationService* consultations_ = nullptr;
+    BillingService* billing_ = nullptr;
     Session session_;
     bool changesBlocked_ = false;  // set after an "outcome uncertain" result (SRS 2.5)
 };

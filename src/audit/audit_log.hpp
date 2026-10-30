@@ -42,6 +42,13 @@ inline constexpr const char* kAppointmentQueueView = "APPOINTMENT_QUEUE_VIEW";
 // Consultations (issue #5)
 inline constexpr const char* kConsultationRecord = "CONSULTATION_RECORD";
 inline constexpr const char* kConsultationView = "CONSULTATION_VIEW";
+// Billing (issue #7). FEE_SET, BILL_GENERATE, PAYMENT_RECORD and RECEIPT_GENERATE are written for every
+// success; BILL_VIEW only when denied.
+inline constexpr const char* kConsultationFeeSet = "CONSULTATION_FEE_SET";
+inline constexpr const char* kBillGenerate = "BILL_GENERATE";
+inline constexpr const char* kBillView = "BILL_VIEW";
+inline constexpr const char* kPaymentRecord = "PAYMENT_RECORD";
+inline constexpr const char* kReceiptGenerate = "RECEIPT_GENERATE";
 // Staff login and accounts (issue #3). Entries hold staff IDs only: never a
 // password and never text typed at the login screen.
 inline constexpr const char* kStaffLogin = "STAFF_LOGIN";

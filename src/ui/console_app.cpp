@@ -63,6 +63,12 @@ int ConsoleApp::run() {
                    "  6. Reschedule or cancel an appointment\n"
                    "  7. Appointment reminders (next "
                 << appointments_.policy().appointment.reminderLeadHours << " hours)\n";
+            if (billing_) {
+                out << "  8. Bill a completed visit\n"
+                       "  9. Record a payment and print the receipt\n"
+                       "  10. Bills and balances\n"
+                       "  11. Print a receipt again\n";
+            }
         } else {
             out << "  1. Search patients (UHID, name, mobile number, or name and date of birth)\n"
                    "  2. Open a patient record by UHID\n"
@@ -87,7 +93,11 @@ int ConsoleApp::run() {
             else if (c == "5") bookAppointmentScreen();
             else if (c == "6") changeAppointmentScreen();
             else if (c == "7") remindersScreen();
-            else out << "  Please choose a number from 0 to 7.\n";
+            else if (billing_ && c == "8") billVisitScreen();
+            else if (billing_ && c == "9") paymentScreen();
+            else if (billing_ && c == "10") billsScreen();
+            else if (billing_ && c == "11") reprintReceiptScreen();
+            else out << (billing_ ? "  Please choose a number from 0 to 11.\n" : "  Please choose a number from 0 to 7.\n");
         } else {
             if (c == "1") searchPatientsScreen();
             else if (c == "2") viewPatientByUhidScreen();

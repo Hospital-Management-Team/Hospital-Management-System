@@ -109,6 +109,13 @@ set(HMS_FEATURE_SOURCES
   # Consultations (issue #5)
   src/consultation/consultation_repository.cpp
   src/consultation/consultation_service.cpp
+  # Billing and payments (issue #7)
+  src/core/money.cpp
+  src/billing/billing.cpp
+  src/billing/billing_repository.cpp
+  src/billing/billing_service.cpp
+  src/billing/receipt.cpp
+  src/ui/billing_screens.cpp
 )
 
 add_library(hms_core STATIC ${HMS_FOUNDATION_SOURCES} ${HMS_FEATURE_SOURCES})
@@ -152,6 +159,9 @@ if(HMS_BUILD_TESTS)
     # issue #5
     tests/test_consultation.cpp
     tests/test_doctor_workspace_console.cpp
+    # issue #7
+    tests/test_billing.cpp
+    tests/test_billing_console.cpp
   )
   add_executable(hms_tests ${HMS_TEST_SOURCES} ${HMS_FEATURE_TEST_SOURCES})
   target_include_directories(hms_tests SYSTEM PRIVATE third_party/doctest)

@@ -28,6 +28,12 @@ enum class Permission {
     ManageOwnHours,            // HMS-F-020:     Doctor (own weekly hours only)
     RecordConsultation,        // HMS-F-022:     Doctor
     ViewConsultations,         // HMS-F-022:     Doctor (patient history)
+    // Billing (issue #7)
+    SetConsultationFee,        // HMS-F-030:     Admin (the fee on a doctor's profile)
+    GenerateBill,              // HMS-F-030:     Receptionist
+    ViewBills,                 // HMS-F-030/031: Receptionist
+    RecordPayment,             // HMS-F-031:     Receptionist
+    GenerateReceipt,           // HMS-F-032:     Receptionist
 };
 
 bool isAllowed(Role role, Permission permission);
