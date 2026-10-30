@@ -74,12 +74,22 @@ struct ConsultationPolicy {
     std::size_t maxItemsPerConsultation = 20;
 };
 
+// Billing (issue #7, HMS-F-030..032). Amounts are whole paise.
+struct BillingPolicy {
+    std::int64_t maxUnitPricePaise = 100'000'000;   // Rs 10,00,000 per line unit
+    std::int64_t maxLineQuantity = 999;
+    std::size_t maxExtraLines = 20;                 // service lines added by reception
+    std::size_t maxDescriptionChars = 100;
+    std::size_t maxReferenceChars = 40;             // payment reference (never a card number)
+};
+
 struct AppPolicy {
     // SRS 2.5: hospital-local time is Asia/Kolkata, UTC+05:30, no DST.
     int utcOffsetMinutes = 330;
     PatientPolicy patient;
     AppointmentPolicy appointment;
     ConsultationPolicy consultation;
+    BillingPolicy billing;
 };
 
 }  // namespace hms

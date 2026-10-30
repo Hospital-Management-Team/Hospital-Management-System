@@ -200,6 +200,56 @@ CREATE TABLE lab_order (
 );
 CREATE INDEX idx_lab_order_consultation ON lab_order (consultation_id);
 )SQL";
+// Version 6 - issue #7: consultation fee, bills, bill lines and payments (HMS-F-030..032).
+// The store refuses a payment that would take the total paid above the bill total.
+const char* kV6 = R"SQL(
+CREATE TABLE doctor_fee (
+    staff_id    INTEGER PRIMARY KEY REFERENCES doctor_profile (staff_id),
+    fee_paise   INTEGER NOT NULL CHECK (fee_paise >= 0),
+    updated_at  TEXT NOT NULL
+);
+
+CREATE TABLE bill (
+    bill_id         INTEGER PRIMARY KEY AUTOINCREMENT,
+    uhid            INTEGER NOT NULL REFERENCES patient (uhid),
+    appointment_id  INTEGER NOT NULL UNIQUE REFERENCES appointment (appointment_id),
+    total_paise     INTEGER NOT NULL CHECK (total_paise >= 0),
+    created_by      TEXT NOT NULL,
+    created_at      TEXT NOT NULL
+);
+CREATE INDEX idx_bill_patient ON bill (uhid);
+CREATE TRIGGER bill_matches_appointment BEFORE INSERT ON bill
+WHEN NEW.uhid <> (SELECT uhid FROM appointment WHERE appointment_id = NEW.appointment_id)
+BEGIN SELECT RAISE(ABORT, 'bill patient must match the appointment'); END;
+
+CREATE TABLE bill_line (
+    line_id           INTEGER PRIMARY KEY AUTOINCREMENT,
+    bill_id           INTEGER NOT NULL REFERENCES bill (bill_id),
+    kind              TEXT NOT NULL CHECK (kind IN ('CONSULTATION', 'LAB_TEST', 'SERVICE')),
+    description       TEXT NOT NULL CHECK (length(description) BETWEEN 1 AND 100),
+    quantity          INTEGER NOT NULL CHECK (quantity BETWEEN 1 AND 999),
+    unit_price_paise  INTEGER NOT NULL CHECK (unit_price_paise >= 0),
+    amount_paise      INTEGER NOT NULL CHECK (amount_paise = quantity * unit_price_paise),
+    lab_order_id      INTEGER UNIQUE REFERENCES lab_order (order_id)
+);
+CREATE INDEX idx_bill_line_bill ON bill_line (bill_id);
+
+CREATE TABLE payment (
+    payment_id    INTEGER PRIMARY KEY AUTOINCREMENT,
+    bill_id       INTEGER NOT NULL REFERENCES bill (bill_id),
+    amount_paise  INTEGER NOT NULL CHECK (amount_paise > 0),
+    mode          TEXT NOT NULL CHECK (mode IN ('CASH', 'CARD', 'INSURANCE')),
+    reference     TEXT CHECK (reference IS NULL OR length(reference) <= 40),
+    received_by   TEXT NOT NULL,
+    paid_at       TEXT NOT NULL
+);
+CREATE INDEX idx_payment_bill ON payment (bill_id);
+CREATE TRIGGER payment_within_balance BEFORE INSERT ON payment
+WHEN (SELECT COALESCE(SUM(amount_paise), 0) FROM payment WHERE bill_id = NEW.bill_id) + NEW.amount_paise
+     > (SELECT total_paise FROM bill WHERE bill_id = NEW.bill_id)
+BEGIN SELECT RAISE(ABORT, 'payment exceeds the outstanding balance'); END;
+)SQL";
+
 }  // namespace
 
 // Each feature appends its tables as the next numbered migration.
@@ -211,6 +261,7 @@ const std::vector<Migration>& migrations() {
         {3, "Mobile number or confirmed no phone; date-of-birth lookup (#2 follow-up)", kV3},
         {4, "Doctor schedules, appointments and reminders (#4)", kV4},
         {5, "Consultations: diagnosis, prescriptions, test orders (#5)", kV5},
+        {6, "Consultation fees, bills, payments (#7)", kV6},
     };
     return kAll;
 }
