@@ -88,7 +88,7 @@ void adminMenu(ConsoleIO& io, Database& db, AppointmentService& appointments, co
         std::string reason;
         if (!auth::isPasswordAcceptable(p1, reason)) { out << "  " << reason << "\n"; continue; }
 
-        if (auth::createStaffAccount(db, *u, p1, role)) {
+        if (auth::createStaffAccount(db, *u, p1, role, auth::defaultClock(), session.userId)) {
             out << "  Account created for '" << *u << "'.\n";
         } else {
             out << "  Could not create the account (empty name, contains spaces, or already used).\n";
@@ -205,13 +205,14 @@ int main(int argc, char** argv) {
             if (!u) return 0;
             std::string pw;
             if (!readPassword("Password: ", pw)) return 0;
-            result = auth::login(*store.db, *u, pw);
+            result = auth::login(*store.db, *u, pw, clock, policy.auth);
             if (result.status == auth::LoginStatus::Success) {
                 loggedIn = true;
                 username = *u;
             } else if (result.status == auth::LoginStatus::AccountLocked) {
                 locked = true;
-                out << "\nThis account is locked after repeated failed attempts. Ask an Administrator.\n";
+                out << "\nThis account is locked after repeated failed attempts. Try again in "
+                    << policy.auth.lockoutMinutes << " minutes.\n";
             } else {
                 out << "\nInvalid username or password.\n";
             }

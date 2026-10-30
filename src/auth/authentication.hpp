@@ -1,6 +1,8 @@
 #pragma once
 
 #include <string>
+#include "config/policy.hpp"
+#include "core/clock.hpp"
 #include "data/database.hpp"
 
 namespace hms::auth {
@@ -23,17 +25,29 @@ struct LoginResult {
     int failedAttempts;
 };
 
+// The clock and policy default to the real clock and the standard values, so
+// existing callers keep working; tests pass a FixedClock.
+const Clock& defaultClock();
+
+// actorId is the staff account that creates the account ("SETUP" for the
+// first Administrator). One STAFF_ACCOUNT_CREATE audit entry is written.
 bool createStaffAccount(
     Database& db,
     const std::string& username,
     const std::string& password,
-    Role role
+    Role role,
+    const Clock& clock = defaultClock(),
+    const std::string& actorId = "SETUP"
 );
 
+// Every attempt writes a STAFF_LOGIN audit entry; the failure that locks the
+// account also writes STAFF_LOCKOUT. The lock ends after policy.lockoutMinutes.
 LoginResult login(
     Database& db,
     const std::string& username,
-    const std::string& password
+    const std::string& password,
+    const Clock& clock = defaultClock(),
+    const AuthPolicy& policy = AuthPolicy{}
 );
 
 bool isAuthorized(Role role, const std::string& action);

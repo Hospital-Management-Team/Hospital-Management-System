@@ -23,7 +23,6 @@ namespace hms {
 enum class AuditOutcome { Ok, Denied, Failed, Prepared, Published, Abandoned, Started };
 std::string to_string(AuditOutcome outcome);
 
-// Action names. One value per audited action; add new ones per sprint.
 namespace audit_action {
 inline constexpr const char* kPatientRegister = "PATIENT_REGISTER";
 inline constexpr const char* kPatientUseExisting = "PATIENT_DUPLICATE_USE_EXISTING";
@@ -43,6 +42,11 @@ inline constexpr const char* kAppointmentQueueView = "APPOINTMENT_QUEUE_VIEW";
 // Consultations (issue #5)
 inline constexpr const char* kConsultationRecord = "CONSULTATION_RECORD";
 inline constexpr const char* kConsultationView = "CONSULTATION_VIEW";
+// Staff login and accounts (issue #3). Entries hold staff IDs only: never a
+// password and never text typed at the login screen.
+inline constexpr const char* kStaffLogin = "STAFF_LOGIN";
+inline constexpr const char* kStaffLockout = "STAFF_LOCKOUT";
+inline constexpr const char* kStaffAccountCreate = "STAFF_ACCOUNT_CREATE";
 }  // namespace audit_action
 
 struct AuditEntryInput {
@@ -81,5 +85,11 @@ private:
     Database& db_;
     const Clock& clock_;
 };
+
+// Staff login and accounts (issue #3). Entries hold staff IDs only: never a
+// password and never text typed at the login screen.
+inline constexpr const char* kStaffLogin = "STAFF_LOGIN";                  // OK or DENIED (+ reason code)
+inline constexpr const char* kStaffLockout = "STAFF_LOCKOUT";
+inline constexpr const char* kStaffAccountCreate = "STAFF_ACCOUNT_CREATE";
 
 }  // namespace hms

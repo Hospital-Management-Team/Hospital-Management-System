@@ -1,4 +1,5 @@
 
+#include <chrono>
 #include "doctest.h"
 
 #include "auth/authentication.hpp"
@@ -136,4 +137,40 @@ TEST_CASE("Unknown user fails; usernames are case-insensitive") {
     CHECK(hasStaffAccounts(store.db()));
     CHECK(login(store.db(), "nobody", "SecurePass123!").status == LoginStatus::InvalidCredentials);
     CHECK(login(store.db(), "doctor1", "SecurePass123!").status == LoginStatus::Success);
+}
+TEST_CASE("TC-Sec-04 (2) the lock lasts for the cooldown, then the account works again") {
+    test::TempStore store;
+    FixedClock clock(makeUtc(2026, 10, 30, 9, 0, 0));
+    const AuthPolicy policy;  // 5 attempts, 15 minutes
+    REQUIRE(createStaffAccount(store.db(), "doctor1", "SecurePass123!", Role::Doctor, clock));
+
+    for (int i = 0; i < 5; ++i) login(store.db(), "doctor1", "wrong-password", clock, policy);
+
+    CHECK(login(store.db(), "doctor1", "SecurePass123!", clock, policy).status == LoginStatus::AccountLocked);
+    clock.advance(std::chrono::minutes(14));
+    CHECK(login(store.db(), "doctor1", "SecurePass123!", clock, policy).status == LoginStatus::AccountLocked);
+    clock.advance(std::chrono::minutes(2));
+    const auto after = login(store.db(), "doctor1", "SecurePass123!", clock, policy);
+    CHECK(after.status == LoginStatus::Success);
+    CHECK(after.failedAttempts == 0);
+}
+
+TEST_CASE("TC-Sec-04 (3) login events are audited with staff IDs only") {
+    test::TempStore store;
+    FixedClock clock(makeUtc(2026, 10, 30, 9, 0, 0));
+    const AuthPolicy policy;
+    REQUIRE(createStaffAccount(store.db(), "doctor1", "SecurePass123!", Role::Doctor, clock, "admin1"));
+
+    login(store.db(), "nobody", "guess-password", clock, policy);                       // unknown user
+    for (int i = 0; i < 5; ++i) login(store.db(), "doctor1", "wrong-password", clock, policy);
+    login(store.db(), "doctor1", "SecurePass123!", clock, policy);                      // refused: locked
+    clock.advance(std::chrono::minutes(16));
+    login(store.db(), "doctor1", "SecurePass123!", clock, policy);                      // success
+
+    CHECK(store.count("SELECT COUNT(*) FROM audit_entry WHERE action = 'STAFF_ACCOUNT_CREATE' AND user_id = 'admin1'") == 1);
+    CHECK(store.count("SELECT COUNT(*) FROM audit_entry WHERE action = 'STAFF_LOGIN' AND outcome = 'OK'") == 1);
+    CHECK(store.count("SELECT COUNT(*) FROM audit_entry WHERE action = 'STAFF_LOGIN' AND outcome = 'DENIED'") == 7);
+    CHECK(store.count("SELECT COUNT(*) FROM audit_entry WHERE action = 'STAFF_LOCKOUT' AND related_event_id IS NOT NULL") == 1);
+    // Nothing typed at the login screen is stored.
+    CHECK(store.count("SELECT COUNT(*) FROM audit_entry WHERE user_id = 'nobody' OR record_id LIKE '%guess%' OR record_id LIKE '%wrong%' OR reason_code LIKE '%guess%' OR reason_code LIKE '%wrong%' OR reason_code LIKE '%SecurePass%'") == 0);
 }
