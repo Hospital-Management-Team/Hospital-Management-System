@@ -1,6 +1,9 @@
 
 #include "auth/authentication.hpp"
+#include <chrono>
+#include <optional>
 
+#include "audit/audit_log.hpp"
 #include <argon2.h>
 #include <cctype>
 #include <array>
@@ -112,11 +115,18 @@ bool hasStaffAccounts(Database& db) {
     auto statement = db.prepare("SELECT 1 FROM staff_accounts LIMIT 1");
     return statement.step();
 }
+const Clock& defaultClock() {
+    static const SystemClock clock;
+    return clock;
+}
+
 bool createStaffAccount(
     Database& db,
     const std::string& username,
     const std::string& password,
-    Role role) {
+    Role role,
+    const Clock& clock,
+    const std::string& actorId) {
 
     std::string reason;
     if (username.empty() ||
@@ -131,14 +141,30 @@ bool createStaffAccount(
     try {
         Transaction tx(db);
 
-        auto statement = db.prepare(
-            "INSERT INTO staff_accounts "
-            "(username, password_hash, role) VALUES (?, ?, ?)");
+        {
+            auto statement = db.prepare(
+                "INSERT INTO staff_accounts "
+                "(username, password_hash, role) VALUES (?, ?, ?)");
+            statement.bind(1, username)
+                .bind(2, passwordHash)
+                .bind(3, roleName)
+                .run();
+        }
 
-        statement.bind(1, username)
-                 .bind(2, passwordHash)
-                 .bind(3, roleName)
-                 .run();
+        std::string staffId;
+        {
+            auto statement = db.prepare(
+                "SELECT staff_id FROM staff_accounts WHERE username = ?");
+            statement.bind(1, username);
+            if (statement.step()) staffId = std::to_string(statement.getInt64(0));
+        }
+
+        AuditLog audit(db, clock);
+        AuditEntryInput entry;
+        entry.action = audit_action::kStaffAccountCreate;
+        entry.recordId = staffId;
+        entry.changedFields = {"username", "password_hash", "role"};  // names only
+        audit.append(actorId, entry);
 
         tx.commit();
         return true;
@@ -150,21 +176,39 @@ bool createStaffAccount(
 LoginResult login(
     Database& db,
     const std::string& username,
-    const std::string& password) {
+    const std::string& password,
+    const Clock& clock,
+    const AuthPolicy& policy) {
 
+    AuditLog audit(db, clock);
     Transaction tx(db);
+    const std::string now = toIsoUtc(clock.now());
+
+    // Entries hold the staff ID only; text typed at the login screen is never stored.
+    auto record = [&](const std::string& user, const std::optional<std::string>& recordId,
+                      AuditOutcome outcome, const char* reasonCode, const char* action,
+                      const std::optional<std::string>& related = std::nullopt) {
+        AuditEntryInput entry;
+        entry.action = action;
+        entry.recordId = recordId;
+        entry.outcome = outcome;
+        if (reasonCode) entry.reasonCode = reasonCode;
+        entry.relatedEventId = related;
+        return audit.append(user, entry);
+    };
 
     std::int64_t staffId = 0;
+    std::string storedName;
     std::string passwordHash;
     std::string storedRole;
+    std::string lockedUntil;
     int failures = 0;
-    bool locked = false;
     bool found = false;
 
     {
         auto statement = db.prepare(
-            "SELECT staff_id, password_hash, role, "
-            "failed_attempts, locked "
+            "SELECT staff_id, username, password_hash, role, "
+            "failed_attempts, COALESCE(locked_until, '') "
             "FROM staff_accounts WHERE username = ?");
 
         statement.bind(1, username);
@@ -172,39 +216,54 @@ LoginResult login(
         if (statement.step()) {
             found = true;
             staffId = statement.getInt64(0);
-            passwordHash = statement.getText(1);
-            storedRole = statement.getText(2);
-            failures = static_cast<int>(statement.getInt64(3));
-            locked = statement.getInt64(4) != 0;
+            storedName = statement.getText(1);
+            passwordHash = statement.getText(2);
+            storedRole = statement.getText(3);
+            failures = static_cast<int>(statement.getInt64(4));
+            lockedUntil = statement.getText(5);
         }
-    } // Finalize the SELECT before updating the same table.
+    }  // Finalize the SELECT before updating the same table.
 
     if (!found) {
+        record("UNKNOWN", std::nullopt, AuditOutcome::Denied, "UNKNOWN_USER", audit_action::kStaffLogin);
         tx.commit();
-        return {LoginStatus::InvalidCredentials,
-                Role::Receptionist, 0};
+        return {LoginStatus::InvalidCredentials, Role::Receptionist, 0};
     }
 
-    if (locked) {
+    const std::string staffKey = std::to_string(staffId);
+
+    if (!lockedUntil.empty() && lockedUntil > now) {
+        record(storedName, staffKey, AuditOutcome::Denied, "ACCOUNT_LOCKED", audit_action::kStaffLogin);
         tx.commit();
-        return {LoginStatus::AccountLocked,
-                Role::Receptionist, failures};
+        return {LoginStatus::AccountLocked, Role::Receptionist, failures};
     }
+    if (!lockedUntil.empty()) failures = 0;  // the cooldown is over: start counting again
 
     if (!verifyPassword(password, passwordHash)) {
         const int updatedFailures = failures + 1;
-        const bool shouldLock = updatedFailures >= MAX_FAILED_ATTEMPTS;
+        const bool shouldLock = updatedFailures >= policy.maxFailedAttempts;
+        std::optional<std::string> until;
+        if (shouldLock) {
+            until = toIsoUtc(clock.now() + std::chrono::minutes(policy.lockoutMinutes));
+        }
 
         auto update = db.prepare(
             "UPDATE staff_accounts "
-            "SET failed_attempts = ?, locked = ? "
+            "SET failed_attempts = ?, locked = ?, locked_until = ? "
             "WHERE staff_id = ?");
 
         update.bind(1, updatedFailures)
-              .bind(2, shouldLock ? 1 : 0)
-              .bind(3, staffId)
-              .run();
+            .bind(2, shouldLock ? 1 : 0)
+            .bind(3, until)
+            .bind(4, staffId)
+            .run();
 
+        const std::string failedId = record(storedName, staffKey, AuditOutcome::Denied,
+                                            "BAD_PASSWORD", audit_action::kStaffLogin);
+        if (shouldLock) {
+            record(storedName, staffKey, AuditOutcome::Ok, "MAX_FAILED_ATTEMPTS",
+                   audit_action::kStaffLockout, failedId);
+        }
         tx.commit();
 
         return {
@@ -218,15 +277,15 @@ LoginResult login(
     const Role role = stringToRole(storedRole);
 
     auto reset = db.prepare(
-        "UPDATE staff_accounts SET failed_attempts = 0 "
+        "UPDATE staff_accounts SET failed_attempts = 0, locked = 0, locked_until = NULL "
         "WHERE staff_id = ?");
-
     reset.bind(1, staffId).run();
+
+    record(storedName, staffKey, AuditOutcome::Ok, nullptr, audit_action::kStaffLogin);
     tx.commit();
 
     return {LoginStatus::Success, role, 0};
 }
-
 bool isAuthorized(Role role, const std::string& action) {
     if (role == Role::Administrator) {
         return action == "manage_staff" ||

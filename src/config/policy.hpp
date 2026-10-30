@@ -74,12 +74,19 @@ struct ConsultationPolicy {
     std::size_t maxItemsPerConsultation = 20;
 };
 
+// Staff login (issue #3, HMS-SR-003). Until the Admin parameter screen
+struct AuthPolicy {
+    int maxFailedAttempts = 5;   // consecutive failures that lock the account
+    int lockoutMinutes = 15;     // cooldown before the account works again
+};
+
 struct AppPolicy {
     // SRS 2.5: hospital-local time is Asia/Kolkata, UTC+05:30, no DST.
     int utcOffsetMinutes = 330;
     PatientPolicy patient;
     AppointmentPolicy appointment;
     ConsultationPolicy consultation;
+    AuthPolicy auth;
 };
 
 }  // namespace hms

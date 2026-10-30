@@ -200,6 +200,12 @@ CREATE TABLE lab_order (
 );
 CREATE INDEX idx_lab_order_consultation ON lab_order (consultation_id);
 )SQL";
+
+// Version 6 - issue #3: lockout cooldown (HMS-SR-003).
+const char* kV6 = R"SQL(
+ALTER TABLE staff_accounts ADD COLUMN locked_until TEXT;
+)SQL";
+
 }  // namespace
 
 // Each feature appends its tables as the next numbered migration.
@@ -211,6 +217,7 @@ const std::vector<Migration>& migrations() {
         {3, "Mobile number or confirmed no phone; date-of-birth lookup (#2 follow-up)", kV3},
         {4, "Doctor schedules, appointments and reminders (#4)", kV4},
         {5, "Consultations: diagnosis, prescriptions, test orders (#5)", kV5},
+        {6, "Lockout cooldown (#3)", kV6},
     };
     return kAll;
 }
