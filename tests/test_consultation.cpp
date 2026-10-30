@@ -325,3 +325,32 @@ TEST_CASE("TC-Doc-01 own hours: booked appointments that no longer fit are kept 
     CHECK(saved.value().bookedOutsideHours == 1);
     CHECK(f.count("SELECT count(*) FROM appointment WHERE status = 'BOOKED'") == 2);
 }
+
+TEST_CASE("TC-App-02 a completed visit keeps its slot until the slot ends") {
+    ConsultationFixture f;
+    const auto doc = f.addDoctor("mehta");
+    const auto first = f.addPatient("Ravi Kumar");
+    const auto second = f.addPatient("Anita Rao");
+    const auto appt = f.bookOk(first, doc, at(kMonday, 9, 0));  // 09:00-09:15
+
+    // The doctor records the visit at 09:05, while its slot is still running.
+    f.setLocalTime(kMonday, 9, 5);
+    REQUIRE(f.consultations.recordConsultation(doctorSession("mehta"), f.draft(appt.id)).ok());
+
+    // Monday's hours now start at 09:10, so the new grid has a 09:10 slot that
+    // overlaps the completed 09:00-09:15 visit.
+    DoctorScheduleDraft d;
+    d.department = "General Medicine";
+    for (int day = 1; day <= 7; ++day) d.hours.push_back(WeeklyHours{day, day == 1 ? 9 * 60 + 10 : 9 * 60, 13 * 60});
+    REQUIRE(f.appointments->setDoctorSchedule(test::admin(), doc, d).ok());
+
+    auto slots = f.appointments->freeSlots(test::receptionist(), doc, kMonday);
+    REQUIRE(slots.ok());
+    REQUIRE_FALSE(slots.value().empty());
+    CHECK(slots.value().front() == at(kMonday, 9, 25));
+
+    auto overlapping = f.appointments->book(test::receptionist(), second, doc, at(kMonday, 9, 10));
+    REQUIRE_FALSE(overlapping.ok());
+    CHECK(overlapping.error().kind == ErrorKind::Conflict);
+    CHECK(f.appointments->book(test::receptionist(), second, doc, at(kMonday, 9, 25)).ok());
+}

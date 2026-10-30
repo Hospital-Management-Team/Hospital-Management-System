@@ -229,7 +229,7 @@ std::vector<LocalSlot> AppointmentService::computeFreeSlots(const DoctorSummary&
     if (!doctor.hasProfile) return out;
     const auto hours = doctor.hoursOn(isoWeekday(date));
     if (!hours) return out;
-    const auto booked = repo_.bookedForDoctorOn(doctor.staffId, date);
+    const auto booked = repo_.occupyingForDoctorOn(doctor.staffId, date);
     const std::int64_t nowMin = now().epochMinutes();
     const int len = policy_.appointment.slotMinutes;
     for (int m : gridMinutes(*hours)) {
@@ -309,7 +309,7 @@ std::optional<Error> AppointmentService::checkOverlaps(std::int64_t doctorStaffI
                                                        const LocalSlot& start, std::optional<std::int64_t> ignoreId) {
     const std::int64_t s = start.epochMinutes();
     const int len = policy_.appointment.slotMinutes;
-    for (const auto& a : repo_.bookedForDoctorOn(doctorStaffId, start.date)) {
+    for (const auto& a : repo_.occupyingForDoctorOn(doctorStaffId, start.date)) {
         if (ignoreId && a.id == *ignoreId) continue;
         if (overlaps(s, len, a.start.epochMinutes(), a.slotMinutes)) {
             const LocalSlot end = fromEpochMinutes(a.start.epochMinutes() + a.slotMinutes);

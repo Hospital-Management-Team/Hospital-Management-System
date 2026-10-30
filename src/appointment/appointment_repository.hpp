@@ -29,8 +29,10 @@ public:
 
     std::optional<AppointmentRecord> findAppointment(std::int64_t id);
 
-    // Booked appointments of one doctor, or one patient, on one date.
-    std::vector<AppointmentRecord> bookedForDoctorOn(std::int64_t staffId, const Date& date);
+    // Appointments that occupy a doctor's time on one date: Booked and Completed
+    // (a completed visit keeps its slot until the slot ends, HMS-F-011).
+    std::vector<AppointmentRecord> occupyingForDoctorOn(std::int64_t staffId, const Date& date);
+    // Booked appointments of one patient on one date.
     std::vector<AppointmentRecord> bookedForPatientOn(std::int64_t uhid, const Date& date);
     // Booked appointments of one doctor starting at or after `fromKey`.
     std::vector<AppointmentRecord> bookedForDoctorFrom(std::int64_t staffId, const std::string& fromKey);
