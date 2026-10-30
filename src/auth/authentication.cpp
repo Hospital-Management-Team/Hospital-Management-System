@@ -22,7 +22,6 @@
 namespace hms::auth {
 namespace {
 
-constexpr int MAX_FAILED_ATTEMPTS = 5;
 
 std::string roleToString(Role role) {
     switch (role) {
