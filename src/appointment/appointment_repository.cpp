@@ -121,10 +121,10 @@ std::optional<AppointmentRecord> AppointmentRepository::findAppointment(std::int
     return std::nullopt;
 }
 
-std::vector<AppointmentRecord> AppointmentRepository::bookedForDoctorOn(std::int64_t staffId, const Date& date) {
+std::vector<AppointmentRecord> AppointmentRepository::occupyingForDoctorOn(std::int64_t staffId, const Date& date) {
     auto st = db_.prepare(std::string(kSelectRecord) +
-                          "WHERE a.doctor_staff_id = ? AND a.status = 'BOOKED' AND a.slot_start LIKE ? "
-                          "ORDER BY a.slot_start");
+                          "WHERE a.doctor_staff_id = ? AND a.status IN ('BOOKED', 'COMPLETED') "
+                          "AND a.slot_start LIKE ? ORDER BY a.slot_start");
     st.bind(1, staffId).bind(2, dayPrefixPattern(date));
     return collect(st);
 }
