@@ -34,6 +34,9 @@ enum class Permission {
     ViewBills,                 // HMS-F-030/031: Receptionist
     RecordPayment,             // HMS-F-031:     Receptionist
     GenerateReceipt,           // HMS-F-032:     Receptionist
+    // Medical records (issue #6). The service also requires a care relationship.
+    ViewMedicalHistory,        // HMS-F-003:     Doctor
+    UpdateMedicalHistory,      // HMS-F-003:     Doctor
 };
 
 bool isAllowed(Role role, Permission permission);

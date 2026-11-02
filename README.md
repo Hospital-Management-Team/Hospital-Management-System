@@ -45,6 +45,7 @@ src/patient/     patient registration, duplicate review, search (issue #2)
 src/audit/       append-only audit trail, written in the same transaction as each change
 src/auth/        Session, role check, staff login, password hashing and policy (issue #3)
 src/appointment/ doctor schedules, booking, double-booking prevention, reschedule, cancel, reminders, doctor queue (issue #4)
+src/record/      versioned medical history, allergies and current medications; care-relationship access (issue #6)
 tools/           hms_seed: synthetic test data and search timings
 tests/           doctest suites (run by CI on every push and pull request)
 third_party/     SQLite 3.50.4 amalgamation, Argon2 reference implementation, doctest 2.4.11
@@ -115,6 +116,20 @@ Log in as a **Receptionist** (see Staff login above) to register patients. The r
 **Audit:** booking, cancelling, rescheduling, reminders and schedule changes are written in the same transaction as the change, with IDs only (`APT-…`, `STAFF-…`). Denied attempts are audited.
 
 Deviations: D-35 to D-41 in `docs/deviation-log.md`. Tests: `tests/test_appointment.cpp` and `tests/test_appointment_console.cpp` (TC-App-01 to 04, TC-Doc-01 and 02).
+
+### Medical history (issue #6)
+
+**Doctor, option 8: medical history, allergies and current medications** (HMS-F-003). Enter the patient's UHID to see the current version, who recorded it and when. Then:
+- **1, update:** for each field, press Enter to keep it, type new text to replace it, or type `-` to clear it. After you confirm, it's saved as a new version (`MHV-000001`, …).
+- **2, show earlier versions:** older versions, newest first. Versions are never changed or deleted.
+
+A patient with no version shows "No medical history recorded".
+
+**Who can open it:** only a doctor with a booked or completed appointment with the patient. Cancelled and rescheduled appointments don't count. Every other doctor, and every other role, is refused.
+
+**Audit:** every opening and every update is audited with the UHID and the changed field names, never the clinical text. Refusals are audited too.
+
+Deviations: D-48 and D-49. Tests: `tests/test_medical_record.cpp` and `tests/test_medical_record_console.cpp` (TC-Rec-01).
 
 ## Continuous integration
 

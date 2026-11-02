@@ -21,6 +21,7 @@
 #include "platform/store_lock.hpp"
 #include "billing/billing_service.hpp"
 #include "consultation/consultation_service.hpp"
+#include "record/medical_record_service.hpp"
 #include "ui/billing_screens.hpp"
 #include "ui/console_app.hpp"
 #include "ui/console_io.hpp"
@@ -197,6 +198,7 @@ int main(int argc, char** argv) {
     AppointmentService appointments(*store.db, clock, policy);
     ConsultationService consultations(*store.db, clock, policy);
     BillingService billing(*store.db, clock, policy);
+    MedicalRecordService medicalRecords(*store.db, clock, policy);
 
     while (true) {
         out << "\n=== Staff Login ===   (Ctrl+Z then Enter to quit)\n";
@@ -245,6 +247,7 @@ int main(int argc, char** argv) {
             ConsoleApp app(io, patients, appointments, session);
             app.setConsultationService(consultations);
             app.setBillingService(billing);
+            app.setMedicalRecordService(medicalRecords);
             app.run();
         }
         out << "Logged out.\n";

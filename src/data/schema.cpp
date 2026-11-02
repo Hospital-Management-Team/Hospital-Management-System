@@ -256,6 +256,26 @@ WHEN (SELECT COALESCE(SUM(amount_paise), 0) FROM payment WHERE bill_id = NEW.bil
 BEGIN SELECT RAISE(ABORT, 'payment exceeds the outstanding balance'); END;
 )SQL";
 
+// Version 8 - issue #6: versioned medical history (HMS-F-003). Every update is
+// a new row; the store refuses to change or delete a version once it is saved.
+const char* kV8 = R"SQL(
+CREATE TABLE medical_history_version (
+    version_id           INTEGER PRIMARY KEY AUTOINCREMENT,      -- store counter, never reused
+    uhid                 INTEGER NOT NULL REFERENCES patient (uhid),
+    history              TEXT    NOT NULL CHECK (length(history) <= 1000),
+    allergies            TEXT    NOT NULL CHECK (length(allergies) <= 1000),
+    current_medications  TEXT    NOT NULL CHECK (length(current_medications) <= 1000),
+    author_staff_id      INTEGER NOT NULL REFERENCES staff_accounts (staff_id),
+    recorded_at          TEXT    NOT NULL                        -- UTC, ISO 8601
+);
+CREATE INDEX idx_medical_history_patient ON medical_history_version (uhid, version_id);
+
+CREATE TRIGGER medical_history_version_no_update BEFORE UPDATE ON medical_history_version
+BEGIN SELECT RAISE(ABORT, 'medical history versions are never changed'); END;
+CREATE TRIGGER medical_history_version_no_delete BEFORE DELETE ON medical_history_version
+BEGIN SELECT RAISE(ABORT, 'medical history versions are never deleted'); END;
+)SQL";
+
 }  // namespace
 
 // Each feature appends its tables as the next numbered migration.
@@ -269,6 +289,7 @@ const std::vector<Migration>& migrations() {
         {5, "Consultations: diagnosis, prescriptions, test orders (#5)", kV5},
         {6, "Lockout cooldown (#3)", kV6},
         {7, "Consultation fees, bills, payments (#7)", kV7},
+        {8, "Medical history versions (#6)", kV8},
     };
     return kAll;
 }

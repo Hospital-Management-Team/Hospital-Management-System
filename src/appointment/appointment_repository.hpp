@@ -27,6 +27,11 @@ public:
 
     bool patientExists(std::int64_t uhid);
 
+    // Care relationship (SRS 1.4): the doctor has at least one Booked or Completed
+    // appointment with the patient. Cancelled and rescheduled ones do not count.
+    // It is the condition for opening the patient's clinical records (issue #6).
+    bool hasCareRelationship(std::int64_t staffId, std::int64_t uhid);
+
     std::optional<AppointmentRecord> findAppointment(std::int64_t id);
 
     // Appointments that occupy a doctor's time on one date: Booked and Completed

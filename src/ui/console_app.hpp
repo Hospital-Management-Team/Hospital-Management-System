@@ -16,6 +16,7 @@ namespace hms {
 
 class ConsultationService;
 class BillingService;
+class MedicalRecordService;
 
 class ConsoleApp {
 public:
@@ -33,6 +34,10 @@ public:
     // payment, bills and balances, reprint a receipt). Without it the Reception
     // menu is the one from issue #4.
     void setBillingService(BillingService& billing) { billing_ = &billing; }
+
+    // Issue #6: gives the Doctor menu its medical history entry. Without it the
+    // Doctor menu is the one from issue #5.
+    void setMedicalRecordService(MedicalRecordService& records) { medicalRecords_ = &records; }
 
 private:
     void registerPatientScreen();
@@ -56,6 +61,8 @@ private:
     void recordConsultationScreen();
     void patientHistoryScreen();
     void ownHoursScreen();
+    // Medical records (issue #6)
+    void medicalHistoryScreen();
     // Billing (issue #7)
     void billVisitScreen();
     void paymentScreen();
@@ -78,6 +85,7 @@ private:
     AppointmentService& appointments_;
     ConsultationService* consultations_ = nullptr;
     BillingService* billing_ = nullptr;
+    MedicalRecordService* medicalRecords_ = nullptr;
     Session session_;
     bool changesBlocked_ = false;  // set after an "outcome uncertain" result (SRS 2.5)
 };

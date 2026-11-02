@@ -79,6 +79,9 @@ int ConsoleApp::run() {
                        "  6. Past consultations of a patient\n"
                        "  7. My weekly working hours\n";
             }
+            if (consultations_ && medicalRecords_) {
+                out << "  8. Medical history, allergies and current medications of a patient\n";
+            }
         }
         out << "  0. Exit\n";
         auto choice = io_.readLine("Choose an option: ");
@@ -106,6 +109,8 @@ int ConsoleApp::run() {
             else if (consultations_ && c == "5") recordConsultationScreen();
             else if (consultations_ && c == "6") patientHistoryScreen();
             else if (consultations_ && c == "7") ownHoursScreen();
+            else if (consultations_ && medicalRecords_ && c == "8") medicalHistoryScreen();
+            else if (consultations_ && medicalRecords_) out << "  Please choose a number from 0 to 8.\n";
             else out << (consultations_ ? "  Please choose a number from 0 to 7.\n" : "  Please choose 0, 1, 2 or 3.\n");
         }
     }

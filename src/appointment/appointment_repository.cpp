@@ -114,6 +114,14 @@ bool AppointmentRepository::patientExists(std::int64_t uhid) {
     return st.step();
 }
 
+bool AppointmentRepository::hasCareRelationship(std::int64_t staffId, std::int64_t uhid) {
+    auto st = db_.prepare(
+        "SELECT 1 FROM appointment WHERE doctor_staff_id = ? AND uhid = ? AND status IN ('BOOKED', 'COMPLETED') "
+        "LIMIT 1");
+    st.bind(1, staffId).bind(2, uhid);
+    return st.step();
+}
+
 std::optional<AppointmentRecord> AppointmentRepository::findAppointment(std::int64_t id) {
     auto st = db_.prepare(std::string(kSelectRecord) + "WHERE a.appointment_id = ?");
     st.bind(1, id);
