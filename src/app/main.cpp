@@ -21,6 +21,9 @@
 #include "platform/password_input.hpp"
 #include "platform/store_lock.hpp"
 #include "billing/billing_service.hpp"
+#include "lab/lab_service.hpp"
+#include "pharmacy/pharmacy_service.hpp"
+#include "ui/lab_pharmacy_screens.hpp"
 #include "consultation/consultation_service.hpp"
 #include "record/medical_record_service.hpp"
 #include "ui/audit_log_screen.hpp"
@@ -45,6 +48,8 @@ Role toSessionRole(auth::Role r) {
         case auth::Role::Administrator: return Role::Admin;
         case auth::Role::Doctor: return Role::Doctor;
         case auth::Role::Receptionist: return Role::Receptionist;
+        case auth::Role::LabTechnician: return Role::LabTechnician;
+        case auth::Role::Pharmacist: return Role::Pharmacist;
     }
     return Role::Receptionist;
 }
@@ -54,6 +59,8 @@ const char* roleName(auth::Role r) {
         case auth::Role::Administrator: return "Administrator";
         case auth::Role::Doctor: return "Doctor";
         case auth::Role::Receptionist: return "Receptionist";
+        case auth::Role::LabTechnician: return "Lab Technician";
+        case auth::Role::Pharmacist: return "Pharmacist";
     }
     return "";
 }
@@ -80,7 +87,7 @@ void adminMenu(ConsoleIO& io, Database& db, AppointmentService& appointments, Bi
 
         auto u = io.readLine("New username: ");
         if (!u) return;
-        out << "  Role: 1. Doctor   2. Receptionist   3. Administrator\n";
+        out << "  Role: 1. Doctor   2. Receptionist   3. Administrator   4. Lab Technician   5. Pharmacist\n";
         auto r = io.readLine("Role: ");
         if (!r) return;
 
@@ -88,7 +95,9 @@ void adminMenu(ConsoleIO& io, Database& db, AppointmentService& appointments, Bi
         if (*r == "1") role = auth::Role::Doctor;
         else if (*r == "2") role = auth::Role::Receptionist;
         else if (*r == "3") role = auth::Role::Administrator;
-        else { out << "  Please choose 1, 2 or 3.\n"; continue; }
+        else if (*r == "4") role = auth::Role::LabTechnician;
+        else if (*r == "5") role = auth::Role::Pharmacist;
+        else { out << "  Please choose 1, 2, 3, 4 or 5.\n"; continue; }
 
         std::string p1, p2;
         if (!readPassword("Password: ", p1)) return;
@@ -204,6 +213,8 @@ int main(int argc, char** argv) {
     BillingService billing(*store.db, clock, policy);
     MedicalRecordService medicalRecords(*store.db, clock, policy);
     AuditLogService auditLog(*store.db, clock, policy);
+    LabService lab(*store.db, clock, policy);
+    PharmacyService pharmacy(*store.db, clock, policy);
 
     while (true) {
         out << "\n=== Staff Login ===   (Ctrl+Z then Enter to quit)\n";
@@ -248,11 +259,16 @@ int main(int argc, char** argv) {
         session.simulated = false;
         if (result.role == auth::Role::Administrator) {
             adminMenu(io, *store.db, appointments, billing, auditLog, session);
+        } else if (result.role == auth::Role::LabTechnician) {
+            labMenu(io, lab, session);
+        } else if (result.role == auth::Role::Pharmacist) {
+            pharmacyMenu(io, pharmacy, session);
         } else {
             ConsoleApp app(io, patients, appointments, session);
             app.setConsultationService(consultations);
             app.setBillingService(billing);
             app.setMedicalRecordService(medicalRecords);
+            app.setLabService(lab);
             app.run();
         }
         out << "Logged out.\n";

@@ -16,7 +16,9 @@ enum class LoginStatus {
 enum class Role {
     Administrator,
     Doctor,
-    Receptionist
+    Receptionist,
+    LabTechnician,
+    Pharmacist
 };
 
 struct LoginResult {

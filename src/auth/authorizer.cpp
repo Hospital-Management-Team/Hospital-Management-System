@@ -50,6 +50,19 @@ bool isAllowed(Role role, Permission permission) {
             return role == Role::Doctor;
         case Permission::ViewAuditLog:
             return role == Role::Admin;
+        case Permission::ViewLabOrders:
+        case Permission::RecordLabResult:
+            return role == Role::LabTechnician;
+        case Permission::ViewLabResults:
+            return role == Role::Doctor;
+        case Permission::ViewStock:
+        case Permission::AddMedicine:
+        case Permission::RestockMedicine:
+        case Permission::EditMedicine:
+        case Permission::CorrectStock:
+        case Permission::ViewPrescriptions:
+        case Permission::DispenseMedicine:
+            return role == Role::Pharmacist;
     }
     return false;  // deny anything not listed
 }
@@ -79,6 +92,16 @@ std::string auditActionFor(Permission permission) {
         case Permission::ViewMedicalHistory: return audit_action::kMedicalHistoryView;
         case Permission::UpdateMedicalHistory: return audit_action::kMedicalHistoryUpdate;
         case Permission::ViewAuditLog: return audit_action::kAuditLogView;
+        case Permission::ViewLabOrders: return audit_action::kLabOrderView;
+        case Permission::RecordLabResult: return audit_action::kLabResultRecord;
+        case Permission::ViewLabResults: return audit_action::kLabResultView;
+        case Permission::ViewStock: return audit_action::kStockView;
+        case Permission::AddMedicine: return audit_action::kMedicineAdd;
+        case Permission::RestockMedicine: return audit_action::kStockRestock;
+        case Permission::EditMedicine: return audit_action::kMedicineUpdate;
+        case Permission::CorrectStock: return audit_action::kStockCorrect;
+        case Permission::ViewPrescriptions: return audit_action::kPrescriptionView;
+        case Permission::DispenseMedicine: return audit_action::kMedicineDispense;
     }
     return "UNKNOWN";
 }

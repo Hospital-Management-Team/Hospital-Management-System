@@ -49,6 +49,19 @@ inline constexpr const char* kBillGenerate = "BILL_GENERATE";
 inline constexpr const char* kBillView = "BILL_VIEW";
 inline constexpr const char* kPaymentRecord = "PAYMENT_RECORD";
 inline constexpr const char* kReceiptGenerate = "RECEIPT_GENERATE";
+// Laboratory and pharmacy (issue #8). LAB_RESULT_RECORD, MEDICINE_ADD, MEDICINE_UPDATE, STOCK_RESTOCK, STOCK_CORRECT and MEDICINE_DISPENSE are
+// written for every success; the view actions only when denied. Entries hold IDs and field names, never
+// result text or medicine names.
+inline constexpr const char* kLabOrderView = "LAB_ORDER_VIEW";
+inline constexpr const char* kLabResultRecord = "LAB_RESULT_RECORD";
+inline constexpr const char* kLabResultView = "LAB_RESULT_VIEW";
+inline constexpr const char* kMedicineAdd = "MEDICINE_ADD";
+inline constexpr const char* kStockView = "STOCK_VIEW";
+inline constexpr const char* kStockRestock = "STOCK_RESTOCK";
+inline constexpr const char* kMedicineUpdate = "MEDICINE_UPDATE";
+inline constexpr const char* kStockCorrect = "STOCK_CORRECT";
+inline constexpr const char* kPrescriptionView = "PRESCRIPTION_VIEW";
+inline constexpr const char* kMedicineDispense = "MEDICINE_DISPENSE";
 // Staff login and accounts (issue #3). Entries hold staff IDs only: never a
 // password and never text typed at the login screen.
 inline constexpr const char* kStaffLogin = "STAFF_LOGIN";

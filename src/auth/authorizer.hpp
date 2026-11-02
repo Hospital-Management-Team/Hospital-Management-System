@@ -38,6 +38,18 @@ enum class Permission {
     ViewMedicalHistory,        // HMS-F-003:     Doctor
     UpdateMedicalHistory,      // HMS-F-003:     Doctor
     ViewAuditLog,              // HMS-SR-004:    Admin (read only)
+    // Laboratory (issue #8)
+    ViewLabOrders,             // HMS-F-040:     Lab Technician (orders waiting, a patient's orders)
+    RecordLabResult,           // HMS-F-040:     Lab Technician (enter or update a result)
+    ViewLabResults,            // HMS-F-040:     Doctor (results on the doctor's own consultations)
+    // Pharmacy (issue #8)
+    ViewStock,                 // HMS-F-041:     Pharmacist
+    AddMedicine,               // HMS-F-041:     Pharmacist
+    RestockMedicine,           // HMS-F-041:     Pharmacist
+    EditMedicine,              // HMS-F-041:     Pharmacist (name, unit, available or not)
+    CorrectStock,              // HMS-F-041:     Pharmacist (set the stock to the counted figure)
+    ViewPrescriptions,         // HMS-F-041:     Pharmacist
+    DispenseMedicine,          // HMS-F-041:     Pharmacist
 };
 
 bool isAllowed(Role role, Permission permission);
