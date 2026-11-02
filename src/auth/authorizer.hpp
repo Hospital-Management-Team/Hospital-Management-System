@@ -37,6 +37,7 @@ enum class Permission {
     // Medical records (issue #6). The service also requires a care relationship.
     ViewMedicalHistory,        // HMS-F-003:     Doctor
     UpdateMedicalHistory,      // HMS-F-003:     Doctor
+    ViewAuditLog,              // HMS-SR-004:    Admin (read only)
 };
 
 bool isAllowed(Role role, Permission permission);

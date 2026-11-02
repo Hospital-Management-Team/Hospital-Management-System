@@ -373,3 +373,66 @@ TEST_CASE("TC-App-02 a completed visit keeps its slot until the slot ends") {
     CHECK(overlapping.error().kind == ErrorKind::Conflict);
     CHECK(f.appointments->book(test::receptionist(), second, doc, at(kMonday, 9, 25)).ok());
 }
+
+TEST_CASE("TC-Rec-04 a doctor with a care relationship sees every visit of the patient, also with other doctors") {
+    ConsultationFixture f;
+    const auto mehta = f.addDoctor("mehta");
+    const auto rao = f.addDoctor("rao");
+    const auto uhid = f.addPatient("Ravi Kumar");
+    const auto appt = f.visit(uhid, mehta);
+    REQUIRE(f.consultations.recordConsultation(doctorSession("mehta"), f.draft(appt.id, "Cough")).ok());
+
+    // Rao has only a booked appointment, which is enough to open the history.
+    f.bookOk(uhid, rao, at(kTuesday, 10, 0));
+    auto h = f.consultations.listPatientHistory(doctorSession("rao"), uhid);
+    REQUIRE(h.ok());
+    REQUIRE(h.value().size() == 1);
+    CHECK(h.value()[0].diagnosis == "Cough");
+    CHECK(h.value()[0].doctorUsername == "mehta");
+    CHECK(f.count("SELECT count(*) FROM audit_entry WHERE action = 'CONSULTATION_VIEW' AND outcome = 'OK' "
+                  "AND user_id = 'rao' AND record_id = 'HMS-000001'") == 1);
+}
+
+TEST_CASE("TC-Rec-04 a patient with no completed visit shows an empty history") {
+    ConsultationFixture f;
+    const auto doc = f.addDoctor("mehta");
+    const auto uhid = f.addPatient("Ravi Kumar");
+    f.bookOk(uhid, doc, at(kMonday, 9, 0));
+    auto h = f.consultations.listPatientHistory(doctorSession("mehta"), uhid);
+    REQUIRE(h.ok());
+    CHECK(h.value().empty());
+}
+
+TEST_CASE("TC-Rec-04 a doctor without a care relationship is denied and the denial is audited") {
+    ConsultationFixture f;
+    const auto mehta = f.addDoctor("mehta");
+    const auto rao = f.addDoctor("rao");
+    const auto uhid = f.addPatient("Ravi Kumar");
+    const auto appt = f.visit(uhid, mehta);
+    REQUIRE(f.consultations.recordConsultation(doctorSession("mehta"), f.draft(appt.id, "Cough")).ok());
+
+    auto expectDenied = [&](const std::string& doctor) {
+        auto r = f.consultations.listPatientHistory(doctorSession(doctor), uhid);
+        REQUIRE_FALSE(r.ok());
+        CHECK(r.error().kind == ErrorKind::AccessDenied);
+    };
+
+    // No appointment at all.
+    expectDenied("rao");
+    // Only a cancelled appointment.
+    const auto cancelled = f.bookOk(uhid, rao, at(kTuesday, 10, 0));
+    REQUIRE(f.appointments->cancel(test::receptionist(), cancelled.id).ok());
+    expectDenied("rao");
+    // A rescheduled appointment no longer counts, but its replacement is Booked
+    // with the same doctor, so the doctor keeps access.
+    const auto moved = f.bookOk(uhid, rao, at(kTuesday, 11, 0));
+    REQUIRE(f.appointments->reschedule(test::receptionist(), moved.id, at(kTuesday, 12, 0)).ok());
+    CHECK(f.consultations.listPatientHistory(doctorSession("rao"), uhid).ok());
+
+    CHECK(f.count("SELECT count(*) FROM audit_entry WHERE action = 'CONSULTATION_VIEW' AND outcome = 'DENIED' "
+                  "AND user_id = 'rao' AND record_id = 'HMS-000001' AND reason_code = 'NO_CARE_RELATIONSHIP'") == 2);
+
+    // A Doctor account with no profile is denied too.
+    f.addStaff("newdoc");
+    expectDenied("newdoc");
+}

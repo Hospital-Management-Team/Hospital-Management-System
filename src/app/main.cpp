@@ -9,6 +9,7 @@
 #include <system_error>
 
 #include "appointment/appointment_service.hpp"
+#include "audit/audit_log_service.hpp"
 #include "auth/authentication.hpp"
 #include "auth/session.hpp"
 #include "config/policy.hpp"
@@ -22,6 +23,7 @@
 #include "billing/billing_service.hpp"
 #include "consultation/consultation_service.hpp"
 #include "record/medical_record_service.hpp"
+#include "ui/audit_log_screen.hpp"
 #include "ui/billing_screens.hpp"
 #include "ui/console_app.hpp"
 #include "ui/console_io.hpp"
@@ -60,19 +62,21 @@ const char* roleName(auth::Role r) {
 // role and audits the change (issue #4). Account creation does not take it yet
 // (deviation log D-17, D-22).
 void adminMenu(ConsoleIO& io, Database& db, AppointmentService& appointments, BillingService& billing,
-               const Session& session) {
+               AuditLogService& auditLog, const Session& session) {
     auto& out = io.out();
     while (true) {
         out << "\n--- ADMIN MENU ---\n"
                "  1. Create staff account\n"
                "  2. Set a doctor's department and weekly hours\n"
                "  3. Set a doctor's consultation fee\n"
+               "  4. View the audit log (read only)\n"
                "  0. Log out\n";
         auto c = io.readLine("Choose an option: ");
         if (!c || *c == "0") return;
         if (*c == "2") { doctorScheduleScreen(io, appointments, session); continue; }
         if (*c == "3") { consultationFeeScreen(io, billing, session); continue; }
-        if (*c != "1") { out << "  Please choose 0, 1, 2 or 3.\n"; continue; }
+        if (*c == "4") { auditLogScreen(io, auditLog, session); continue; }
+        if (*c != "1") { out << "  Please choose a number from 0 to 4.\n"; continue; }
 
         auto u = io.readLine("New username: ");
         if (!u) return;
@@ -199,6 +203,7 @@ int main(int argc, char** argv) {
     ConsultationService consultations(*store.db, clock, policy);
     BillingService billing(*store.db, clock, policy);
     MedicalRecordService medicalRecords(*store.db, clock, policy);
+    AuditLogService auditLog(*store.db, clock, policy);
 
     while (true) {
         out << "\n=== Staff Login ===   (Ctrl+Z then Enter to quit)\n";
@@ -242,7 +247,7 @@ int main(int argc, char** argv) {
         session.role = toSessionRole(result.role);
         session.simulated = false;
         if (result.role == auth::Role::Administrator) {
-            adminMenu(io, *store.db, appointments, billing, session);
+            adminMenu(io, *store.db, appointments, billing, auditLog, session);
         } else {
             ConsoleApp app(io, patients, appointments, session);
             app.setConsultationService(consultations);

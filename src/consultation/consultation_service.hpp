@@ -34,7 +34,8 @@ public:
     // HMS-F-022 (Doctor).
     Result<ConsultationRecord> recordConsultation(const Session& session, const ConsultationDraft& draft);
 
-    // A patient's earlier consultations, newest first (SRS use case "View Patient History", Doctor).
+    // A patient's earlier consultations, newest first (HMS-F-006, Doctor). Only a doctor
+    // with a care relationship may open it; a refusal is audited.
     Result<std::vector<ConsultationRecord>> listPatientHistory(const Session& session, std::int64_t uhid);
 
     Date today() const;
@@ -42,7 +43,8 @@ public:
 
 private:
     bool authorize(const Session& session, Permission permission);
-    void auditDenied(const Session& session, const char* action, const std::string& recordId);
+    void auditDenied(const Session& session, const char* action, const std::string& recordId,
+                     const char* reasonCode = nullptr);
     Result<ValidConsultation> validate(const ConsultationDraft& draft) const;
 
     Database& db_;

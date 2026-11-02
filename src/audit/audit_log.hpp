@@ -59,6 +59,8 @@ inline constexpr const char* kStaffAccountCreate = "STAFF_ACCOUNT_CREATE";
 // with reason NO_CARE_RELATIONSHIP for a doctor who has no care relationship.
 inline constexpr const char* kMedicalHistoryView = "MEDICAL_HISTORY_VIEW";
 inline constexpr const char* kMedicalHistoryUpdate = "MEDICAL_HISTORY_UPDATE";
+// Admin's view of the audit log (issue #6). Written only when denied.
+inline constexpr const char* kAuditLogView = "AUDIT_LOG_VIEW";
 }  // namespace audit_action
 
 struct AuditEntryInput {
@@ -90,7 +92,7 @@ public:
     // Appends one entry and returns its event ID. Call inside a Transaction.
     std::string append(const std::string& userId, const AuditEntryInput& entry);
 
-    // Newest first (read-only view; the Admin screen comes later).
+    // Newest first (read-only view; the Admin reads it through AuditLogService).
     std::vector<AuditEntry> recent(std::size_t limit) const;
 
 private:

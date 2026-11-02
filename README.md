@@ -125,11 +125,13 @@ Deviations: D-35 to D-41 in `docs/deviation-log.md`. Tests: `tests/test_appointm
 
 A patient with no version shows "No medical history recorded".
 
-**Who can open it:** only a doctor with a booked or completed appointment with the patient. Cancelled and rescheduled appointments don't count. Every other doctor, and every other role, is refused.
+**Who can open it:** only a doctor with a booked or completed appointment with the patient. Cancelled and rescheduled appointments don't count. Every other doctor, and every other role, is refused. The same rule applies to a patient's past consultations (Doctor option 6, HMS-F-006).
 
 **Audit:** every opening and every update is audited with the UHID and the changed field names, never the clinical text. Refusals are audited too.
 
-Deviations: D-48 and D-49. Tests: `tests/test_medical_record.cpp` and `tests/test_medical_record_console.cpp` (TC-Rec-01).
+**Admin, option 4: view the audit log** (HMS-SR-004). Lists the newest entries first (press Enter for 50, at most 500): time, user, action, record, outcome, changed fields and reason. It is read only; no screen edits or deletes an entry. Other roles are refused, and the refusal is audited (D-50, TC-Sec-05 in `tests/test_audit_log_view.cpp`).
+
+Deviations: D-48 and D-49. Tests: `tests/test_medical_record.cpp` and `tests/test_medical_record_console.cpp` (TC-Rec-01), and `tests/test_consultation.cpp` (TC-Rec-04).
 
 ## Continuous integration
 

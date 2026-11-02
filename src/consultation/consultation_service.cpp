@@ -38,13 +38,15 @@ ConsultationService::ConsultationService(Database& db, const Clock& clock, AppPo
 
 Date ConsultationService::today() const { return localDate(clock_.now(), policy_.utcOffsetMinutes); }
 
-void ConsultationService::auditDenied(const Session& session, const char* action, const std::string& recordId) {
+void ConsultationService::auditDenied(const Session& session, const char* action, const std::string& recordId,
+                                      const char* reasonCode) {
     try {
         Transaction tx(db_);
         AuditEntryInput e;
         e.action = action;
         e.recordId = recordId;
         e.outcome = AuditOutcome::Denied;
+        if (reasonCode) e.reasonCode = reasonCode;
         audit_.append(session.userId, e);
         tx.commit();
     } catch (const std::exception&) {
@@ -180,6 +182,15 @@ Result<std::vector<ConsultationRecord>> ConsultationService::listPatientHistory(
     try {
         Transaction tx(db_);
         if (!repo_.patientExists(uhid)) return Error::notFound("No patient found with UHID " + formatUhid(uhid) + ".");
+        // HMS-F-006: only a doctor with a care relationship (a Booked or Completed
+        // appointment with the patient, SRS 1.4) may open the visit history.
+        auto doctorId = appointments_.doctorIdForUsername(session.userId);
+        if (!doctorId || !appointments_.hasCareRelationship(*doctorId, uhid)) {
+            tx.rollback();
+            auditDenied(session, audit_action::kConsultationView, formatUhid(uhid), "NO_CARE_RELATIONSHIP");
+            return Error::accessDenied("You have no booked or completed appointment with patient " + formatUhid(uhid) +
+                                       ", so you may not open their visit history.");
+        }
         auto rows = repo_.listForPatient(uhid);
         AuditEntryInput e;
         e.action = audit_action::kConsultationView;
