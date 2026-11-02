@@ -100,6 +100,19 @@ struct AuditViewPolicy {
     std::size_t maxEntries = 500;     // the most shown at once
 };
 
+// Laboratory and pharmacy (issue #8, HMS-F-040, HMS-F-041).
+struct LabPharmacyPolicy {
+    std::size_t maxResultChars = 500;
+    std::size_t maxMedicineNameChars = 100;
+    std::size_t maxUnitChars = 20;
+    std::size_t maxReasonChars = 100;               // why a stock count was corrected
+    std::int64_t maxStockQuantity = 1'000'000;      // stock of one medicine, and one restock
+    // The low-stock alert triggers when the stock is BELOW this number (HMS-F-041, deviation E-08).
+    // The Admin parameter screen (HMS-F-052) will change it later.
+    std::int64_t lowStockThreshold = 10;
+    std::size_t maxListRows = 100;
+};
+
 struct AppPolicy {
     // SRS 2.5: hospital-local time is Asia/Kolkata, UTC+05:30, no DST.
     int utcOffsetMinutes = 330;
@@ -110,6 +123,7 @@ struct AppPolicy {
     BillingPolicy billing;
     MedicalRecordPolicy medicalRecord;
     AuditViewPolicy auditView;
+    LabPharmacyPolicy labPharmacy;
 };
 
 }  // namespace hms

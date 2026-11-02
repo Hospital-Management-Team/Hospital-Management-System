@@ -276,6 +276,92 @@ CREATE TRIGGER medical_history_version_no_delete BEFORE DELETE ON medical_histor
 BEGIN SELECT RAISE(ABORT, 'medical history versions are never deleted'); END;
 )SQL";
 
+// Version 9 - issue #8: Lab Technician and Pharmacist accounts (deviation E-07), laboratory
+// results (HMS-F-040) and the pharmacy stock and dispensing (HMS-F-041).
+// SQLite cannot change a CHECK constraint, so staff_accounts is rebuilt with the two new roles.
+// Account IDs, passwords, roles and lockout state are copied unchanged. The one trigger that reads
+// the table is dropped and created again, and migrate() switches foreign-key checking off for the
+// rebuild and checks that nothing is left dangling before it commits.
+// A result is kept as numbered revisions: the store refuses to change or delete one.
+// The store refuses to dispense more than was prescribed, and stock can never go below zero.
+const char* kV9 = R"SQL(
+DROP TRIGGER doctor_profile_role_insert;
+
+CREATE TABLE staff_accounts_new (
+    staff_id        INTEGER PRIMARY KEY AUTOINCREMENT,
+    username        TEXT NOT NULL COLLATE NOCASE UNIQUE,
+    password_hash   TEXT NOT NULL,
+    role            TEXT NOT NULL
+                    CHECK (role IN ('administrator', 'doctor', 'receptionist', 'lab_technician', 'pharmacist')),
+    failed_attempts INTEGER NOT NULL DEFAULT 0 CHECK (failed_attempts >= 0),
+    locked          INTEGER NOT NULL DEFAULT 0 CHECK (locked IN (0, 1)),
+    created_at      TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    locked_until    TEXT
+);
+INSERT INTO staff_accounts_new
+    (staff_id, username, password_hash, role, failed_attempts, locked, created_at, locked_until)
+    SELECT staff_id, username, password_hash, role, failed_attempts, locked, created_at, locked_until
+    FROM staff_accounts;
+DROP TABLE staff_accounts;
+ALTER TABLE staff_accounts_new RENAME TO staff_accounts;
+
+CREATE TRIGGER doctor_profile_role_insert BEFORE INSERT ON doctor_profile
+WHEN (SELECT role FROM staff_accounts WHERE staff_id = NEW.staff_id) IS NOT 'doctor'
+BEGIN SELECT RAISE(ABORT, 'a doctor profile needs a doctor account'); END;
+
+CREATE TABLE lab_result (
+    result_id    INTEGER PRIMARY KEY AUTOINCREMENT,
+    order_id     INTEGER NOT NULL REFERENCES lab_order (order_id),
+    revision     INTEGER NOT NULL CHECK (revision >= 1),
+    result_text  TEXT    NOT NULL CHECK (length(result_text) BETWEEN 1 AND 500),
+    entered_by   TEXT    NOT NULL,
+    entered_at   TEXT    NOT NULL,                           -- UTC, ISO 8601
+    UNIQUE (order_id, revision)
+);
+CREATE TRIGGER lab_result_no_update BEFORE UPDATE ON lab_result
+BEGIN SELECT RAISE(ABORT, 'a saved lab result cannot be changed; save a new revision'); END;
+CREATE TRIGGER lab_result_no_delete BEFORE DELETE ON lab_result
+BEGIN SELECT RAISE(ABORT, 'a saved lab result cannot be deleted'); END;
+
+CREATE TABLE medicine (
+    medicine_id     INTEGER PRIMARY KEY AUTOINCREMENT,
+    name            TEXT    NOT NULL COLLATE NOCASE UNIQUE CHECK (length(name) BETWEEN 1 AND 100),
+    unit            TEXT    NOT NULL CHECK (length(unit) BETWEEN 1 AND 20),
+    stock_quantity  INTEGER NOT NULL DEFAULT 0 CHECK (stock_quantity >= 0),
+    active          INTEGER NOT NULL DEFAULT 1 CHECK (active IN (0, 1)),
+    created_at      TEXT    NOT NULL
+);
+
+CREATE TABLE dispense (
+    dispense_id   INTEGER PRIMARY KEY AUTOINCREMENT,
+    item_id       INTEGER NOT NULL REFERENCES prescription_item (item_id),
+    medicine_id   INTEGER NOT NULL REFERENCES medicine (medicine_id),
+    quantity      INTEGER NOT NULL CHECK (quantity > 0),
+    dispensed_by  TEXT    NOT NULL,
+    dispensed_at  TEXT    NOT NULL                           -- UTC, ISO 8601
+);
+CREATE INDEX idx_dispense_item ON dispense (item_id);
+CREATE TRIGGER dispense_within_prescription BEFORE INSERT ON dispense
+WHEN COALESCE((SELECT SUM(quantity) FROM dispense WHERE item_id = NEW.item_id), 0) + NEW.quantity
+     > (SELECT quantity FROM prescription_item WHERE item_id = NEW.item_id)
+BEGIN SELECT RAISE(ABORT, 'more than the prescribed quantity cannot be dispensed'); END;
+
+-- Every change of stock is one row (a correction keeps its reason); the stock of a medicine is the sum of its rows.
+CREATE TABLE stock_movement (
+    movement_id  INTEGER PRIMARY KEY AUTOINCREMENT,
+    medicine_id  INTEGER NOT NULL REFERENCES medicine (medicine_id),
+    delta        INTEGER NOT NULL CHECK (delta <> 0),
+    reason       TEXT    NOT NULL CHECK (reason IN ('INITIAL', 'RESTOCK', 'DISPENSE', 'CORRECTION')),
+    dispense_id  INTEGER REFERENCES dispense (dispense_id),
+    note         TEXT    CHECK (note IS NULL OR length(note) BETWEEN 1 AND 100),   -- why a count was corrected
+    recorded_by  TEXT    NOT NULL,
+    recorded_at  TEXT    NOT NULL,                           -- UTC, ISO 8601
+    CHECK ((reason = 'DISPENSE') = (dispense_id IS NOT NULL)),
+    CHECK ((reason = 'CORRECTION') = (note IS NOT NULL))
+);
+CREATE INDEX idx_stock_movement_medicine ON stock_movement (medicine_id);
+)SQL";
+
 }  // namespace
 
 // Each feature appends its tables as the next numbered migration.
@@ -290,6 +376,7 @@ const std::vector<Migration>& migrations() {
         {6, "Lockout cooldown (#3)", kV6},
         {7, "Consultation fees, bills, payments (#7)", kV7},
         {8, "Medical history versions (#6)", kV8},
+        {9, "Lab technician and pharmacist accounts, lab results, medicine stock and dispensing (#8)", kV9},
     };
     return kAll;
 }
@@ -297,13 +384,29 @@ const std::vector<Migration>& migrations() {
 int currentVersion() { return migrations().empty() ? 0 : migrations().back().version; }
 
 void migrate(Database& db, int fromVersion) {
-    for (const auto& m : migrations()) {
-        if (m.version <= fromVersion) continue;
-        Transaction tx(db);
-        db.exec(m.sql);
-        db.exec("PRAGMA user_version = " + std::to_string(m.version));
-        tx.commit();
+    // SQLite ignores "PRAGMA foreign_keys" inside a transaction, so checking is switched off here, around
+    // the migrations, because migration 9 rebuilds staff_accounts (SQLite's documented way to change a
+    // CHECK). Before each commit the whole store is checked, so a migration that leaves a dangling
+    // reference is rolled back. Checking is switched on again afterwards, also after a failure.
+    const bool checking = db.queryInt("PRAGMA foreign_keys").value_or(0) == 1;
+    if (checking) db.exec("PRAGMA foreign_keys = OFF");
+    try {
+        for (const auto& m : migrations()) {
+            if (m.version <= fromVersion) continue;
+            Transaction tx(db);
+            db.exec(m.sql);
+            db.exec("PRAGMA user_version = " + std::to_string(m.version));
+            if (checking) {
+                Statement dangling = db.prepare("PRAGMA foreign_key_check");
+                if (dangling.step()) throw DbError(0, "migration " + std::to_string(m.version) + " left a broken reference");
+            }
+            tx.commit();
+        }
+    } catch (...) {
+        if (checking) db.exec("PRAGMA foreign_keys = ON");
+        throw;
     }
+    if (checking) db.exec("PRAGMA foreign_keys = ON");
 }
 
 }  // namespace hms::schema

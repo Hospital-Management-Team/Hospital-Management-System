@@ -49,6 +49,9 @@ std::string ConsoleApp::dobText(const PatientRecord& p) const {
 int ConsoleApp::run() {
     auto& out = io_.out();
     const bool reception = session_.role == Role::Receptionist;
+    // The lab-results entry follows the medical history entry (issue #6) when both are present.
+    const bool historyEntry = consultations_ && medicalRecords_;
+    const std::string labNumber = historyEntry ? "9" : "8";
     while (!io_.exhausted()) {
         out << "\n" << kRule << "\n";
         out << (reception ? "RECEPTION" : "DOCTOR") << " MENU  -  " << session_.displayName;
@@ -82,6 +85,7 @@ int ConsoleApp::run() {
             if (consultations_ && medicalRecords_) {
                 out << "  8. Medical history, allergies and current medications of a patient\n";
             }
+            if (lab_) out << "  " << labNumber << ". Lab results of a patient\n";
         }
         out << "  0. Exit\n";
         auto choice = io_.readLine("Choose an option: ");
@@ -110,6 +114,8 @@ int ConsoleApp::run() {
             else if (consultations_ && c == "6") patientHistoryScreen();
             else if (consultations_ && c == "7") ownHoursScreen();
             else if (consultations_ && medicalRecords_ && c == "8") medicalHistoryScreen();
+            else if (lab_ && c == labNumber) labResultsScreen();
+            else if (lab_) out << "  Please choose a number from 0 to " << labNumber << ".\n";
             else if (consultations_ && medicalRecords_) out << "  Please choose a number from 0 to 8.\n";
             else out << (consultations_ ? "  Please choose a number from 0 to 7.\n" : "  Please choose 0, 1, 2 or 3.\n");
         }

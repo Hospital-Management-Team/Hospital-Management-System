@@ -122,6 +122,12 @@ set(HMS_FEATURE_SOURCES
   src/ui/medical_record_screens.cpp
   src/audit/audit_log_service.cpp
   src/ui/audit_log_screen.cpp
+  # Laboratory and pharmacy (issue #8)
+  src/lab/lab_repository.cpp
+  src/lab/lab_service.cpp
+  src/pharmacy/pharmacy_repository.cpp
+  src/pharmacy/pharmacy_service.cpp
+  src/ui/lab_pharmacy_screens.cpp
 )
 
 add_library(hms_core STATIC ${HMS_FOUNDATION_SOURCES} ${HMS_FEATURE_SOURCES})
@@ -172,6 +178,10 @@ if(HMS_BUILD_TESTS)
     tests/test_medical_record.cpp
     tests/test_medical_record_console.cpp
     tests/test_audit_log_view.cpp
+    # issue #8
+    tests/test_lab.cpp
+    tests/test_pharmacy.cpp
+    tests/test_lab_pharmacy_console.cpp
   )
   add_executable(hms_tests ${HMS_TEST_SOURCES} ${HMS_FEATURE_TEST_SOURCES})
   target_include_directories(hms_tests SYSTEM PRIVATE third_party/doctest)

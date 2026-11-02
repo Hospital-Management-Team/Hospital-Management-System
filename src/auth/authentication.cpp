@@ -28,6 +28,8 @@ std::string roleToString(Role role) {
         case Role::Administrator: return "administrator";
         case Role::Doctor: return "doctor";
         case Role::Receptionist: return "receptionist";
+        case Role::LabTechnician: return "lab_technician";
+        case Role::Pharmacist: return "pharmacist";
     }
     throw std::invalid_argument("Invalid staff role");
 }
@@ -36,6 +38,8 @@ Role stringToRole(const std::string& role) {
     if (role == "administrator") return Role::Administrator;
     if (role == "doctor") return Role::Doctor;
     if (role == "receptionist") return Role::Receptionist;
+    if (role == "lab_technician") return Role::LabTechnician;
+    if (role == "pharmacist") return Role::Pharmacist;
     throw std::runtime_error("Invalid role stored in database");
 }
 
