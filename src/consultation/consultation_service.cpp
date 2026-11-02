@@ -144,6 +144,11 @@ Result<ConsultationRecord> ConsultationService::recordConsultation(const Session
             return Error::conflict("Appointment " + apptText + " is not a booked appointment (" +
                                    to_string(appt->status) + ").");
         }
+        // A visit is recorded once it has started, never ahead of time.
+        if (appt->start.epochMinutes() > localSlotAt(clock_.now(), policy_.utcOffsetMinutes).epochMinutes()) {
+            return Error::conflict("Appointment " + apptText + " starts at " + appt->start.toDisplay() +
+                                   ". A consultation can be recorded once it has started.");
+        }
 
         valid.value().uhid = appt->uhid;  // the patient comes from the appointment
         valid.value().doctorStaffId = *doctorId;

@@ -151,6 +151,25 @@ TEST_CASE("TC-Doc-03 only the appointment's own doctor can record it, and only w
     CHECK(f.count("SELECT count(*) FROM consultation") == 0);
 }
 
+TEST_CASE("TC-Doc-03 a consultation cannot be recorded before the appointment starts") {
+    ConsultationFixture f;  // the clock starts on Sunday 25-10-2026
+    const auto doc = f.addDoctor("mehta");
+    const auto uhid = f.addPatient("Ravi Kumar");
+    const auto appt = f.bookOk(uhid, doc, at(kTuesday, 9, 0));
+
+    auto early = f.consultations.recordConsultation(doctorSession("mehta"), f.draft(appt.id));
+    REQUIRE_FALSE(early.ok());
+    CHECK(early.error().kind == ErrorKind::Conflict);
+    CHECK(f.count("SELECT count(*) FROM consultation") == 0);
+    CHECK(f.count("SELECT count(*) FROM appointment WHERE status = 'BOOKED'") == 1);
+
+    // One minute before the start is still too early; at the start it is allowed.
+    f.setLocalTime(kTuesday, 8, 59);
+    CHECK_FALSE(f.consultations.recordConsultation(doctorSession("mehta"), f.draft(appt.id)).ok());
+    f.setLocalTime(kTuesday, 9, 0);
+    CHECK(f.consultations.recordConsultation(doctorSession("mehta"), f.draft(appt.id)).ok());
+}
+
 TEST_CASE("TC-Doc-03 the store itself refuses a consultation that does not match its appointment") {
     ConsultationFixture f;
     const auto mehta = f.addDoctor("mehta");
@@ -201,7 +220,7 @@ TEST_CASE("TC-Doc-03 a doctor sees a patient's earlier consultations, newest fir
     REQUIRE(f.consultations.recordConsultation(doctorSession("mehta"), f.draft(first.id, "Cough")).ok());
     const auto second = f.visit(uhid, doc, at(kTuesday, 9, 0));
     REQUIRE(f.consultations.recordConsultation(doctorSession("mehta"), f.draft(second.id, "Fever")).ok());
-    const auto third = f.bookOk(other, doc, at(kTuesday, 12, 0));
+    const auto third = f.visit(other, doc, at(kTuesday, 12, 0));
     REQUIRE(f.consultations.recordConsultation(doctorSession("mehta"), f.draft(third.id, "Rash")).ok());
 
     auto h = f.consultations.listPatientHistory(doctorSession("mehta"), uhid);
