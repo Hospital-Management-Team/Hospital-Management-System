@@ -54,6 +54,11 @@ inline constexpr const char* kReceiptGenerate = "RECEIPT_GENERATE";
 inline constexpr const char* kStaffLogin = "STAFF_LOGIN";
 inline constexpr const char* kStaffLockout = "STAFF_LOCKOUT";
 inline constexpr const char* kStaffAccountCreate = "STAFF_ACCOUNT_CREATE";
+// Medical history (issue #6). VIEW is written every time a doctor opens a
+// patient's history (HMS-SR-004), UPDATE for every new version; both are DENIED
+// with reason NO_CARE_RELATIONSHIP for a doctor who has no care relationship.
+inline constexpr const char* kMedicalHistoryView = "MEDICAL_HISTORY_VIEW";
+inline constexpr const char* kMedicalHistoryUpdate = "MEDICAL_HISTORY_UPDATE";
 }  // namespace audit_action
 
 struct AuditEntryInput {

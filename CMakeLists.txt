@@ -116,6 +116,10 @@ set(HMS_FEATURE_SOURCES
   src/billing/billing_service.cpp
   src/billing/receipt.cpp
   src/ui/billing_screens.cpp
+  # Medical records (issue #6)
+  src/record/medical_record_repository.cpp
+  src/record/medical_record_service.cpp
+  src/ui/medical_record_screens.cpp
 )
 
 add_library(hms_core STATIC ${HMS_FOUNDATION_SOURCES} ${HMS_FEATURE_SOURCES})
@@ -162,6 +166,9 @@ if(HMS_BUILD_TESTS)
     # issue #7
     tests/test_billing.cpp
     tests/test_billing_console.cpp
+    # issue #6
+    tests/test_medical_record.cpp
+    tests/test_medical_record_console.cpp
   )
   add_executable(hms_tests ${HMS_TEST_SOURCES} ${HMS_FEATURE_TEST_SOURCES})
   target_include_directories(hms_tests SYSTEM PRIVATE third_party/doctest)

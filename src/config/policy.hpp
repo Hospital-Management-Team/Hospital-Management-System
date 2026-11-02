@@ -89,6 +89,11 @@ struct BillingPolicy {
     std::size_t maxReferenceChars = 40;             // payment reference (never a card number)
 };
 
+// Medical history (issue #6, HMS-F-003; SAD data dictionary MedicalHistoryVersion).
+struct MedicalRecordPolicy {
+    std::size_t maxFieldChars = 1000;  // history, allergies and current medications, each
+};
+
 struct AppPolicy {
     // SRS 2.5: hospital-local time is Asia/Kolkata, UTC+05:30, no DST.
     int utcOffsetMinutes = 330;
@@ -97,6 +102,7 @@ struct AppPolicy {
     ConsultationPolicy consultation;
     AuthPolicy auth;
     BillingPolicy billing;
+    MedicalRecordPolicy medicalRecord;
 };
 
 }  // namespace hms
