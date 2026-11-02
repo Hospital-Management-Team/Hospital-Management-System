@@ -94,6 +94,12 @@ struct MedicalRecordPolicy {
     std::size_t maxFieldChars = 1000;  // history, allergies and current medications, each
 };
 
+// Admin's view of the audit log (issue #6, HMS-SR-004).
+struct AuditViewPolicy {
+    std::size_t defaultEntries = 50;  // shown when the Admin presses Enter
+    std::size_t maxEntries = 500;     // the most shown at once
+};
+
 struct AppPolicy {
     // SRS 2.5: hospital-local time is Asia/Kolkata, UTC+05:30, no DST.
     int utcOffsetMinutes = 330;
@@ -103,6 +109,7 @@ struct AppPolicy {
     AuthPolicy auth;
     BillingPolicy billing;
     MedicalRecordPolicy medicalRecord;
+    AuditViewPolicy auditView;
 };
 
 }  // namespace hms

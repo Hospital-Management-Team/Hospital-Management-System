@@ -48,6 +48,8 @@ bool isAllowed(Role role, Permission permission) {
         case Permission::ViewMedicalHistory:
         case Permission::UpdateMedicalHistory:
             return role == Role::Doctor;
+        case Permission::ViewAuditLog:
+            return role == Role::Admin;
     }
     return false;  // deny anything not listed
 }
@@ -76,6 +78,7 @@ std::string auditActionFor(Permission permission) {
         case Permission::GenerateReceipt: return audit_action::kReceiptGenerate;
         case Permission::ViewMedicalHistory: return audit_action::kMedicalHistoryView;
         case Permission::UpdateMedicalHistory: return audit_action::kMedicalHistoryUpdate;
+        case Permission::ViewAuditLog: return audit_action::kAuditLogView;
     }
     return "UNKNOWN";
 }

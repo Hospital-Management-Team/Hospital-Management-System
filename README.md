@@ -129,6 +129,8 @@ A patient with no version shows "No medical history recorded".
 
 **Audit:** every opening and every update is audited with the UHID and the changed field names, never the clinical text. Refusals are audited too.
 
+**Admin, option 4: view the audit log** (HMS-SR-004). Lists the newest entries first (press Enter for 50, at most 500): time, user, action, record, outcome, changed fields and reason. It is read only; no screen edits or deletes an entry. Other roles are refused, and the refusal is audited (D-50, TC-Sec-05 in `tests/test_audit_log_view.cpp`).
+
 Deviations: D-48 and D-49. Tests: `tests/test_medical_record.cpp` and `tests/test_medical_record_console.cpp` (TC-Rec-01), and `tests/test_consultation.cpp` (TC-Rec-04).
 
 ## Continuous integration
