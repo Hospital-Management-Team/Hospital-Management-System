@@ -10,11 +10,12 @@ namespace hms::test {
 struct ConsultationFixture : AppointmentFixture {
     ConsultationService consultations{db(), clock, policy};
 
-    // Books Monday 26-10-2026 09:00 for a patient and moves the clock to 09:30 that day,
-    // so the visit has taken place and can be recorded.
+    // Books a visit (default Monday 26-10-2026 09:00) and moves the clock to 30 minutes
+    // after its start, so the visit has taken place and can be recorded.
     AppointmentRecord visit(std::int64_t uhid, std::int64_t doctorId, const LocalSlot& start = at(kMonday, 9, 0)) {
         auto a = bookOk(uhid, doctorId, start);
-        setLocalTime(start.date, 9, 30);
+        const int held = start.minute + 30;
+        setLocalTime(start.date, held / 60, held % 60);
         return a;
     }
 
