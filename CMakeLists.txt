@@ -121,6 +121,9 @@ set(HMS_FEATURE_SOURCES
   src/record/medical_record_service.cpp
   src/ui/medical_record_screens.cpp
   src/audit/audit_log_service.cpp
+  src/admin/admin_repository.cpp
+  src/admin/admin_service.cpp
+  src/ui/admin_screens.cpp
   src/ui/audit_log_screen.cpp
   # Laboratory and pharmacy (issue #8)
   src/lab/lab_repository.cpp
@@ -178,6 +181,7 @@ if(HMS_BUILD_TESTS)
     tests/test_medical_record.cpp
     tests/test_medical_record_console.cpp
     tests/test_audit_log_view.cpp
+    tests/test_admin.cpp
     # issue #8
     tests/test_lab.cpp
     tests/test_pharmacy.cpp

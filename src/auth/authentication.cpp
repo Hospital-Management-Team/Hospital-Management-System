@@ -205,13 +205,14 @@ LoginResult login(
     std::string passwordHash;
     std::string storedRole;
     std::string lockedUntil;
+    bool active = true;
     int failures = 0;
     bool found = false;
 
     {
         auto statement = db.prepare(
             "SELECT staff_id, username, password_hash, role, "
-            "failed_attempts, COALESCE(locked_until, '') "
+            "failed_attempts, COALESCE(locked_until, ''), active "
             "FROM staff_accounts WHERE username = ?");
 
         statement.bind(1, username);
@@ -224,6 +225,7 @@ LoginResult login(
             storedRole = statement.getText(3);
             failures = static_cast<int>(statement.getInt64(4));
             lockedUntil = statement.getText(5);
+            active = statement.getInt64(6) != 0;
         }
     }  // Finalize the SELECT before updating the same table.
 
@@ -234,6 +236,13 @@ LoginResult login(
     }
 
     const std::string staffKey = std::to_string(staffId);
+
+    // A deactivated account cannot log in (HMS-F-023). It is not counted as a failed password.
+    if (!active) {
+        record(storedName, staffKey, AuditOutcome::Denied, "ACCOUNT_DEACTIVATED", audit_action::kStaffLogin);
+        tx.commit();
+        return {LoginStatus::InvalidCredentials, Role::Receptionist, failures};
+    }
 
     if (!lockedUntil.empty() && lockedUntil > now) {
         record(storedName, staffKey, AuditOutcome::Denied, "ACCOUNT_LOCKED", audit_action::kStaffLogin);
@@ -289,6 +298,8 @@ LoginResult login(
 
     return {LoginStatus::Success, role, 0};
 }
+std::string makePasswordHash(const std::string& password) { return hashPassword(password); }
+
 bool isAuthorized(Role role, const std::string& action) {
     if (role == Role::Administrator) {
         return action == "manage_staff" ||

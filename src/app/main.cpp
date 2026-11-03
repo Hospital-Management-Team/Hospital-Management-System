@@ -9,6 +9,7 @@
 #include <system_error>
 
 #include "appointment/appointment_service.hpp"
+#include "admin/admin_service.hpp"
 #include "audit/audit_log_service.hpp"
 #include "auth/authentication.hpp"
 #include "auth/session.hpp"
@@ -26,6 +27,7 @@
 #include "ui/lab_pharmacy_screens.hpp"
 #include "consultation/consultation_service.hpp"
 #include "record/medical_record_service.hpp"
+#include "ui/admin_screens.hpp"
 #include "ui/audit_log_screen.hpp"
 #include "ui/billing_screens.hpp"
 #include "ui/console_app.hpp"
@@ -69,7 +71,7 @@ const char* roleName(auth::Role r) {
 // role and audits the change (issue #4). Account creation does not take it yet
 // (deviation log D-17, D-22).
 void adminMenu(ConsoleIO& io, Database& db, AppointmentService& appointments, BillingService& billing,
-               AuditLogService& auditLog, const Session& session) {
+               AuditLogService& auditLog, AdminService& admin, const Session& session) {
     auto& out = io.out();
     while (true) {
         out << "\n--- ADMIN MENU ---\n"
@@ -77,13 +79,19 @@ void adminMenu(ConsoleIO& io, Database& db, AppointmentService& appointments, Bi
                "  2. Set a doctor's department and weekly hours\n"
                "  3. Set a doctor's consultation fee\n"
                "  4. View the audit log (read only)\n"
+               "  5. Manage staff accounts (deactivate, unlock, new password)\n"
+               "  6. Summary reports\n"
+               "  7. Master data (departments, rooms, doctor mapping)\n"
                "  0. Log out\n";
         auto c = io.readLine("Choose an option: ");
         if (!c || *c == "0") return;
         if (*c == "2") { doctorScheduleScreen(io, appointments, session); continue; }
         if (*c == "3") { consultationFeeScreen(io, billing, session); continue; }
         if (*c == "4") { auditLogScreen(io, auditLog, session); continue; }
-        if (*c != "1") { out << "  Please choose a number from 0 to 4.\n"; continue; }
+        if (*c == "5") { staffAccountsScreen(io, admin, session, readPassword); continue; }
+        if (*c == "6") { reportsScreen(io, admin, session); continue; }
+        if (*c == "7") { masterDataScreen(io, admin, session); continue; }
+        if (*c != "1") { out << "  Please choose a number from 0 to 7.\n"; continue; }
 
         auto u = io.readLine("New username: ");
         if (!u) return;
@@ -213,6 +221,7 @@ int main(int argc, char** argv) {
     BillingService billing(*store.db, clock, policy);
     MedicalRecordService medicalRecords(*store.db, clock, policy);
     AuditLogService auditLog(*store.db, clock, policy);
+    AdminService admin(*store.db, clock, policy);
     LabService lab(*store.db, clock, policy);
     PharmacyService pharmacy(*store.db, clock, policy);
 
@@ -258,7 +267,7 @@ int main(int argc, char** argv) {
         session.role = toSessionRole(result.role);
         session.simulated = false;
         if (result.role == auth::Role::Administrator) {
-            adminMenu(io, *store.db, appointments, billing, auditLog, session);
+            adminMenu(io, *store.db, appointments, billing, auditLog, admin, session);
         } else if (result.role == auth::Role::LabTechnician) {
             labMenu(io, lab, session);
         } else if (result.role == auth::Role::Pharmacist) {

@@ -362,6 +362,28 @@ CREATE TABLE stock_movement (
 CREATE INDEX idx_stock_movement_medicine ON stock_movement (medicine_id);
 )SQL";
 
+// Version 10 - issue #9: an account can be deactivated (HMS-F-023); departments and consultation
+// rooms (HMS-F-050). A deactivated account cannot log in; its records and audit entries stay.
+const char* kV10 = R"SQL(
+ALTER TABLE staff_accounts ADD COLUMN active INTEGER NOT NULL DEFAULT 1 CHECK (active IN (0, 1));
+
+-- HMS-F-050 master data: departments and consultation rooms. A doctor's department stays on the
+-- doctor profile (booking and billing read it from there); renaming a department updates it.
+CREATE TABLE department (
+    department_id  INTEGER PRIMARY KEY AUTOINCREMENT,
+    name           TEXT    NOT NULL COLLATE NOCASE UNIQUE CHECK (length(name) BETWEEN 1 AND 60),
+    active         INTEGER NOT NULL DEFAULT 1 CHECK (active IN (0, 1))
+);
+INSERT OR IGNORE INTO department (name) SELECT DISTINCT department FROM doctor_profile;
+
+CREATE TABLE consultation_room (
+    room_id        INTEGER PRIMARY KEY AUTOINCREMENT,
+    name           TEXT    NOT NULL COLLATE NOCASE UNIQUE CHECK (length(name) BETWEEN 1 AND 60),
+    department_id  INTEGER REFERENCES department (department_id),
+    active         INTEGER NOT NULL DEFAULT 1 CHECK (active IN (0, 1))
+);
+)SQL";
+
 }  // namespace
 
 // Each feature appends its tables as the next numbered migration.
@@ -377,6 +399,7 @@ const std::vector<Migration>& migrations() {
         {7, "Consultation fees, bills, payments (#7)", kV7},
         {8, "Medical history versions (#6)", kV8},
         {9, "Lab technician and pharmacist accounts, lab results, medicine stock and dispensing (#8)", kV9},
+        {10, "Deactivated staff accounts, departments and consultation rooms (#9)", kV10},
     };
     return kAll;
 }

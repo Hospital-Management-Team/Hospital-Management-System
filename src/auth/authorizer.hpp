@@ -50,6 +50,10 @@ enum class Permission {
     CorrectStock,              // HMS-F-041:     Pharmacist (set the stock to the counted figure)
     ViewPrescriptions,         // HMS-F-041:     Pharmacist
     DispenseMedicine,          // HMS-F-041:     Pharmacist
+    // Administration and reporting (issue #9)
+    ManageStaffAccounts,       // HMS-F-023:     Admin (list, deactivate, reactivate, unlock, reset password)
+    ViewReports,               // HMS-F-051:     Admin
+    ManageMasterData,          // HMS-F-050:     Admin (departments, consultation rooms, doctor-department mapping)
 };
 
 bool isAllowed(Role role, Permission permission);

@@ -52,6 +52,9 @@ LoginResult login(
     const AuthPolicy& policy = AuthPolicy{}
 );
 
+// Argon2id hash of a password, for storing (used when Admin resets a password).
+std::string makePasswordHash(const std::string& password);
+
 bool isAuthorized(Role role, const std::string& action);
 
 // Password policy (SRS HMS-SR-002): 8-128 chars with upper, lower, digit, symbol.

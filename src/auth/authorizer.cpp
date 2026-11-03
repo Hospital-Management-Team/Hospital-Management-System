@@ -49,6 +49,9 @@ bool isAllowed(Role role, Permission permission) {
         case Permission::UpdateMedicalHistory:
             return role == Role::Doctor;
         case Permission::ViewAuditLog:
+        case Permission::ManageStaffAccounts:
+        case Permission::ViewReports:
+        case Permission::ManageMasterData:
             return role == Role::Admin;
         case Permission::ViewLabOrders:
         case Permission::RecordLabResult:
@@ -92,6 +95,9 @@ std::string auditActionFor(Permission permission) {
         case Permission::ViewMedicalHistory: return audit_action::kMedicalHistoryView;
         case Permission::UpdateMedicalHistory: return audit_action::kMedicalHistoryUpdate;
         case Permission::ViewAuditLog: return audit_action::kAuditLogView;
+        case Permission::ManageStaffAccounts: return audit_action::kStaffAccountManage;
+        case Permission::ViewReports: return audit_action::kReportView;
+        case Permission::ManageMasterData: return audit_action::kMasterDataManage;
         case Permission::ViewLabOrders: return audit_action::kLabOrderView;
         case Permission::RecordLabResult: return audit_action::kLabResultRecord;
         case Permission::ViewLabResults: return audit_action::kLabResultView;
