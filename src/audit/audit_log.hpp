@@ -74,6 +74,21 @@ inline constexpr const char* kMedicalHistoryView = "MEDICAL_HISTORY_VIEW";
 inline constexpr const char* kMedicalHistoryUpdate = "MEDICAL_HISTORY_UPDATE";
 // Admin's view of the audit log (issue #6). Written only when denied.
 inline constexpr const char* kAuditLogView = "AUDIT_LOG_VIEW";
+// Admin and reporting (issue #9). The account changes are written for every success; STAFF_ACCOUNT_MANAGE
+// and REPORT_VIEW only when denied.
+inline constexpr const char* kStaffAccountManage = "STAFF_ACCOUNT_MANAGE";
+inline constexpr const char* kStaffAccountDeactivate = "STAFF_ACCOUNT_DEACTIVATE";
+inline constexpr const char* kStaffAccountReactivate = "STAFF_ACCOUNT_REACTIVATE";
+inline constexpr const char* kStaffAccountUnlock = "STAFF_ACCOUNT_UNLOCK";
+inline constexpr const char* kStaffPasswordReset = "STAFF_PASSWORD_RESET";
+inline constexpr const char* kReportView = "REPORT_VIEW";
+// Master data (issue #9, HMS-F-050). MASTER_DATA_MANAGE only when denied.
+inline constexpr const char* kMasterDataManage = "MASTER_DATA_MANAGE";
+inline constexpr const char* kDepartmentCreate = "DEPARTMENT_CREATE";
+inline constexpr const char* kDepartmentUpdate = "DEPARTMENT_UPDATE";
+inline constexpr const char* kRoomCreate = "ROOM_CREATE";
+inline constexpr const char* kRoomUpdate = "ROOM_UPDATE";
+inline constexpr const char* kDoctorDepartmentSet = "DOCTOR_DEPARTMENT_SET";
 }  // namespace audit_action
 
 struct AuditEntryInput {

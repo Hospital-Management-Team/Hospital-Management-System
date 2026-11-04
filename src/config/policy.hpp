@@ -113,6 +113,16 @@ struct LabPharmacyPolicy {
     std::size_t maxListRows = 100;
 };
 
+// Admin reports (issue #9, HMS-F-051).
+struct ReportPolicy {
+    int maxRangeDays = 366;  // the longest date range one report covers
+};
+
+// Master data names (issue #9, HMS-F-050): the same limit as the doctor profile's department.
+struct MasterDataPolicy {
+    std::size_t maxNameChars = 60;
+};
+
 struct AppPolicy {
     // SRS 2.5: hospital-local time is Asia/Kolkata, UTC+05:30, no DST.
     int utcOffsetMinutes = 330;
@@ -124,6 +134,8 @@ struct AppPolicy {
     MedicalRecordPolicy medicalRecord;
     AuditViewPolicy auditView;
     LabPharmacyPolicy labPharmacy;
+    ReportPolicy report;
+    MasterDataPolicy masterData;
 };
 
 }  // namespace hms
