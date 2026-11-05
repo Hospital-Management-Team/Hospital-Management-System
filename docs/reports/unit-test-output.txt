@@ -1,0 +1,1239 @@
+[doctest] doctest version is "2.4.11"
+[doctest] run with "--help" for options
+===============================================================================
+C:/Users/jithu/Projects/HMS-auth-rbac/tests/test_admin.cpp:89:
+TEST CASE:  TC-Rep-01 the report totals match the stored appointments, bills and payments
+
+0.153365 s: TC-Rep-01 the report totals match the stored appointments, bills and payments
+===============================================================================
+C:/Users/jithu/Projects/HMS-auth-rbac/tests/test_admin.cpp:118:
+TEST CASE:  TC-Rep-01 daily and doctor-wise counts follow the selected dates
+
+0.153736 s: TC-Rep-01 daily and doctor-wise counts follow the selected dates
+===============================================================================
+C:/Users/jithu/Projects/HMS-auth-rbac/tests/test_admin.cpp:153:
+TEST CASE:  TC-Rep-01 a payment is counted on the hospital-local date, not the UTC date
+
+0.154704 s: TC-Rep-01 a payment is counted on the hospital-local date, not the UTC date
+===============================================================================
+C:/Users/jithu/Projects/HMS-auth-rbac/tests/test_admin.cpp:167:
+TEST CASE:  TC-Rep-01 a bad date range is refused and reading changes nothing
+
+0.146666 s: TC-Rep-01 a bad date range is refused and reading changes nothing
+===============================================================================
+C:/Users/jithu/Projects/HMS-auth-rbac/tests/test_admin.cpp:181:
+TEST CASE:  TC-Sec-02 only the Admin may view reports or manage staff accounts, and every denial is audited
+
+0.293104 s: TC-Sec-02 only the Admin may view reports or manage staff accounts, and every denial is audited
+===============================================================================
+C:/Users/jithu/Projects/HMS-auth-rbac/tests/test_admin.cpp:200:
+TEST CASE:  TC-Staff-01 the Admin lists staff accounts with role and status
+
+0.481980 s: TC-Staff-01 the Admin lists staff accounts with role and status
+===============================================================================
+C:/Users/jithu/Projects/HMS-auth-rbac/tests/test_admin.cpp:217:
+TEST CASE:  TC-Staff-01 a deactivated account cannot log in and the action is audited
+
+0.666561 s: TC-Staff-01 a deactivated account cannot log in and the action is audited
+===============================================================================
+C:/Users/jithu/Projects/HMS-auth-rbac/tests/test_admin.cpp:240:
+TEST CASE:  TC-Staff-01 the Admin cannot lock themselves out
+
+0.339094 s: TC-Staff-01 the Admin cannot lock themselves out
+===============================================================================
+C:/Users/jithu/Projects/HMS-auth-rbac/tests/test_admin.cpp:254:
+TEST CASE:  TC-Staff-01 unlock and password reset
+
+1.457538 s: TC-Staff-01 unlock and password reset
+===============================================================================
+C:/Users/jithu/Projects/HMS-auth-rbac/tests/test_admin.cpp:279:
+TEST CASE:  TC-Staff-01 a failed save leaves the account unchanged
+
+0.289179 s: TC-Staff-01 a failed save leaves the account unchanged
+===============================================================================
+C:/Users/jithu/Projects/HMS-auth-rbac/tests/test_admin.cpp:290:
+TEST CASE:  TC-Staff-01 the staff screen deactivates an account after confirmation
+
+0.435006 s: TC-Staff-01 the staff screen deactivates an account after confirmation
+===============================================================================
+C:/Users/jithu/Projects/HMS-auth-rbac/tests/test_admin.cpp:310:
+TEST CASE:  TC-Rep-01 the report screen prints the summary
+
+0.172293 s: TC-Rep-01 the report screen prints the summary
+===============================================================================
+C:/Users/jithu/Projects/HMS-auth-rbac/tests/test_admin.cpp:325:
+TEST CASE:  TC-Admin-01 the Admin adds departments; names are checked and unique ignoring case
+
+0.086815 s: TC-Admin-01 the Admin adds departments; names are checked and unique ignoring case
+===============================================================================
+C:/Users/jithu/Projects/HMS-auth-rbac/tests/test_admin.cpp:340:
+TEST CASE:  TC-Admin-01 renaming a department shows in booking and billing at once
+
+0.117290 s: TC-Admin-01 renaming a department shows in booking and billing at once
+===============================================================================
+C:/Users/jithu/Projects/HMS-auth-rbac/tests/test_admin.cpp:365:
+TEST CASE:  TC-Admin-01 the Admin moves a doctor to another department
+
+0.116632 s: TC-Admin-01 the Admin moves a doctor to another department
+===============================================================================
+C:/Users/jithu/Projects/HMS-auth-rbac/tests/test_admin.cpp:390:
+TEST CASE:  TC-Admin-01 consultation rooms: add, edit, switch off
+
+0.117264 s: TC-Admin-01 consultation rooms: add, edit, switch off
+===============================================================================
+C:/Users/jithu/Projects/HMS-auth-rbac/tests/test_admin.cpp:421:
+TEST CASE:  TC-Admin-01 only the Admin may change master data, and every denial is audited
+
+0.270828 s: TC-Admin-01 only the Admin may change master data, and every denial is audited
+===============================================================================
+C:/Users/jithu/Projects/HMS-auth-rbac/tests/test_admin.cpp:441:
+TEST CASE:  TC-Admin-01 a failed save leaves the master data unchanged
+
+0.069588 s: TC-Admin-01 a failed save leaves the master data unchanged
+===============================================================================
+C:/Users/jithu/Projects/HMS-auth-rbac/tests/test_admin.cpp:451:
+TEST CASE:  TC-Admin-01 the master data screens
+
+0.122269 s: TC-Admin-01 the master data screens
+===============================================================================
+C:/Users/jithu/Projects/HMS-auth-rbac/tests/test_appointment.cpp:27:
+TEST CASE:  Appointment helpers: slot keys, weekdays, appointment numbers, HH:MM input
+
+0.000067 s: Appointment helpers: slot keys, weekdays, appointment numbers, HH:MM input
+===============================================================================
+C:/Users/jithu/Projects/HMS-auth-rbac/tests/test_appointment.cpp:60:
+TEST CASE:  Migration 4 adds the appointment tables to a new store
+
+0.065004 s: Migration 4 adds the appointment tables to a new store
+===============================================================================
+C:/Users/jithu/Projects/HMS-auth-rbac/tests/test_appointment.cpp:69:
+TEST CASE:  TC-Doc-01 (1) a doctor appears for booking only on the weekdays of their hours
+
+0.099380 s: TC-Doc-01 (1) a doctor appears for booking only on the weekdays of their hours
+===============================================================================
+C:/Users/jithu/Projects/HMS-auth-rbac/tests/test_appointment.cpp:97:
+TEST CASE:  TC-Doc-01 (2) schedule input is validated and only the Admin may change it
+
+0.079603 s: TC-Doc-01 (2) schedule input is validated and only the Admin may change it
+===============================================================================
+C:/Users/jithu/Projects/HMS-auth-rbac/tests/test_appointment.cpp:134:
+TEST CASE:  TC-App-01 (1) booking a free slot marks it booked and returns the confirmation
+
+0.085134 s: TC-App-01 (1) booking a free slot marks it booked and returns the confirmation
+===============================================================================
+C:/Users/jithu/Projects/HMS-auth-rbac/tests/test_appointment.cpp:163:
+TEST CASE:  TC-App-01 (2) only real, future slots inside the doctor's hours can be booked
+
+0.085277 s: TC-App-01 (2) only real, future slots inside the doctor's hours can be booked
+===============================================================================
+C:/Users/jithu/Projects/HMS-auth-rbac/tests/test_appointment.cpp:211:
+TEST CASE:  TC-App-02 (1) a booked slot is refused with a clear message and the existing appointment is unchanged
+
+0.105802 s: TC-App-02 (1) a booked slot is refused with a clear message and the existing appointment is unchanged
+===============================================================================
+C:/Users/jithu/Projects/HMS-auth-rbac/tests/test_appointment.cpp:230:
+TEST CASE:  TC-App-02 (2) the store itself refuses a second booked appointment at the same doctor and start
+
+0.093559 s: TC-App-02 (2) the store itself refuses a second booked appointment at the same doctor and start
+===============================================================================
+C:/Users/jithu/Projects/HMS-auth-rbac/tests/test_appointment.cpp:249:
+TEST CASE:  TC-App-02 (3) overlapping periods are refused even when the starts differ
+
+0.116965 s: TC-App-02 (3) overlapping periods are refused even when the starts differ
+===============================================================================
+C:/Users/jithu/Projects/HMS-auth-rbac/tests/test_appointment.cpp:275:
+TEST CASE:  TC-App-02 (4) a patient cannot hold two appointments at the same time
+
+0.141539 s: TC-App-02 (4) a patient cannot hold two appointments at the same time
+===============================================================================
+C:/Users/jithu/Projects/HMS-auth-rbac/tests/test_appointment.cpp:289:
+TEST CASE:  TC-App-02 (5) NF-002 a failure before commit saves nothing and the slot stays free
+
+0.084341 s: TC-App-02 (5) NF-002 a failure before commit saves nothing and the slot stays free
+===============================================================================
+C:/Users/jithu/Projects/HMS-auth-rbac/tests/test_appointment.cpp:305:
+TEST CASE:  TC-App-02 (6) SR-001 only a Receptionist may book; a denied attempt is audited
+
+0.098229 s: TC-App-02 (6) SR-001 only a Receptionist may book; a denied attempt is audited
+===============================================================================
+C:/Users/jithu/Projects/HMS-auth-rbac/tests/test_appointment.cpp:321:
+TEST CASE:  TC-App-03 (1) cancelling releases the slot at once
+
+0.100433 s: TC-App-03 (1) cancelling releases the slot at once
+===============================================================================
+C:/Users/jithu/Projects/HMS-auth-rbac/tests/test_appointment.cpp:345:
+TEST CASE:  TC-App-03 (2) rescheduling cancels the old appointment, links it to the new one, and frees its slot
+
+0.093694 s: TC-App-03 (2) rescheduling cancels the old appointment, links it to the new one, and frees its slot
+===============================================================================
+C:/Users/jithu/Projects/HMS-auth-rbac/tests/test_appointment.cpp:379:
+TEST CASE:  TC-App-03 (3) the cutoff: allowed exactly at the cutoff, refused one minute inside it
+
+0.095333 s: TC-App-03 (3) the cutoff: allowed exactly at the cutoff, refused one minute inside it
+===============================================================================
+C:/Users/jithu/Projects/HMS-auth-rbac/tests/test_appointment.cpp:400:
+TEST CASE:  TC-App-03 (4) NF-002 a failed reschedule changes nothing
+
+0.086389 s: TC-App-03 (4) NF-002 a failed reschedule changes nothing
+===============================================================================
+C:/Users/jithu/Projects/HMS-auth-rbac/tests/test_appointment.cpp:417:
+TEST CASE:  TC-App-03 (5) a patient's upcoming list shows booked appointments that have not started
+
+0.103811 s: TC-App-03 (5) a patient's upcoming list shows booked appointments that have not started
+===============================================================================
+C:/Users/jithu/Projects/HMS-auth-rbac/tests/test_appointment.cpp:435:
+TEST CASE:  TC-App-04 (1) one reminder entry for every booked appointment in the next 48 hours
+
+0.165805 s: TC-App-04 (1) one reminder entry for every booked appointment in the next 48 hours
+===============================================================================
+C:/Users/jithu/Projects/HMS-auth-rbac/tests/test_appointment.cpp:474:
+TEST CASE:  TC-Doc-02 (1) a doctor's queue is in time order and holds only that doctor's patients
+
+0.148674 s: TC-Doc-02 (1) a doctor's queue is in time order and holds only that doctor's patients
+===============================================================================
+C:/Users/jithu/Projects/HMS-auth-rbac/tests/test_appointment.cpp:502:
+TEST CASE:  TC-Doc-02 (2) only a Doctor has a queue
+
+0.100661 s: TC-Doc-02 (2) only a Doctor has a queue
+===============================================================================
+C:/Users/jithu/Projects/HMS-auth-rbac/tests/test_appointment_console.cpp:29:
+TEST CASE:  Console TC-App-01: reception books an appointment through the menu
+
+0.114605 s: Console TC-App-01: reception books an appointment through the menu
+===============================================================================
+C:/Users/jithu/Projects/HMS-auth-rbac/tests/test_appointment_console.cpp:51:
+TEST CASE:  Console TC-App-01: declining the confirmation books nothing; a day with no doctor is reported
+
+0.104373 s: Console TC-App-01: declining the confirmation books nothing; a day with no doctor is reported
+===============================================================================
+C:/Users/jithu/Projects/HMS-auth-rbac/tests/test_appointment_console.cpp:65:
+TEST CASE:  Console TC-App-03: reception cancels, then reschedules, through the menu
+
+0.148007 s: Console TC-App-03: reception cancels, then reschedules, through the menu
+===============================================================================
+C:/Users/jithu/Projects/HMS-auth-rbac/tests/test_appointment_console.cpp:84:
+TEST CASE:  Console TC-App-03: inside the cutoff the change is refused with the reason
+
+0.101121 s: Console TC-App-03: inside the cutoff the change is refused with the reason
+===============================================================================
+C:/Users/jithu/Projects/HMS-auth-rbac/tests/test_appointment_console.cpp:95:
+TEST CASE:  Console TC-App-04: the reminder list marks new reminders and shows the mobile number
+
+0.105809 s: Console TC-App-04: the reminder list marks new reminders and shows the mobile number
+===============================================================================
+C:/Users/jithu/Projects/HMS-auth-rbac/tests/test_appointment_console.cpp:109:
+TEST CASE:  Console TC-Doc-02: the Doctor menu shows the doctor's own queue and no booking options
+
+0.099828 s: Console TC-Doc-02: the Doctor menu shows the doctor's own queue and no booking options
+===============================================================================
+C:/Users/jithu/Projects/HMS-auth-rbac/tests/test_appointment_console.cpp:124:
+TEST CASE:  Console TC-Doc-01: the Admin sets a doctor's department and weekly hours
+
+0.091570 s: Console TC-Doc-01: the Admin sets a doctor's department and weekly hours
+===============================================================================
+C:/Users/jithu/Projects/HMS-auth-rbac/tests/test_audit_log_view.cpp:31:
+TEST CASE:  TC-Sec-05 the Admin reads the audit log, newest first
+
+0.082930 s: TC-Sec-05 the Admin reads the audit log, newest first
+===============================================================================
+C:/Users/jithu/Projects/HMS-auth-rbac/tests/test_audit_log_view.cpp:49:
+TEST CASE:  TC-Sec-05 reading the log changes nothing
+
+0.083767 s: TC-Sec-05 reading the log changes nothing
+===============================================================================
+C:/Users/jithu/Projects/HMS-auth-rbac/tests/test_audit_log_view.cpp:58:
+TEST CASE:  TC-Sec-05 every role other than Admin is denied, and each denial is audited
+
+0.100345 s: TC-Sec-05 every role other than Admin is denied, and each denial is audited
+===============================================================================
+C:/Users/jithu/Projects/HMS-auth-rbac/tests/test_audit_log_view.cpp:69:
+TEST CASE:  TC-Sec-05 the number of entries must be from 1 to the maximum
+
+0.072787 s: TC-Sec-05 the number of entries must be from 1 to the maximum
+===============================================================================
+C:/Users/jithu/Projects/HMS-auth-rbac/tests/test_audit_log_view.cpp:77:
+TEST CASE:  Console TC-Sec-05: the Admin screen lists the entries with time, user, action, record and outcome
+
+0.095319 s: Console TC-Sec-05: the Admin screen lists the entries with time, user, action, record and outcome
+===============================================================================
+C:/Users/jithu/Projects/HMS-auth-rbac/tests/test_audit_log_view.cpp:97:
+TEST CASE:  Console TC-Sec-05: another role using the screen is refused
+
+0.086200 s: Console TC-Sec-05: another role using the screen is refused
+===============================================================================
+C:/Users/jithu/Projects/HMS-auth-rbac/tests/test_authentication.cpp:11:
+TEST CASE:  Staff account creation
+
+0.353399 s: Staff account creation
+===============================================================================
+C:/Users/jithu/Projects/HMS-auth-rbac/tests/test_authentication.cpp:26:
+TEST CASE:  Successful login returns the correct role
+
+0.370375 s: Successful login returns the correct role
+===============================================================================
+C:/Users/jithu/Projects/HMS-auth-rbac/tests/test_authentication.cpp:39:
+TEST CASE:  Incorrect password increments failed attempts
+
+0.352660 s: Incorrect password increments failed attempts
+===============================================================================
+C:/Users/jithu/Projects/HMS-auth-rbac/tests/test_authentication.cpp:54:
+TEST CASE:  Account locks after five failed login attempts
+
+0.962355 s: Account locks after five failed login attempts
+===============================================================================
+C:/Users/jithu/Projects/HMS-auth-rbac/tests/test_authentication.cpp:74:
+TEST CASE:  Successful login resets failed attempts
+
+0.658934 s: Successful login resets failed attempts
+===============================================================================
+C:/Users/jithu/Projects/HMS-auth-rbac/tests/test_authentication.cpp:92:
+TEST CASE:  Role-based permissions
+
+0.000011 s: Role-based permissions
+===============================================================================
+C:/Users/jithu/Projects/HMS-auth-rbac/tests/test_authentication.cpp:100:
+TEST CASE:  Password policy
+
+0.000010 s: Password policy
+===============================================================================
+C:/Users/jithu/Projects/HMS-auth-rbac/tests/test_authentication.cpp:110:
+TEST CASE:  Weak password is rejected at account creation
+
+0.082390 s: Weak password is rejected at account creation
+===============================================================================
+C:/Users/jithu/Projects/HMS-auth-rbac/tests/test_authentication.cpp:116:
+TEST CASE:  Password is stored only as a salted Argon2id hash
+
+0.388248 s: Password is stored only as a salted Argon2id hash
+===============================================================================
+C:/Users/jithu/Projects/HMS-auth-rbac/tests/test_authentication.cpp:133:
+TEST CASE:  Unknown user fails; usernames are case-insensitive
+
+0.367244 s: Unknown user fails; usernames are case-insensitive
+===============================================================================
+C:/Users/jithu/Projects/HMS-auth-rbac/tests/test_authentication.cpp:141:
+TEST CASE:  TC-Sec-04 (2) the lock lasts for the cooldown, then the account works again
+
+1.083058 s: TC-Sec-04 (2) the lock lasts for the cooldown, then the account works again
+===============================================================================
+C:/Users/jithu/Projects/HMS-auth-rbac/tests/test_authentication.cpp:158:
+TEST CASE:  TC-Sec-04 (3) login events are audited with staff IDs only
+
+1.052038 s: TC-Sec-04 (3) login events are audited with staff IDs only
+===============================================================================
+C:/Users/jithu/Projects/HMS-auth-rbac/tests/test_billing.cpp:20:
+TEST CASE:  TC-Bill-01 the bill lists the consultation, each test and other charges, and the total is their sum
+
+0.119859 s: TC-Bill-01 the bill lists the consultation, each test and other charges, and the total is their sum
+===============================================================================
+C:/Users/jithu/Projects/HMS-auth-rbac/tests/test_billing.cpp:50:
+TEST CASE:  TC-Bill-01 every bill has its own number
+
+0.149245 s: TC-Bill-01 every bill has its own number
+===============================================================================
+C:/Users/jithu/Projects/HMS-auth-rbac/tests/test_billing.cpp:63:
+TEST CASE:  TC-Bill-01 the preview shows the fee and the tests reception has to price
+
+0.113872 s: TC-Bill-01 the preview shows the fee and the tests reception has to price
+===============================================================================
+C:/Users/jithu/Projects/HMS-auth-rbac/tests/test_billing.cpp:76:
+TEST CASE:  TC-Bill-01 invalid prices and service lines are rejected and nothing is saved
+
+0.127900 s: TC-Bill-01 invalid prices and service lines are rejected and nothing is saved
+===============================================================================
+C:/Users/jithu/Projects/HMS-auth-rbac/tests/test_billing.cpp:97:
+TEST CASE:  TC-Bill-01 only a finished, uncancelled visit with a fee set can be billed, and only once
+
+0.133341 s: TC-Bill-01 only a finished, uncancelled visit with a fee set can be billed, and only once
+===============================================================================
+C:/Users/jithu/Projects/HMS-auth-rbac/tests/test_billing.cpp:123:
+TEST CASE:  TC-Bill-01 a cancelled appointment cannot be billed
+
+0.108536 s: TC-Bill-01 a cancelled appointment cannot be billed
+===============================================================================
+C:/Users/jithu/Projects/HMS-auth-rbac/tests/test_billing.cpp:134:
+TEST CASE:  TC-Bill-01 the Admin sets the consultation fee; others cannot; old bills keep their fee
+
+0.192231 s: TC-Bill-01 the Admin sets the consultation fee; others cannot; old bills keep their fee
+===============================================================================
+C:/Users/jithu/Projects/HMS-auth-rbac/tests/test_billing.cpp:162:
+TEST CASE:  TC-Bill-01 only the Receptionist bills; a denial is audited
+
+0.138677 s: TC-Bill-01 only the Receptionist bills; a denial is audited
+===============================================================================
+C:/Users/jithu/Projects/HMS-auth-rbac/tests/test_billing.cpp:175:
+TEST CASE:  TC-Bill-01 the audit entries hold IDs and field names only
+
+0.127648 s: TC-Bill-01 the audit entries hold IDs and field names only
+===============================================================================
+C:/Users/jithu/Projects/HMS-auth-rbac/tests/test_billing.cpp:193:
+TEST CASE:  TC-Bill-01 a failed save leaves no half-written bill
+
+0.122410 s: TC-Bill-01 a failed save leaves no half-written bill
+===============================================================================
+C:/Users/jithu/Projects/HMS-auth-rbac/tests/test_billing.cpp:211:
+TEST CASE:  TC-Bill-02 partial then full payment: the balance is recalculated each time
+
+0.133524 s: TC-Bill-02 partial then full payment: the balance is recalculated each time
+===============================================================================
+C:/Users/jithu/Projects/HMS-auth-rbac/tests/test_billing.cpp:243:
+TEST CASE:  TC-Bill-02 an overpayment, a bad amount or a card number is refused
+
+0.125908 s: TC-Bill-02 an overpayment, a bad amount or a card number is refused
+===============================================================================
+C:/Users/jithu/Projects/HMS-auth-rbac/tests/test_billing.cpp:268:
+TEST CASE:  TC-Bill-02 the store itself refuses a payment above the balance
+
+0.120588 s: TC-Bill-02 the store itself refuses a payment above the balance
+===============================================================================
+C:/Users/jithu/Projects/HMS-auth-rbac/tests/test_billing.cpp:281:
+TEST CASE:  TC-Bill-02 a failed payment is not recorded
+
+0.124171 s: TC-Bill-02 a failed payment is not recorded
+===============================================================================
+C:/Users/jithu/Projects/HMS-auth-rbac/tests/test_billing.cpp:299:
+TEST CASE:  TC-Bill-02 bills of a patient and bills with a balance are listed
+
+0.151946 s: TC-Bill-02 bills of a patient and bills with a balance are listed
+===============================================================================
+C:/Users/jithu/Projects/HMS-auth-rbac/tests/test_billing.cpp:323:
+TEST CASE:  TC-Bill-03 the receipt shows the bill ID, itemised charges, payment mode and time
+
+0.135526 s: TC-Bill-03 the receipt shows the bill ID, itemised charges, payment mode and time
+===============================================================================
+C:/Users/jithu/Projects/HMS-auth-rbac/tests/test_billing.cpp:353:
+TEST CASE:  TC-Bill-03 each receipt shows what had been paid up to its own payment
+
+0.149523 s: TC-Bill-03 each receipt shows what had been paid up to its own payment
+===============================================================================
+C:/Users/jithu/Projects/HMS-auth-rbac/tests/test_billing.cpp:367:
+TEST CASE:  TC-Bill-03 the receipt is audited without names, amounts or references; other roles and numbers are refused
+
+0.136152 s: TC-Bill-03 the receipt is audited without names, amounts or references; other roles and numbers are refused
+===============================================================================
+C:/Users/jithu/Projects/HMS-auth-rbac/tests/test_billing.cpp:382:
+TEST CASE:  TC-Bill-03 stored UTC times are shown in hospital-local time
+
+0.000019 s: TC-Bill-03 stored UTC times are shown in hospital-local time
+===============================================================================
+C:/Users/jithu/Projects/HMS-auth-rbac/tests/test_billing.cpp:389:
+TEST CASE:  Bill and receipt numbers print and parse
+
+0.000027 s: Bill and receipt numbers print and parse
+===============================================================================
+C:/Users/jithu/Projects/HMS-auth-rbac/tests/test_billing.cpp:400:
+TEST CASE:  TC-Bill-02 an ordinary claim or transaction number is accepted as a reference
+
+0.227070 s: TC-Bill-02 an ordinary claim or transaction number is accepted as a reference
+===============================================================================
+C:/Users/jithu/Projects/HMS-auth-rbac/tests/test_billing_console.cpp:32:
+TEST CASE:  Console TC-Bill-01..03: reception bills a visit, takes a payment and prints the receipt
+
+0.138043 s: Console TC-Bill-01..03: reception bills a visit, takes a payment and prints the receipt
+===============================================================================
+C:/Users/jithu/Projects/HMS-auth-rbac/tests/test_billing_console.cpp:79:
+TEST CASE:  Console TC-Bill-03: the receipt can be saved as a text file
+
+0.119711 s: Console TC-Bill-03: the receipt can be saved as a text file
+===============================================================================
+C:/Users/jithu/Projects/HMS-auth-rbac/tests/test_billing_console.cpp:107:
+TEST CASE:  Console TC-Bill-02: a refused payment is shown and nothing is saved
+
+0.114424 s: Console TC-Bill-02: a refused payment is shown and nothing is saved
+===============================================================================
+C:/Users/jithu/Projects/HMS-auth-rbac/tests/test_billing_console.cpp:122:
+TEST CASE:  Console: a visit that is not complete cannot be billed from the menu
+
+0.096356 s: Console: a visit that is not complete cannot be billed from the menu
+===============================================================================
+C:/Users/jithu/Projects/HMS-auth-rbac/tests/test_billing_console.cpp:132:
+TEST CASE:  Console: the billing entries appear only when billing is set up, and never for a Doctor
+
+0.079267 s: Console: the billing entries appear only when billing is set up, and never for a Doctor
+===============================================================================
+C:/Users/jithu/Projects/HMS-auth-rbac/tests/test_billing_console.cpp:150:
+TEST CASE:  Console TC-Bill-01: the Admin sets a doctor's consultation fee
+
+0.113986 s: Console TC-Bill-01: the Admin sets a doctor's consultation fee
+===============================================================================
+C:/Users/jithu/Projects/HMS-auth-rbac/tests/test_billing_console.cpp:173:
+TEST CASE:  Console: a non-Admin cannot use the fee screen
+
+0.090819 s: Console: a non-Admin cannot use the fee screen
+===============================================================================
+C:/Users/jithu/Projects/HMS-auth-rbac/tests/test_console_app.cpp:24:
+TEST CASE:  Console: register a patient, re-prompting for invalid fields, then find them
+
+0.080936 s: Console: register a patient, re-prompting for invalid fields, then find them
+===============================================================================
+C:/Users/jithu/Projects/HMS-auth-rbac/tests/test_console_app.cpp:51:
+TEST CASE:  Console: age instead of date of birth
+
+0.080363 s: Console: age instead of date of birth
+===============================================================================
+C:/Users/jithu/Projects/HMS-auth-rbac/tests/test_console_app.cpp:60:
+TEST CASE:  Console: the mobile number cannot be left empty
+
+0.074729 s: Console: the mobile number cannot be left empty
+===============================================================================
+C:/Users/jithu/Projects/HMS-auth-rbac/tests/test_console_app.cpp:68:
+TEST CASE:  Console: no phone available - staff confirm it, and it is shown on the record
+
+0.078403 s: Console: no phone available - staff confirm it, and it is shown on the record
+===============================================================================
+C:/Users/jithu/Projects/HMS-auth-rbac/tests/test_console_app.cpp:79:
+TEST CASE:  Console: declining the confirmation saves nothing
+
+0.081225 s: Console: declining the confirmation saves nothing
+===============================================================================
+C:/Users/jithu/Projects/HMS-auth-rbac/tests/test_console_app.cpp:86:
+TEST CASE:  Console: end of input during registration cancels it and leaves the menus
+
+0.080097 s: Console: end of input during registration cancels it and leaves the menus
+===============================================================================
+C:/Users/jithu/Projects/HMS-auth-rbac/tests/test_console_app.cpp:94:
+TEST CASE:  Console: shared phone number - family member registered as a different person
+
+0.081263 s: Console: shared phone number - family member registered as a different person
+===============================================================================
+C:/Users/jithu/Projects/HMS-auth-rbac/tests/test_console_app.cpp:104:
+TEST CASE:  Console: strong duplicate - staff choose the existing patient
+
+0.085651 s: Console: strong duplicate - staff choose the existing patient
+===============================================================================
+C:/Users/jithu/Projects/HMS-auth-rbac/tests/test_console_app.cpp:113:
+TEST CASE:  Console: strong duplicate - twins registered with a reason code
+
+0.089336 s: Console: strong duplicate - twins registered with a reason code
+===============================================================================
+C:/Users/jithu/Projects/HMS-auth-rbac/tests/test_console_app.cpp:122:
+TEST CASE:  Console: the Doctor menu has no registration and search shows demographics only
+
+0.077993 s: Console: the Doctor menu has no registration and search shows demographics only
+===============================================================================
+C:/Users/jithu/Projects/HMS-auth-rbac/tests/test_console_app.cpp:152:
+TEST CASE:  Console: returning patient - the mobile number lists the family, staff pick the person
+
+0.092122 s: Console: returning patient - the mobile number lists the family, staff pick the person
+===============================================================================
+C:/Users/jithu/Projects/HMS-auth-rbac/tests/test_console_app.cpp:162:
+TEST CASE:  Console: returning patient with no phone - found by name and date of birth
+
+0.093178 s: Console: returning patient with no phone - found by name and date of birth
+===============================================================================
+C:/Users/jithu/Projects/HMS-auth-rbac/tests/test_console_app.cpp:171:
+TEST CASE:  Console: returning patient - unknown number falls back to name and date of birth
+
+0.100531 s: Console: returning patient - unknown number falls back to name and date of birth
+===============================================================================
+C:/Users/jithu/Projects/HMS-auth-rbac/tests/test_console_app.cpp:179:
+TEST CASE:  Console: returning patient - not found anywhere points to registration
+
+0.090175 s: Console: returning patient - not found anywhere points to registration
+===============================================================================
+C:/Users/jithu/Projects/HMS-auth-rbac/tests/test_console_app.cpp:187:
+TEST CASE:  Console: search menu option 4 - name and date of birth; tables show the phone status
+
+0.092799 s: Console: search menu option 4 - name and date of birth; tables show the phone status
+===============================================================================
+C:/Users/jithu/Projects/HMS-auth-rbac/tests/test_console_io.cpp:12:
+TEST CASE:  ask re-prompts until the answer is valid and names the field in each error
+
+0.000043 s: ask re-prompts until the answer is valid and names the field in each error
+===============================================================================
+C:/Users/jithu/Projects/HMS-auth-rbac/tests/test_console_io.cpp:23:
+TEST CASE:  end of input cancels the question; repeated end of input marks the input finished
+
+0.000008 s: end of input cancels the question; repeated end of input marks the input finished
+===============================================================================
+C:/Users/jithu/Projects/HMS-auth-rbac/tests/test_console_io.cpp:33:
+TEST CASE:  Windows line endings are accepted and Y/N answers are case-insensitive
+
+0.000006 s: Windows line endings are accepted and Y/N answers are case-insensitive
+===============================================================================
+C:/Users/jithu/Projects/HMS-auth-rbac/tests/test_consultation.cpp:16:
+TEST CASE:  TC-Doc-03 a consultation is saved with its prescription and tests, linked to the patient and the appointment
+
+0.102342 s: TC-Doc-03 a consultation is saved with its prescription and tests, linked to the patient and the appointment
+===============================================================================
+C:/Users/jithu/Projects/HMS-auth-rbac/tests/test_consultation.cpp:49:
+TEST CASE:  TC-Doc-03 the audit entry names the consultation and fields only, never the clinical text
+
+0.105327 s: TC-Doc-03 the audit entry names the consultation and fields only, never the clinical text
+===============================================================================
+C:/Users/jithu/Projects/HMS-auth-rbac/tests/test_consultation.cpp:67:
+TEST CASE:  TC-Doc-03 invalid or incomplete records are rejected and nothing is saved
+
+0.106656 s: TC-Doc-03 invalid or incomplete records are rejected and nothing is saved
+===============================================================================
+C:/Users/jithu/Projects/HMS-auth-rbac/tests/test_consultation.cpp:122:
+TEST CASE:  TC-Doc-03 only the appointment's own doctor can record it, and only while it is booked
+
+0.156124 s: TC-Doc-03 only the appointment's own doctor can record it, and only while it is booked
+===============================================================================
+C:/Users/jithu/Projects/HMS-auth-rbac/tests/test_consultation.cpp:154:
+TEST CASE:  TC-Doc-03 a consultation cannot be recorded before the appointment starts
+
+0.099954 s: TC-Doc-03 a consultation cannot be recorded before the appointment starts
+===============================================================================
+C:/Users/jithu/Projects/HMS-auth-rbac/tests/test_consultation.cpp:173:
+TEST CASE:  TC-Doc-03 the store itself refuses a consultation that does not match its appointment
+
+0.128029 s: TC-Doc-03 the store itself refuses a consultation that does not match its appointment
+===============================================================================
+C:/Users/jithu/Projects/HMS-auth-rbac/tests/test_consultation.cpp:190:
+TEST CASE:  TC-Doc-03 a failed save leaves nothing half-written
+
+0.123215 s: TC-Doc-03 a failed save leaves nothing half-written
+===============================================================================
+C:/Users/jithu/Projects/HMS-auth-rbac/tests/test_consultation.cpp:214:
+TEST CASE:  TC-Doc-03 a doctor sees a patient's earlier consultations, newest first; others cannot
+
+0.178409 s: TC-Doc-03 a doctor sees a patient's earlier consultations, newest first; others cannot
+===============================================================================
+C:/Users/jithu/Projects/HMS-auth-rbac/tests/test_consultation.cpp:239:
+TEST CASE:  TC-Doc-02 the weekly queue shows the doctor's own appointments for seven days, in time order
+
+0.170137 s: TC-Doc-02 the weekly queue shows the doctor's own appointments for seven days, in time order
+===============================================================================
+C:/Users/jithu/Projects/HMS-auth-rbac/tests/test_consultation.cpp:272:
+TEST CASE:  TC-Doc-01 a doctor changes only their own weekly hours; the Admin's department stays
+
+0.117353 s: TC-Doc-01 a doctor changes only their own weekly hours; the Admin's department stays
+===============================================================================
+C:/Users/jithu/Projects/HMS-auth-rbac/tests/test_consultation.cpp:309:
+TEST CASE:  TC-Doc-01 own hours: invalid hours, other roles and doctors without a profile are refused
+
+0.127936 s: TC-Doc-01 own hours: invalid hours, other roles and doctors without a profile are refused
+===============================================================================
+C:/Users/jithu/Projects/HMS-auth-rbac/tests/test_consultation.cpp:337:
+TEST CASE:  TC-Doc-01 own hours: booked appointments that no longer fit are kept and counted
+
+0.140946 s: TC-Doc-01 own hours: booked appointments that no longer fit are kept and counted
+===============================================================================
+C:/Users/jithu/Projects/HMS-auth-rbac/tests/test_consultation.cpp:348:
+TEST CASE:  TC-App-02 a completed visit keeps its slot until the slot ends
+
+0.218251 s: TC-App-02 a completed visit keeps its slot until the slot ends
+===============================================================================
+C:/Users/jithu/Projects/HMS-auth-rbac/tests/test_consultation.cpp:377:
+TEST CASE:  TC-Rec-04 a doctor with a care relationship sees every visit of the patient, also with other doctors
+
+0.128649 s: TC-Rec-04 a doctor with a care relationship sees every visit of the patient, also with other doctors
+===============================================================================
+C:/Users/jithu/Projects/HMS-auth-rbac/tests/test_consultation.cpp:396:
+TEST CASE:  TC-Rec-04 a patient with no completed visit shows an empty history
+
+0.103122 s: TC-Rec-04 a patient with no completed visit shows an empty history
+===============================================================================
+C:/Users/jithu/Projects/HMS-auth-rbac/tests/test_consultation.cpp:406:
+TEST CASE:  TC-Rec-04 a doctor without a care relationship is denied and the denial is audited
+
+0.173631 s: TC-Rec-04 a doctor without a care relationship is denied and the denial is audited
+===============================================================================
+C:/Users/jithu/Projects/HMS-auth-rbac/tests/test_core.cpp:13:
+TEST CASE:  normaliseName trims, collapses spaces and folds ASCII case
+
+0.000028 s: normaliseName trims, collapses spaces and folds ASCII case
+===============================================================================
+C:/Users/jithu/Projects/HMS-auth-rbac/tests/test_core.cpp:20:
+TEST CASE:  UTF-8 validation and length in characters
+
+0.000014 s: UTF-8 validation and length in characters
+===============================================================================
+C:/Users/jithu/Projects/HMS-auth-rbac/tests/test_core.cpp:29:
+TEST CASE:  control characters are detected (C0, DEL, C1)
+
+0.000005 s: control characters are detected (C0, DEL, C1)
+===============================================================================
+C:/Users/jithu/Projects/HMS-auth-rbac/tests/test_core.cpp:37:
+TEST CASE:  fitWidth pads and cuts by characters
+
+0.000008 s: fitWidth pads and cuts by characters
+===============================================================================
+C:/Users/jithu/Projects/HMS-auth-rbac/tests/test_core.cpp:43:
+TEST CASE:  event IDs are 32 hex digits and unique
+
+0.003488 s: event IDs are 32 hex digits and unique
+===============================================================================
+C:/Users/jithu/Projects/HMS-auth-rbac/tests/test_core.cpp:54:
+TEST CASE:  calendar arithmetic and local date (Asia/Kolkata, UTC+05:30)
+
+0.000016 s: calendar arithmetic and local date (Asia/Kolkata, UTC+05:30)
+===============================================================================
+C:/Users/jithu/Projects/HMS-auth-rbac/tests/test_core.cpp:66:
+TEST CASE:  age in whole years
+
+0.000004 s: age in whole years
+===============================================================================
+C:/Users/jithu/Projects/HMS-auth-rbac/tests/test_core.cpp:75:
+TEST CASE:  Result holds a value or one error that names every bad field
+
+0.000021 s: Result holds a value or one error that names every bad field
+===============================================================================
+C:/Users/jithu/Projects/HMS-auth-rbac/tests/test_doctor_workspace_console.cpp:29:
+TEST CASE:  Console TC-Doc-03: the doctor records a consultation through the menu
+
+0.098675 s: Console TC-Doc-03: the doctor records a consultation through the menu
+===============================================================================
+C:/Users/jithu/Projects/HMS-auth-rbac/tests/test_doctor_workspace_console.cpp:64:
+TEST CASE:  Console TC-Doc-03: declining the confirmation saves nothing
+
+0.096052 s: Console TC-Doc-03: declining the confirmation saves nothing
+===============================================================================
+C:/Users/jithu/Projects/HMS-auth-rbac/tests/test_doctor_workspace_console.cpp:74:
+TEST CASE:  Console TC-Doc-03: another doctor's appointment is refused with a clear message
+
+0.112827 s: Console TC-Doc-03: another doctor's appointment is refused with a clear message
+===============================================================================
+C:/Users/jithu/Projects/HMS-auth-rbac/tests/test_doctor_workspace_console.cpp:84:
+TEST CASE:  Console TC-Doc-02 and history: weekly queue and a patient's past consultations
+
+0.116660 s: Console TC-Doc-02 and history: weekly queue and a patient's past consultations
+===============================================================================
+C:/Users/jithu/Projects/HMS-auth-rbac/tests/test_doctor_workspace_console.cpp:101:
+TEST CASE:  Console TC-Doc-01: the doctor changes their own weekly hours; the menu is unchanged without the workspace
+
+0.090923 s: Console TC-Doc-01: the doctor changes their own weekly hours; the menu is unchanged without the workspace
+===============================================================================
+C:/Users/jithu/Projects/HMS-auth-rbac/tests/test_doctor_workspace_console.cpp:118:
+TEST CASE:  Console: the Receptionist menu has no doctor workspace entries
+
+0.068934 s: Console: the Receptionist menu has no doctor workspace entries
+===============================================================================
+C:/Users/jithu/Projects/HMS-auth-rbac/tests/test_input.cpp:9:
+TEST CASE:  cleanLine: trims spaces, enforces 1,000 characters, rejects control characters
+
+0.000077 s: cleanLine: trims spaces, enforces 1,000 characters, rejects control characters
+===============================================================================
+C:/Users/jithu/Projects/HMS-auth-rbac/tests/test_input.cpp:23:
+TEST CASE:  requireLine: an empty answer to a mandatory prompt is an error naming the field
+
+0.000006 s: requireLine: an empty answer to a mandatory prompt is an error naming the field
+===============================================================================
+C:/Users/jithu/Projects/HMS-auth-rbac/tests/test_input.cpp:30:
+TEST CASE:  parseDate: DD-MM-YYYY with real calendar dates only
+
+0.000039 s: parseDate: DD-MM-YYYY with real calendar dates only
+===============================================================================
+C:/Users/jithu/Projects/HMS-auth-rbac/tests/test_input.cpp:46:
+TEST CASE:  parseWholeNumber: digits only, inside the range
+
+0.000031 s: parseWholeNumber: digits only, inside the range
+===============================================================================
+C:/Users/jithu/Projects/HMS-auth-rbac/tests/test_input.cpp:57:
+TEST CASE:  parseMoneyPaise: the SRS 3.1 money format
+
+0.000034 s: parseMoneyPaise: the SRS 3.1 money format
+===============================================================================
+C:/Users/jithu/Projects/HMS-auth-rbac/tests/test_lab.cpp:21:
+TEST CASE:  TC-Lab-01 a result is linked to the ordered test and the treating doctor can see it
+
+0.115331 s: TC-Lab-01 a result is linked to the ordered test and the treating doctor can see it
+===============================================================================
+C:/Users/jithu/Projects/HMS-auth-rbac/tests/test_lab.cpp:65:
+TEST CASE:  TC-Lab-01 updating a result keeps every earlier revision
+
+0.123802 s: TC-Lab-01 updating a result keeps every earlier revision
+===============================================================================
+C:/Users/jithu/Projects/HMS-auth-rbac/tests/test_lab.cpp:90:
+TEST CASE:  TC-Lab-01 the doctor sees only the tests that doctor ordered
+
+0.148651 s: TC-Lab-01 the doctor sees only the tests that doctor ordered
+===============================================================================
+C:/Users/jithu/Projects/HMS-auth-rbac/tests/test_lab.cpp:116:
+TEST CASE:  TC-Lab-01 an unknown order or an invalid result is refused and nothing is saved
+
+0.148557 s: TC-Lab-01 an unknown order or an invalid result is refused and nothing is saved
+===============================================================================
+C:/Users/jithu/Projects/HMS-auth-rbac/tests/test_lab.cpp:145:
+TEST CASE:  TC-Lab-01 only the Lab Technician enters results; the doctor reads only own patients; denials are audited
+
+0.237693 s: TC-Lab-01 only the Lab Technician enters results; the doctor reads only own patients; denials are audited
+===============================================================================
+C:/Users/jithu/Projects/HMS-auth-rbac/tests/test_lab.cpp:174:
+TEST CASE:  TC-Lab-01 the audit entries hold IDs and field names only
+
+0.133554 s: TC-Lab-01 the audit entries hold IDs and field names only
+===============================================================================
+C:/Users/jithu/Projects/HMS-auth-rbac/tests/test_lab.cpp:188:
+TEST CASE:  TC-Lab-01 the store refuses to change or delete a saved result
+
+0.143141 s: TC-Lab-01 the store refuses to change or delete a saved result
+===============================================================================
+C:/Users/jithu/Projects/HMS-auth-rbac/tests/test_lab.cpp:201:
+TEST CASE:  TC-Lab-01 NF-002 a failure before commit saves nothing and the retry works
+
+0.135522 s: TC-Lab-01 NF-002 a failure before commit saves nothing and the retry works
+===============================================================================
+C:/Users/jithu/Projects/HMS-auth-rbac/tests/test_lab.cpp:235:
+TEST CASE:  TC-Lab-01 migration 9 keeps every account and doctor profile and accepts the two new roles
+
+0.107548 s: TC-Lab-01 migration 9 keeps every account and doctor profile and accepts the two new roles
+===============================================================================
+C:/Users/jithu/Projects/HMS-auth-rbac/tests/test_lab_pharmacy_console.cpp:47:
+TEST CASE:  Console TC-Lab-01: the lab technician enters a result and updates it; the doctor reads it
+
+0.118614 s: Console TC-Lab-01: the lab technician enters a result and updates it; the doctor reads it
+===============================================================================
+C:/Users/jithu/Projects/HMS-auth-rbac/tests/test_lab_pharmacy_console.cpp:88:
+TEST CASE:  Console TC-Lab-01: cancelling at the result prompt saves nothing
+
+0.106881 s: Console TC-Lab-01: cancelling at the result prompt saves nothing
+===============================================================================
+C:/Users/jithu/Projects/HMS-auth-rbac/tests/test_lab_pharmacy_console.cpp:99:
+TEST CASE:  Console TC-Pharm-01: the pharmacist adds, restocks and dispenses and sees the low-stock alert
+
+0.131850 s: Console TC-Pharm-01: the pharmacist adds, restocks and dispenses and sees the low-stock alert
+===============================================================================
+C:/Users/jithu/Projects/HMS-auth-rbac/tests/test_lab_pharmacy_console.cpp:139:
+TEST CASE:  Console TC-Pharm-01: a dispense that takes the stock below the threshold shows the alert; 'N' dispenses nothing
+
+0.124964 s: Console TC-Pharm-01: a dispense that takes the stock below the threshold shows the alert; 'N' dispenses nothing
+===============================================================================
+C:/Users/jithu/Projects/HMS-auth-rbac/tests/test_lab_pharmacy_console.cpp:159:
+TEST CASE:  Console TC-Pharm-01: a refused dispense shows the reason and leaves the stock alone
+
+0.460793 s: Console TC-Pharm-01: a refused dispense shows the reason and leaves the stock alone
+===============================================================================
+C:/Users/jithu/Projects/HMS-auth-rbac/tests/test_lab_pharmacy_console.cpp:171:
+TEST CASE:  Console TC-Lab-01: with the medical history entry present, lab results are option 9
+
+0.112090 s: Console TC-Lab-01: with the medical history entry present, lab results are option 9
+===============================================================================
+C:/Users/jithu/Projects/HMS-auth-rbac/tests/test_lab_pharmacy_console.cpp:193:
+TEST CASE:  Console TC-Pharm-01: the pharmacist corrects a name, a stock count and the availability of a medicine
+
+0.104743 s: Console TC-Pharm-01: the pharmacist corrects a name, a stock count and the availability of a medicine
+===============================================================================
+C:/Users/jithu/Projects/HMS-auth-rbac/tests/test_medical_record.cpp:16:
+TEST CASE:  TC-Rec-01 a new patient has no history yet, and opening it is audited
+
+0.116332 s: TC-Rec-01 a new patient has no history yet, and opening it is audited
+===============================================================================
+C:/Users/jithu/Projects/HMS-auth-rbac/tests/test_medical_record.cpp:31:
+TEST CASE:  TC-Rec-01 each update is a new version with its author and time; earlier versions are kept
+
+0.119713 s: TC-Rec-01 each update is a new version with its author and time; earlier versions are kept
+===============================================================================
+C:/Users/jithu/Projects/HMS-auth-rbac/tests/test_medical_record.cpp:65:
+TEST CASE:  TC-Rec-01 audit entries hold the UHID and field names only, never the clinical text
+
+0.120378 s: TC-Rec-01 audit entries hold the UHID and field names only, never the clinical text
+===============================================================================
+C:/Users/jithu/Projects/HMS-auth-rbac/tests/test_medical_record.cpp:79:
+TEST CASE:  TC-Rec-01 a doctor without a care relationship is denied, nothing is saved, and the denial is audited
+
+0.145705 s: TC-Rec-01 a doctor without a care relationship is denied, nothing is saved, and the denial is audited
+===============================================================================
+C:/Users/jithu/Projects/HMS-auth-rbac/tests/test_medical_record.cpp:104:
+TEST CASE:  TC-Rec-01 cancelling the doctor's only appointment ends access, also to the versions that doctor wrote
+
+0.151180 s: TC-Rec-01 cancelling the doctor's only appointment ends access, also to the versions that doctor wrote
+===============================================================================
+C:/Users/jithu/Projects/HMS-auth-rbac/tests/test_medical_record.cpp:124:
+TEST CASE:  TC-Rec-01 a completed visit keeps the care relationship
+
+0.152655 s: TC-Rec-01 a completed visit keeps the care relationship
+===============================================================================
+C:/Users/jithu/Projects/HMS-auth-rbac/tests/test_medical_record.cpp:136:
+TEST CASE:  TC-Rec-01 Receptionist, Pharmacist and Admin are denied the history, and each denial is audited
+
+0.199827 s: TC-Rec-01 Receptionist, Pharmacist and Admin are denied the history, and each denial is audited
+===============================================================================
+C:/Users/jithu/Projects/HMS-auth-rbac/tests/test_medical_record.cpp:156:
+TEST CASE:  TC-Rec-01 prescribing does not change the current-medications list
+
+0.125566 s: TC-Rec-01 prescribing does not change the current-medications list
+===============================================================================
+C:/Users/jithu/Projects/HMS-auth-rbac/tests/test_medical_record.cpp:173:
+TEST CASE:  TC-Rec-01 invalid, empty or unchanged updates are refused and nothing is saved
+
+0.118123 s: TC-Rec-01 invalid, empty or unchanged updates are refused and nothing is saved
+===============================================================================
+C:/Users/jithu/Projects/HMS-auth-rbac/tests/test_medical_record.cpp:204:
+TEST CASE:  TC-Rec-01 a failure before commit saves neither the version nor its audit entry
+
+0.110119 s: TC-Rec-01 a failure before commit saves neither the version nor its audit entry
+===============================================================================
+C:/Users/jithu/Projects/HMS-auth-rbac/tests/test_medical_record.cpp:222:
+TEST CASE:  TC-Rec-01 the store refuses to change or delete a saved version
+
+0.106939 s: TC-Rec-01 the store refuses to change or delete a saved version
+===============================================================================
+C:/Users/jithu/Projects/HMS-auth-rbac/tests/test_medical_record_console.cpp:30:
+TEST CASE:  Console TC-Rec-01: the doctor records a first version, then updates one field
+
+0.136744 s: Console TC-Rec-01: the doctor records a first version, then updates one field
+===============================================================================
+C:/Users/jithu/Projects/HMS-auth-rbac/tests/test_medical_record_console.cpp:68:
+TEST CASE:  Console TC-Rec-01: declining the confirmation saves nothing
+
+0.111029 s: Console TC-Rec-01: declining the confirmation saves nothing
+===============================================================================
+C:/Users/jithu/Projects/HMS-auth-rbac/tests/test_medical_record_console.cpp:77:
+TEST CASE:  Console TC-Rec-01: a doctor without an appointment with the patient is refused
+
+0.108991 s: Console TC-Rec-01: a doctor without an appointment with the patient is refused
+===============================================================================
+C:/Users/jithu/Projects/HMS-auth-rbac/tests/test_medical_record_console.cpp:86:
+TEST CASE:  Console: without the medical record service the Doctor menu stops at 7
+
+0.096809 s: Console: without the medical record service the Doctor menu stops at 7
+===============================================================================
+C:/Users/jithu/Projects/HMS-auth-rbac/tests/test_patient_store.cpp:12:
+TEST CASE:  a new store has the patient, audit and duplicate-review tables
+
+0.097987 s: a new store has the patient, audit and duplicate-review tables
+===============================================================================
+C:/Users/jithu/Projects/HMS-auth-rbac/tests/test_patient_store.cpp:21:
+TEST CASE:  an empty store created by the foundation build is upgraded on opening
+
+0.080653 s: an empty store created by the foundation build is upgraded on opening
+===============================================================================
+C:/Users/jithu/Projects/HMS-auth-rbac/tests/test_patient_store.cpp:35:
+TEST CASE:  a registered patient is there after a restart
+
+0.093223 s: a registered patient is there after a restart
+===============================================================================
+C:/Users/jithu/Projects/HMS-auth-rbac/tests/test_patient_store.cpp:64:
+TEST CASE:  HMS-SR-004 audit entries cannot be changed or deleted, even with direct SQL
+
+0.080745 s: HMS-SR-004 audit entries cannot be changed or deleted, even with direct SQL
+===============================================================================
+C:/Users/jithu/Projects/HMS-auth-rbac/tests/test_patient_store.cpp:74:
+TEST CASE:  audit entries can only be written inside the transaction of the change
+
+0.083536 s: audit entries can only be written inside the transaction of the change
+===============================================================================
+C:/Users/jithu/Projects/HMS-auth-rbac/tests/test_patient_store.cpp:82:
+TEST CASE:  store constraints back up the business rules
+
+0.085717 s: store constraints back up the business rules
+===============================================================================
+C:/Users/jithu/Projects/HMS-auth-rbac/tests/test_patient_store.cpp:97:
+TEST CASE:  D-04 the store requires a mobile number or a confirmed "no phone available"
+
+0.083766 s: D-04 the store requires a mobile number or a confirmed "no phone available"
+===============================================================================
+C:/Users/jithu/Projects/HMS-auth-rbac/tests/test_patient_store.cpp:117:
+TEST CASE:  D-04 a version-2 store with a patient who has no phone upgrades and keeps the record
+
+0.118068 s: D-04 a version-2 store with a patient who has no phone upgrades and keeps the record
+===============================================================================
+C:/Users/jithu/Projects/HMS-auth-rbac/tests/test_patient_validation.cpp:21:
+TEST CASE:  TC-Reg-01 valid draft is accepted and normalised
+
+0.000070 s: TC-Reg-01 valid draft is accepted and normalised
+===============================================================================
+C:/Users/jithu/Projects/HMS-auth-rbac/tests/test_patient_validation.cpp:34:
+TEST CASE:  TC-Reg-01 mobile number is required (D-04)
+
+0.000034 s: TC-Reg-01 mobile number is required (D-04)
+===============================================================================
+C:/Users/jithu/Projects/HMS-auth-rbac/tests/test_patient_validation.cpp:43:
+TEST CASE:  TC-Reg-01 "no phone available" is accepted only with the number left empty
+
+0.000045 s: TC-Reg-01 "no phone available" is accepted only with the number left empty
+===============================================================================
+C:/Users/jithu/Projects/HMS-auth-rbac/tests/test_patient_validation.cpp:61:
+TEST CASE:  TC-Reg-01 every invalid field is named in one error
+
+0.000042 s: TC-Reg-01 every invalid field is named in one error
+===============================================================================
+C:/Users/jithu/Projects/HMS-auth-rbac/tests/test_patient_validation.cpp:77:
+TEST CASE:  TC-Reg-01 name length 1-100 characters, must contain a letter
+
+0.000054 s: TC-Reg-01 name length 1-100 characters, must contain a letter
+===============================================================================
+C:/Users/jithu/Projects/HMS-auth-rbac/tests/test_patient_validation.cpp:90:
+TEST CASE:  TC-Reg-01 address 1-200 characters
+
+0.000016 s: TC-Reg-01 address 1-200 characters
+===============================================================================
+C:/Users/jithu/Projects/HMS-auth-rbac/tests/test_patient_validation.cpp:96:
+TEST CASE:  TC-Reg-01 date of birth: not in the future, not before 01-01-1900
+
+0.000020 s: TC-Reg-01 date of birth: not in the future, not before 01-01-1900
+===============================================================================
+C:/Users/jithu/Projects/HMS-auth-rbac/tests/test_patient_validation.cpp:104:
+TEST CASE:  TC-Reg-01 (D-03) age instead of date of birth gives an estimated date of birth
+
+0.000048 s: TC-Reg-01 (D-03) age instead of date of birth gives an estimated date of birth
+===============================================================================
+C:/Users/jithu/Projects/HMS-auth-rbac/tests/test_patient_validation.cpp:118:
+TEST CASE:  TC-Reg-01 gender: Male / Female / Other
+
+0.000014 s: TC-Reg-01 gender: Male / Female / Other
+===============================================================================
+C:/Users/jithu/Projects/HMS-auth-rbac/tests/test_pharmacy.cpp:27:
+TEST CASE:  TC-Pharm-01 the pharmacist adds medicines and checks the stock
+
+0.088946 s: TC-Pharm-01 the pharmacist adds medicines and checks the stock
+===============================================================================
+C:/Users/jithu/Projects/HMS-auth-rbac/tests/test_pharmacy.cpp:61:
+TEST CASE:  TC-Pharm-01 dispensing reduces the stock by exactly the dispensed quantity
+
+0.117339 s: TC-Pharm-01 dispensing reduces the stock by exactly the dispensed quantity
+===============================================================================
+C:/Users/jithu/Projects/HMS-auth-rbac/tests/test_pharmacy.cpp:96:
+TEST CASE:  TC-Pharm-01 a prescription line can be dispensed in parts but never beyond the prescribed quantity
+
+0.115573 s: TC-Pharm-01 a prescription line can be dispensed in parts but never beyond the prescribed quantity
+===============================================================================
+C:/Users/jithu/Projects/HMS-auth-rbac/tests/test_pharmacy.cpp:124:
+TEST CASE:  TC-Pharm-01 dispensing more than the stock is refused and nothing changes
+
+0.119842 s: TC-Pharm-01 dispensing more than the stock is refused and nothing changes
+===============================================================================
+C:/Users/jithu/Projects/HMS-auth-rbac/tests/test_pharmacy.cpp:146:
+TEST CASE:  TC-Pharm-01 invalid dispensing input is refused
+
+0.100047 s: TC-Pharm-01 invalid dispensing input is refused
+===============================================================================
+C:/Users/jithu/Projects/HMS-auth-rbac/tests/test_pharmacy.cpp:171:
+TEST CASE:  TC-Pharm-01 the low-stock alert fires when the stock falls BELOW the threshold (E-08)
+
+0.120589 s: TC-Pharm-01 the low-stock alert fires when the stock falls BELOW the threshold (E-08)
+===============================================================================
+C:/Users/jithu/Projects/HMS-auth-rbac/tests/test_pharmacy.cpp:208:
+TEST CASE:  TC-Pharm-01 restocking adds to the stock; invalid or excessive quantities are refused
+
+0.076457 s: TC-Pharm-01 restocking adds to the stock; invalid or excessive quantities are refused
+===============================================================================
+C:/Users/jithu/Projects/HMS-auth-rbac/tests/test_pharmacy.cpp:228:
+TEST CASE:  TC-Pharm-01 only the Pharmacist manages and dispenses; denials are audited
+
+0.193832 s: TC-Pharm-01 only the Pharmacist manages and dispenses; denials are audited
+===============================================================================
+C:/Users/jithu/Projects/HMS-auth-rbac/tests/test_pharmacy.cpp:251:
+TEST CASE:  TC-Pharm-01 the audit entries hold IDs and field names only
+
+0.119524 s: TC-Pharm-01 the audit entries hold IDs and field names only
+===============================================================================
+C:/Users/jithu/Projects/HMS-auth-rbac/tests/test_pharmacy.cpp:267:
+TEST CASE:  TC-Pharm-01 the store itself refuses over-dispensing and negative stock
+
+0.167730 s: TC-Pharm-01 the store itself refuses over-dispensing and negative stock
+===============================================================================
+C:/Users/jithu/Projects/HMS-auth-rbac/tests/test_pharmacy.cpp:282:
+TEST CASE:  TC-Pharm-01 NF-002 a failure before commit saves nothing and the retry works
+
+0.113900 s: TC-Pharm-01 NF-002 a failure before commit saves nothing and the retry works
+===============================================================================
+C:/Users/jithu/Projects/HMS-auth-rbac/tests/test_pharmacy.cpp:309:
+TEST CASE:  TC-Pharm-01 prescriptions of a patient are listed newest first; an unknown patient is not found
+
+0.108380 s: TC-Pharm-01 prescriptions of a patient are listed newest first; an unknown patient is not found
+===============================================================================
+C:/Users/jithu/Projects/HMS-auth-rbac/tests/test_pharmacy.cpp:326:
+TEST CASE:  TC-Pharm-01 a wrongly typed name or unit can be corrected; a clash, a no-op or bad input is refused
+
+0.091128 s: TC-Pharm-01 a wrongly typed name or unit can be corrected; a clash, a no-op or bad input is refused
+===============================================================================
+C:/Users/jithu/Projects/HMS-auth-rbac/tests/test_pharmacy.cpp:354:
+TEST CASE:  TC-Pharm-01 a stock count is corrected to the counted figure and the reason is kept
+
+0.093593 s: TC-Pharm-01 a stock count is corrected to the counted figure and the reason is kept
+===============================================================================
+C:/Users/jithu/Projects/HMS-auth-rbac/tests/test_pharmacy.cpp:402:
+TEST CASE:  TC-Pharm-01 an unavailable medicine cannot be dispensed or restocked, raises no alert, and can return
+
+0.117085 s: TC-Pharm-01 an unavailable medicine cannot be dispensed or restocked, raises no alert, and can return
+===============================================================================
+C:/Users/jithu/Projects/HMS-auth-rbac/tests/test_pharmacy.cpp:433:
+TEST CASE:  TC-Pharm-01 only the Pharmacist edits medicines or corrects stock; denials are audited
+
+0.112507 s: TC-Pharm-01 only the Pharmacist edits medicines or corrects stock; denials are audited
+===============================================================================
+C:/Users/jithu/Projects/HMS-auth-rbac/tests/test_pharmacy.cpp:448:
+TEST CASE:  TC-Pharm-01 the store refuses a correction without a reason and a dispense movement without its dispense
+
+0.070827 s: TC-Pharm-01 the store refuses a correction without a reason and a dispense movement without its dispense
+===============================================================================
+C:/Users/jithu/Projects/HMS-auth-rbac/tests/test_pharmacy.cpp:458:
+TEST CASE:  TC-Pharm-01 NF-002 a failed correction saves nothing
+
+0.073079 s: TC-Pharm-01 NF-002 a failed correction saves nothing
+===============================================================================
+C:/Users/jithu/Projects/HMS-auth-rbac/tests/test_phone.cpp:9:
+TEST CASE:  TC-Reg-01 phone: every accepted format gives the same 10 digits
+
+0.000027 s: TC-Reg-01 phone: every accepted format gives the same 10 digits
+===============================================================================
+C:/Users/jithu/Projects/HMS-auth-rbac/tests/test_phone.cpp:20:
+TEST CASE:  TC-Reg-01 phone: first digit 6, 7, 8 and 9 accepted; 0-5 rejected
+
+0.000027 s: TC-Reg-01 phone: first digit 6, 7, 8 and 9 accepted; 0-5 rejected
+===============================================================================
+C:/Users/jithu/Projects/HMS-auth-rbac/tests/test_phone.cpp:31:
+TEST CASE:  TC-Reg-01 phone: wrong lengths, prefixes, letters and landlines rejected
+
+0.000029 s: TC-Reg-01 phone: wrong lengths, prefixes, letters and landlines rejected
+===============================================================================
+C:/Users/jithu/Projects/HMS-auth-rbac/tests/test_phone.cpp:48:
+TEST CASE:  phone display form
+
+0.000003 s: phone display form
+===============================================================================
+C:/Users/jithu/Projects/HMS-auth-rbac/tests/test_registration.cpp:31:
+TEST CASE:  TC-Reg-02 (1) no candidate: a new unique UHID is created and audited
+
+0.073362 s: TC-Reg-02 (1) no candidate: a new unique UHID is created and audited
+===============================================================================
+C:/Users/jithu/Projects/HMS-auth-rbac/tests/test_registration.cpp:48:
+TEST CASE:  TC-Reg-02 (2) strong candidate: nothing is saved until staff decide
+
+DEEPEST SUBCASE STACK REACHED (DIFFERENT FROM THE CURRENT ONE):
+  Same patient must be one of the candidates shown
+
+0.294176 s: TC-Reg-02 (2) strong candidate: nothing is saved until staff decide
+===============================================================================
+C:/Users/jithu/Projects/HMS-auth-rbac/tests/test_registration.cpp:103:
+TEST CASE:  TC-Reg-02 (3) phone-match only: shared numbers are allowed without a reason
+
+0.086384 s: TC-Reg-02 (3) phone-match only: shared numbers are allowed without a reason
+===============================================================================
+C:/Users/jithu/Projects/HMS-auth-rbac/tests/test_registration.cpp:125:
+TEST CASE:  TC-Reg-02 (9) one review screen lists strong and same-phone candidates together; a strong candidate who also shares the phone is listed once, as strong
+
+0.089429 s: TC-Reg-02 (9) one review screen lists strong and same-phone candidates together; a strong candidate who also shares the phone is listed once, as strong
+===============================================================================
+C:/Users/jithu/Projects/HMS-auth-rbac/tests/test_registration.cpp:148:
+TEST CASE:  TC-Reg-02 (8),(9) a candidate that appears after the review forces a fresh review
+
+0.080809 s: TC-Reg-02 (8),(9) a candidate that appears after the review forces a fresh review
+===============================================================================
+C:/Users/jithu/Projects/HMS-auth-rbac/tests/test_registration.cpp:171:
+TEST CASE:  TC-Reg-02 (6) UHIDs are never reused
+
+0.076798 s: TC-Reg-02 (6) UHIDs are never reused
+===============================================================================
+C:/Users/jithu/Projects/HMS-auth-rbac/tests/test_registration.cpp:187:
+TEST CASE:  TC-Reg-02 (5) / NF-002 a failure before commit leaves neither patient nor audit entry
+
+0.078537 s: TC-Reg-02 (5) / NF-002 a failure before commit leaves neither patient nor audit entry
+===============================================================================
+C:/Users/jithu/Projects/HMS-auth-rbac/tests/test_registration.cpp:204:
+TEST CASE:  TC-Reg-02 (4) audit entries contain IDs and codes, never names, phones or addresses
+
+0.079319 s: TC-Reg-02 (4) audit entries contain IDs and codes, never names, phones or addresses
+===============================================================================
+C:/Users/jithu/Projects/HMS-auth-rbac/tests/test_registration.cpp:222:
+TEST CASE:  SR-001 only a Receptionist may register; denials are audited and change nothing
+
+0.079990 s: SR-001 only a Receptionist may register; denials are audited and change nothing
+===============================================================================
+C:/Users/jithu/Projects/HMS-auth-rbac/tests/test_registration.cpp:234:
+TEST CASE:  Policy switch: SRS v1.1 behaviour (a matching phone blocks a new UHID)
+
+0.079042 s: Policy switch: SRS v1.1 behaviour (a matching phone blocks a new UHID)
+===============================================================================
+C:/Users/jithu/Projects/HMS-auth-rbac/tests/test_registration.cpp:250:
+TEST CASE:  Validation errors are returned before anything is written
+
+0.064374 s: Validation errors are returned before anything is written
+===============================================================================
+C:/Users/jithu/Projects/HMS-auth-rbac/tests/test_registration.cpp:261:
+TEST CASE:  TC-Reg-01/02 no phone available: registered, flagged, and strong duplicates still caught
+
+0.073625 s: TC-Reg-01/02 no phone available: registered, flagged, and strong duplicates still caught
+===============================================================================
+C:/Users/jithu/Projects/HMS-auth-rbac/tests/test_search.cpp:27:
+TEST CASE:  TC-Rec-02 search by UHID is an exact match in any accepted format
+
+0.077068 s: TC-Rec-02 search by UHID is an exact match in any accepted format
+===============================================================================
+C:/Users/jithu/Projects/HMS-auth-rbac/tests/test_search.cpp:44:
+TEST CASE:  TC-Rec-02 name search is a case-insensitive substring match on the normalised name
+
+0.080049 s: TC-Rec-02 name search is a case-insensitive substring match on the normalised name
+===============================================================================
+C:/Users/jithu/Projects/HMS-auth-rbac/tests/test_search.cpp:62:
+TEST CASE:  TC-Rec-02 phone search normalises the entry and returns every patient sharing the number
+
+0.087876 s: TC-Rec-02 phone search normalises the entry and returns every patient sharing the number
+===============================================================================
+C:/Users/jithu/Projects/HMS-auth-rbac/tests/test_search.cpp:80:
+TEST CASE:  TC-Rec-02 names with quotes, SQL keywords and formula characters are stored and found as data
+
+0.079325 s: TC-Rec-02 names with quotes, SQL keywords and formula characters are stored and found as data
+===============================================================================
+C:/Users/jithu/Projects/HMS-auth-rbac/tests/test_search.cpp:102:
+TEST CASE:  TC-Rec-02 results are demographic only and capped with the true total reported
+
+0.105640 s: TC-Rec-02 results are demographic only and capped with the true total reported
+===============================================================================
+C:/Users/jithu/Projects/HMS-auth-rbac/tests/test_search.cpp:114:
+TEST CASE:  SR-001 search: Receptionist and Doctor allowed, other roles denied and audited
+
+0.072994 s: SR-001 search: Receptionist and Doctor allowed, other roles denied and audited
+===============================================================================
+C:/Users/jithu/Projects/HMS-auth-rbac/tests/test_search.cpp:126:
+TEST CASE:  getPatient returns the record or NotFound
+
+0.074482 s: getPatient returns the record or NotFound
+===============================================================================
+C:/Users/jithu/Projects/HMS-auth-rbac/tests/test_search.cpp:149:
+TEST CASE:  TC-Rec-02 name and date of birth: both must match; exact dates of birth first
+
+0.100723 s: TC-Rec-02 name and date of birth: both must match; exact dates of birth first
+===============================================================================
+C:/Users/jithu/Projects/HMS-auth-rbac/tests/test_search.cpp:161:
+TEST CASE:  TC-Rec-02 name and date of birth: a date estimated from an age matches within one year
+
+0.083826 s: TC-Rec-02 name and date of birth: a date estimated from an age matches within one year
+===============================================================================
+C:/Users/jithu/Projects/HMS-auth-rbac/tests/test_search.cpp:180:
+TEST CASE:  TC-Rec-02 name and date of birth: every invalid field is named; other roles denied
+
+0.084338 s: TC-Rec-02 name and date of birth: every invalid field is named; other roles denied
+===============================================================================
+C:/Users/jithu/Projects/HMS-auth-rbac/tests/test_store.cpp:26:
+TEST CASE:  a missing store is not created unless creation is allowed
+
+0.000575 s: a missing store is not created unless creation is allowed
+===============================================================================
+C:/Users/jithu/Projects/HMS-auth-rbac/tests/test_store.cpp:35:
+TEST CASE:  a new store is created owner-only with the durability settings
+
+0.067709 s: a new store is created owner-only with the durability settings
+===============================================================================
+C:/Users/jithu/Projects/HMS-auth-rbac/tests/test_store.cpp:49:
+TEST CASE:  data committed in one session is there after a restart
+
+0.073285 s: data committed in one session is there after a restart
+===============================================================================
+C:/Users/jithu/Projects/HMS-auth-rbac/tests/test_store.cpp:74:
+TEST CASE:  a transaction that is not committed leaves nothing behind
+
+0.082101 s: a transaction that is not committed leaves nothing behind
+===============================================================================
+C:/Users/jithu/Projects/HMS-auth-rbac/tests/test_store.cpp:104:
+TEST CASE:  a damaged store is refused and its bytes are not changed
+
+0.002188 s: a damaged store is refused and its bytes are not changed
+===============================================================================
+C:/Users/jithu/Projects/HMS-auth-rbac/tests/test_store.cpp:120:
+TEST CASE:  a store with a newer schema version is refused and not changed
+
+0.012679 s: a store with a newer schema version is refused and not changed
+===============================================================================
+C:/Users/jithu/Projects/HMS-auth-rbac/tests/test_store.cpp:135:
+TEST CASE:  a foreign SQLite database (version 0 with tables) is refused
+
+0.010605 s: a foreign SQLite database (version 0 with tables) is refused
+===============================================================================
+C:/Users/jithu/Projects/HMS-auth-rbac/tests/test_store.cpp:147:
+TEST CASE:  a second instance cannot take the store lock (also through another path)
+
+0.001931 s: a second instance cannot take the store lock (also through another path)
+===============================================================================
+C:/Users/jithu/Projects/HMS-auth-rbac/tests/test_uhid.cpp:8:
+TEST CASE:  UHID format and parsing
+
+0.000022 s: UHID format and parsing
+===============================================================================
+[doctest] test cases:  246 |  246 passed | 0 failed | 0 skipped
+[doctest] assertions: 4879 | 4879 passed | 0 failed |
+[doctest] Status: SUCCESS!
