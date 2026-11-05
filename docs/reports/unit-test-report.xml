@@ -1,0 +1,254 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuites>
+  <testsuite name="C:\Users\jithu\Projects\HMS-auth-rbac\build-cov\hms_tests" errors="0" failures="0" tests="4879" time="31.7806" timestamp="2026-11-05T05:27:02Z" doctest_version="2.4.11">
+    <testcase classname="C:/Users/jithu/Projects/HMS-auth-rbac/tests/test_admin.cpp" name="TC-Rep-01 the report totals match the stored appointments, bills and payments" time="0.184681" status="run"/>
+    <testcase classname="C:/Users/jithu/Projects/HMS-auth-rbac/tests/test_admin.cpp" name="TC-Rep-01 daily and doctor-wise counts follow the selected dates" time="0.210204" status="run"/>
+    <testcase classname="C:/Users/jithu/Projects/HMS-auth-rbac/tests/test_admin.cpp" name="TC-Rep-01 a payment is counted on the hospital-local date, not the UTC date" time="0.17522" status="run"/>
+    <testcase classname="C:/Users/jithu/Projects/HMS-auth-rbac/tests/test_admin.cpp" name="TC-Rep-01 a bad date range is refused and reading changes nothing" time="0.178504" status="run"/>
+    <testcase classname="C:/Users/jithu/Projects/HMS-auth-rbac/tests/test_admin.cpp" name="TC-Sec-02 only the Admin may view reports or manage staff accounts, and every denial is audited" time="0.317598" status="run"/>
+    <testcase classname="C:/Users/jithu/Projects/HMS-auth-rbac/tests/test_admin.cpp" name="TC-Staff-01 the Admin lists staff accounts with role and status" time="0.583191" status="run"/>
+    <testcase classname="C:/Users/jithu/Projects/HMS-auth-rbac/tests/test_admin.cpp" name="TC-Staff-01 a deactivated account cannot log in and the action is audited" time="0.668393" status="run"/>
+    <testcase classname="C:/Users/jithu/Projects/HMS-auth-rbac/tests/test_admin.cpp" name="TC-Staff-01 the Admin cannot lock themselves out" time="0.395953" status="run"/>
+    <testcase classname="C:/Users/jithu/Projects/HMS-auth-rbac/tests/test_admin.cpp" name="TC-Staff-01 unlock and password reset" time="1.99061" status="run"/>
+    <testcase classname="C:/Users/jithu/Projects/HMS-auth-rbac/tests/test_admin.cpp" name="TC-Staff-01 a failed save leaves the account unchanged" time="0.4324" status="run"/>
+    <testcase classname="C:/Users/jithu/Projects/HMS-auth-rbac/tests/test_admin.cpp" name="TC-Staff-01 the staff screen deactivates an account after confirmation" time="0.660615" status="run"/>
+    <testcase classname="C:/Users/jithu/Projects/HMS-auth-rbac/tests/test_admin.cpp" name="TC-Rep-01 the report screen prints the summary" time="0.205616" status="run"/>
+    <testcase classname="C:/Users/jithu/Projects/HMS-auth-rbac/tests/test_admin.cpp" name="TC-Admin-01 the Admin adds departments; names are checked and unique ignoring case" time="0.100651" status="run"/>
+    <testcase classname="C:/Users/jithu/Projects/HMS-auth-rbac/tests/test_admin.cpp" name="TC-Admin-01 renaming a department shows in booking and billing at once" time="0.139115" status="run"/>
+    <testcase classname="C:/Users/jithu/Projects/HMS-auth-rbac/tests/test_admin.cpp" name="TC-Admin-01 the Admin moves a doctor to another department" time="0.141358" status="run"/>
+    <testcase classname="C:/Users/jithu/Projects/HMS-auth-rbac/tests/test_admin.cpp" name="TC-Admin-01 consultation rooms: add, edit, switch off" time="0.13828" status="run"/>
+    <testcase classname="C:/Users/jithu/Projects/HMS-auth-rbac/tests/test_admin.cpp" name="TC-Admin-01 only the Admin may change master data, and every denial is audited" time="0.408379" status="run"/>
+    <testcase classname="C:/Users/jithu/Projects/HMS-auth-rbac/tests/test_admin.cpp" name="TC-Admin-01 a failed save leaves the master data unchanged" time="0.092982" status="run"/>
+    <testcase classname="C:/Users/jithu/Projects/HMS-auth-rbac/tests/test_admin.cpp" name="TC-Admin-01 the master data screens" time="0.148667" status="run"/>
+    <testcase classname="C:/Users/jithu/Projects/HMS-auth-rbac/tests/test_appointment.cpp" name="Appointment helpers: slot keys, weekdays, appointment numbers, HH:MM input" time="0" status="run"/>
+    <testcase classname="C:/Users/jithu/Projects/HMS-auth-rbac/tests/test_appointment.cpp" name="Migration 4 adds the appointment tables to a new store" time="0.085417" status="run"/>
+    <testcase classname="C:/Users/jithu/Projects/HMS-auth-rbac/tests/test_appointment.cpp" name="TC-Doc-01 (1) a doctor appears for booking only on the weekdays of their hours" time="0.10076" status="run"/>
+    <testcase classname="C:/Users/jithu/Projects/HMS-auth-rbac/tests/test_appointment.cpp" name="TC-Doc-01 (2) schedule input is validated and only the Admin may change it" time="0.102668" status="run"/>
+    <testcase classname="C:/Users/jithu/Projects/HMS-auth-rbac/tests/test_appointment.cpp" name="TC-App-01 (1) booking a free slot marks it booked and returns the confirmation" time="0.119835" status="run"/>
+    <testcase classname="C:/Users/jithu/Projects/HMS-auth-rbac/tests/test_appointment.cpp" name="TC-App-01 (2) only real, future slots inside the doctor's hours can be booked" time="0.112646" status="run"/>
+    <testcase classname="C:/Users/jithu/Projects/HMS-auth-rbac/tests/test_appointment.cpp" name="TC-App-02 (1) a booked slot is refused with a clear message and the existing appointment is unchanged" time="0.110498" status="run"/>
+    <testcase classname="C:/Users/jithu/Projects/HMS-auth-rbac/tests/test_appointment.cpp" name="TC-App-02 (2) the store itself refuses a second booked appointment at the same doctor and start" time="0.125287" status="run"/>
+    <testcase classname="C:/Users/jithu/Projects/HMS-auth-rbac/tests/test_appointment.cpp" name="TC-App-02 (3) overlapping periods are refused even when the starts differ" time="0.231061" status="run"/>
+    <testcase classname="C:/Users/jithu/Projects/HMS-auth-rbac/tests/test_appointment.cpp" name="TC-App-02 (4) a patient cannot hold two appointments at the same time" time="0.103565" status="run"/>
+    <testcase classname="C:/Users/jithu/Projects/HMS-auth-rbac/tests/test_appointment.cpp" name="TC-App-02 (5) NF-002 a failure before commit saves nothing and the slot stays free" time="0.090588" status="run"/>
+    <testcase classname="C:/Users/jithu/Projects/HMS-auth-rbac/tests/test_appointment.cpp" name="TC-App-02 (6) SR-001 only a Receptionist may book; a denied attempt is audited" time="0.101392" status="run"/>
+    <testcase classname="C:/Users/jithu/Projects/HMS-auth-rbac/tests/test_appointment.cpp" name="TC-App-03 (1) cancelling releases the slot at once" time="0.131752" status="run"/>
+    <testcase classname="C:/Users/jithu/Projects/HMS-auth-rbac/tests/test_appointment.cpp" name="TC-App-03 (2) rescheduling cancels the old appointment, links it to the new one, and frees its slot" time="0.099731" status="run"/>
+    <testcase classname="C:/Users/jithu/Projects/HMS-auth-rbac/tests/test_appointment.cpp" name="TC-App-03 (3) the cutoff: allowed exactly at the cutoff, refused one minute inside it" time="0.096883" status="run"/>
+    <testcase classname="C:/Users/jithu/Projects/HMS-auth-rbac/tests/test_appointment.cpp" name="TC-App-03 (4) NF-002 a failed reschedule changes nothing" time="0.087352" status="run"/>
+    <testcase classname="C:/Users/jithu/Projects/HMS-auth-rbac/tests/test_appointment.cpp" name="TC-App-03 (5) a patient's upcoming list shows booked appointments that have not started" time="0.103851" status="run"/>
+    <testcase classname="C:/Users/jithu/Projects/HMS-auth-rbac/tests/test_appointment.cpp" name="TC-App-04 (1) one reminder entry for every booked appointment in the next 48 hours" time="0.139253" status="run"/>
+    <testcase classname="C:/Users/jithu/Projects/HMS-auth-rbac/tests/test_appointment.cpp" name="TC-Doc-02 (1) a doctor's queue is in time order and holds only that doctor's patients" time="0.141594" status="run"/>
+    <testcase classname="C:/Users/jithu/Projects/HMS-auth-rbac/tests/test_appointment.cpp" name="TC-Doc-02 (2) only a Doctor has a queue" time="0.08427" status="run"/>
+    <testcase classname="C:/Users/jithu/Projects/HMS-auth-rbac/tests/test_appointment_console.cpp" name="Console TC-App-01: reception books an appointment through the menu" time="0.091287" status="run"/>
+    <testcase classname="C:/Users/jithu/Projects/HMS-auth-rbac/tests/test_appointment_console.cpp" name="Console TC-App-01: declining the confirmation books nothing; a day with no doctor is reported" time="0.082615" status="run"/>
+    <testcase classname="C:/Users/jithu/Projects/HMS-auth-rbac/tests/test_appointment_console.cpp" name="Console TC-App-03: reception cancels, then reschedules, through the menu" time="0.131165" status="run"/>
+    <testcase classname="C:/Users/jithu/Projects/HMS-auth-rbac/tests/test_appointment_console.cpp" name="Console TC-App-03: inside the cutoff the change is refused with the reason" time="0.096191" status="run"/>
+    <testcase classname="C:/Users/jithu/Projects/HMS-auth-rbac/tests/test_appointment_console.cpp" name="Console TC-App-04: the reminder list marks new reminders and shows the mobile number" time="0.105463" status="run"/>
+    <testcase classname="C:/Users/jithu/Projects/HMS-auth-rbac/tests/test_appointment_console.cpp" name="Console TC-Doc-02: the Doctor menu shows the doctor's own queue and no booking options" time="0.09592" status="run"/>
+    <testcase classname="C:/Users/jithu/Projects/HMS-auth-rbac/tests/test_appointment_console.cpp" name="Console TC-Doc-01: the Admin sets a doctor's department and weekly hours" time="0.077292" status="run"/>
+    <testcase classname="C:/Users/jithu/Projects/HMS-auth-rbac/tests/test_audit_log_view.cpp" name="TC-Sec-05 the Admin reads the audit log, newest first" time="0.080659" status="run"/>
+    <testcase classname="C:/Users/jithu/Projects/HMS-auth-rbac/tests/test_audit_log_view.cpp" name="TC-Sec-05 reading the log changes nothing" time="0.08296" status="run"/>
+    <testcase classname="C:/Users/jithu/Projects/HMS-auth-rbac/tests/test_audit_log_view.cpp" name="TC-Sec-05 every role other than Admin is denied, and each denial is audited" time="0.08456" status="run"/>
+    <testcase classname="C:/Users/jithu/Projects/HMS-auth-rbac/tests/test_audit_log_view.cpp" name="TC-Sec-05 the number of entries must be from 1 to the maximum" time="0.071284" status="run"/>
+    <testcase classname="C:/Users/jithu/Projects/HMS-auth-rbac/tests/test_audit_log_view.cpp" name="Console TC-Sec-05: the Admin screen lists the entries with time, user, action, record and outcome" time="0.091622" status="run"/>
+    <testcase classname="C:/Users/jithu/Projects/HMS-auth-rbac/tests/test_audit_log_view.cpp" name="Console TC-Sec-05: another role using the screen is refused" time="0.088628" status="run"/>
+    <testcase classname="C:/Users/jithu/Projects/HMS-auth-rbac/tests/test_authentication.cpp" name="Staff account creation" time="0.459578" status="run"/>
+    <testcase classname="C:/Users/jithu/Projects/HMS-auth-rbac/tests/test_authentication.cpp" name="Successful login returns the correct role" time="0.333741" status="run"/>
+    <testcase classname="C:/Users/jithu/Projects/HMS-auth-rbac/tests/test_authentication.cpp" name="Incorrect password increments failed attempts" time="0.323755" status="run"/>
+    <testcase classname="C:/Users/jithu/Projects/HMS-auth-rbac/tests/test_authentication.cpp" name="Account locks after five failed login attempts" time="0.997634" status="run"/>
+    <testcase classname="C:/Users/jithu/Projects/HMS-auth-rbac/tests/test_authentication.cpp" name="Successful login resets failed attempts" time="0.713535" status="run"/>
+    <testcase classname="C:/Users/jithu/Projects/HMS-auth-rbac/tests/test_authentication.cpp" name="Role-based permissions" time="0" status="run"/>
+    <testcase classname="C:/Users/jithu/Projects/HMS-auth-rbac/tests/test_authentication.cpp" name="Password policy" time="0" status="run"/>
+    <testcase classname="C:/Users/jithu/Projects/HMS-auth-rbac/tests/test_authentication.cpp" name="Weak password is rejected at account creation" time="0.077961" status="run"/>
+    <testcase classname="C:/Users/jithu/Projects/HMS-auth-rbac/tests/test_authentication.cpp" name="Password is stored only as a salted Argon2id hash" time="0.399326" status="run"/>
+    <testcase classname="C:/Users/jithu/Projects/HMS-auth-rbac/tests/test_authentication.cpp" name="Unknown user fails; usernames are case-insensitive" time="0.32384" status="run"/>
+    <testcase classname="C:/Users/jithu/Projects/HMS-auth-rbac/tests/test_authentication.cpp" name="TC-Sec-04 (2) the lock lasts for the cooldown, then the account works again" time="0.896704" status="run"/>
+    <testcase classname="C:/Users/jithu/Projects/HMS-auth-rbac/tests/test_authentication.cpp" name="TC-Sec-04 (3) login events are audited with staff IDs only" time="0.932521" status="run"/>
+    <testcase classname="C:/Users/jithu/Projects/HMS-auth-rbac/tests/test_billing.cpp" name="TC-Bill-01 the bill lists the consultation, each test and other charges, and the total is their sum" time="0.116776" status="run"/>
+    <testcase classname="C:/Users/jithu/Projects/HMS-auth-rbac/tests/test_billing.cpp" name="TC-Bill-01 every bill has its own number" time="0.14649" status="run"/>
+    <testcase classname="C:/Users/jithu/Projects/HMS-auth-rbac/tests/test_billing.cpp" name="TC-Bill-01 the preview shows the fee and the tests reception has to price" time="0.12002" status="run"/>
+    <testcase classname="C:/Users/jithu/Projects/HMS-auth-rbac/tests/test_billing.cpp" name="TC-Bill-01 invalid prices and service lines are rejected and nothing is saved" time="0.12433" status="run"/>
+    <testcase classname="C:/Users/jithu/Projects/HMS-auth-rbac/tests/test_billing.cpp" name="TC-Bill-01 only a finished, uncancelled visit with a fee set can be billed, and only once" time="0.125953" status="run"/>
+    <testcase classname="C:/Users/jithu/Projects/HMS-auth-rbac/tests/test_billing.cpp" name="TC-Bill-01 a cancelled appointment cannot be billed" time="0.108985" status="run"/>
+    <testcase classname="C:/Users/jithu/Projects/HMS-auth-rbac/tests/test_billing.cpp" name="TC-Bill-01 the Admin sets the consultation fee; others cannot; old bills keep their fee" time="0.171841" status="run"/>
+    <testcase classname="C:/Users/jithu/Projects/HMS-auth-rbac/tests/test_billing.cpp" name="TC-Bill-01 only the Receptionist bills; a denial is audited" time="0.121326" status="run"/>
+    <testcase classname="C:/Users/jithu/Projects/HMS-auth-rbac/tests/test_billing.cpp" name="TC-Bill-01 the audit entries hold IDs and field names only" time="0.116993" status="run"/>
+    <testcase classname="C:/Users/jithu/Projects/HMS-auth-rbac/tests/test_billing.cpp" name="TC-Bill-01 a failed save leaves no half-written bill" time="0.117498" status="run"/>
+    <testcase classname="C:/Users/jithu/Projects/HMS-auth-rbac/tests/test_billing.cpp" name="TC-Bill-02 partial then full payment: the balance is recalculated each time" time="0.124797" status="run"/>
+    <testcase classname="C:/Users/jithu/Projects/HMS-auth-rbac/tests/test_billing.cpp" name="TC-Bill-02 an overpayment, a bad amount or a card number is refused" time="0.119344" status="run"/>
+    <testcase classname="C:/Users/jithu/Projects/HMS-auth-rbac/tests/test_billing.cpp" name="TC-Bill-02 the store itself refuses a payment above the balance" time="0.133914" status="run"/>
+    <testcase classname="C:/Users/jithu/Projects/HMS-auth-rbac/tests/test_billing.cpp" name="TC-Bill-02 a failed payment is not recorded" time="0.127411" status="run"/>
+    <testcase classname="C:/Users/jithu/Projects/HMS-auth-rbac/tests/test_billing.cpp" name="TC-Bill-02 bills of a patient and bills with a balance are listed" time="0.146466" status="run"/>
+    <testcase classname="C:/Users/jithu/Projects/HMS-auth-rbac/tests/test_billing.cpp" name="TC-Bill-03 the receipt shows the bill ID, itemised charges, payment mode and time" time="0.146883" status="run"/>
+    <testcase classname="C:/Users/jithu/Projects/HMS-auth-rbac/tests/test_billing.cpp" name="TC-Bill-03 each receipt shows what had been paid up to its own payment" time="0.146053" status="run"/>
+    <testcase classname="C:/Users/jithu/Projects/HMS-auth-rbac/tests/test_billing.cpp" name="TC-Bill-03 the receipt is audited without names, amounts or references; other roles and numbers are refused" time="0.130268" status="run"/>
+    <testcase classname="C:/Users/jithu/Projects/HMS-auth-rbac/tests/test_billing.cpp" name="TC-Bill-03 stored UTC times are shown in hospital-local time" time="0" status="run"/>
+    <testcase classname="C:/Users/jithu/Projects/HMS-auth-rbac/tests/test_billing.cpp" name="Bill and receipt numbers print and parse" time="0" status="run"/>
+    <testcase classname="C:/Users/jithu/Projects/HMS-auth-rbac/tests/test_billing.cpp" name="TC-Bill-02 an ordinary claim or transaction number is accepted as a reference" time="0.132835" status="run"/>
+    <testcase classname="C:/Users/jithu/Projects/HMS-auth-rbac/tests/test_billing_console.cpp" name="Console TC-Bill-01..03: reception bills a visit, takes a payment and prints the receipt" time="0.157672" status="run"/>
+    <testcase classname="C:/Users/jithu/Projects/HMS-auth-rbac/tests/test_billing_console.cpp" name="Console TC-Bill-03: the receipt can be saved as a text file" time="0.163742" status="run"/>
+    <testcase classname="C:/Users/jithu/Projects/HMS-auth-rbac/tests/test_billing_console.cpp" name="Console TC-Bill-02: a refused payment is shown and nothing is saved" time="0.14261" status="run"/>
+    <testcase classname="C:/Users/jithu/Projects/HMS-auth-rbac/tests/test_billing_console.cpp" name="Console: a visit that is not complete cannot be billed from the menu" time="0.101271" status="run"/>
+    <testcase classname="C:/Users/jithu/Projects/HMS-auth-rbac/tests/test_billing_console.cpp" name="Console: the billing entries appear only when billing is set up, and never for a Doctor" time="0.091225" status="run"/>
+    <testcase classname="C:/Users/jithu/Projects/HMS-auth-rbac/tests/test_billing_console.cpp" name="Console TC-Bill-01: the Admin sets a doctor's consultation fee" time="0.114746" status="run"/>
+    <testcase classname="C:/Users/jithu/Projects/HMS-auth-rbac/tests/test_billing_console.cpp" name="Console: a non-Admin cannot use the fee screen" time="0.103033" status="run"/>
+    <testcase classname="C:/Users/jithu/Projects/HMS-auth-rbac/tests/test_console_app.cpp" name="Console: register a patient, re-prompting for invalid fields, then find them" time="0.077092" status="run"/>
+    <testcase classname="C:/Users/jithu/Projects/HMS-auth-rbac/tests/test_console_app.cpp" name="Console: age instead of date of birth" time="0.074899" status="run"/>
+    <testcase classname="C:/Users/jithu/Projects/HMS-auth-rbac/tests/test_console_app.cpp" name="Console: the mobile number cannot be left empty" time="0.085797" status="run"/>
+    <testcase classname="C:/Users/jithu/Projects/HMS-auth-rbac/tests/test_console_app.cpp" name="Console: no phone available - staff confirm it, and it is shown on the record" time="0.10042" status="run"/>
+    <testcase classname="C:/Users/jithu/Projects/HMS-auth-rbac/tests/test_console_app.cpp" name="Console: declining the confirmation saves nothing" time="0.116608" status="run"/>
+    <testcase classname="C:/Users/jithu/Projects/HMS-auth-rbac/tests/test_console_app.cpp" name="Console: end of input during registration cancels it and leaves the menus" time="0.081608" status="run"/>
+    <testcase classname="C:/Users/jithu/Projects/HMS-auth-rbac/tests/test_console_app.cpp" name="Console: shared phone number - family member registered as a different person" time="0.085064" status="run"/>
+    <testcase classname="C:/Users/jithu/Projects/HMS-auth-rbac/tests/test_console_app.cpp" name="Console: strong duplicate - staff choose the existing patient" time="0.096216" status="run"/>
+    <testcase classname="C:/Users/jithu/Projects/HMS-auth-rbac/tests/test_console_app.cpp" name="Console: strong duplicate - twins registered with a reason code" time="0.080783" status="run"/>
+    <testcase classname="C:/Users/jithu/Projects/HMS-auth-rbac/tests/test_console_app.cpp" name="Console: the Doctor menu has no registration and search shows demographics only" time="0.096201" status="run"/>
+    <testcase classname="C:/Users/jithu/Projects/HMS-auth-rbac/tests/test_console_app.cpp" name="Console: returning patient - the mobile number lists the family, staff pick the person" time="0.104232" status="run"/>
+    <testcase classname="C:/Users/jithu/Projects/HMS-auth-rbac/tests/test_console_app.cpp" name="Console: returning patient with no phone - found by name and date of birth" time="0.096064" status="run"/>
+    <testcase classname="C:/Users/jithu/Projects/HMS-auth-rbac/tests/test_console_app.cpp" name="Console: returning patient - unknown number falls back to name and date of birth" time="0.101984" status="run"/>
+    <testcase classname="C:/Users/jithu/Projects/HMS-auth-rbac/tests/test_console_app.cpp" name="Console: returning patient - not found anywhere points to registration" time="0.093484" status="run"/>
+    <testcase classname="C:/Users/jithu/Projects/HMS-auth-rbac/tests/test_console_app.cpp" name="Console: search menu option 4 - name and date of birth; tables show the phone status" time="0.082319" status="run"/>
+    <testcase classname="C:/Users/jithu/Projects/HMS-auth-rbac/tests/test_console_io.cpp" name="ask re-prompts until the answer is valid and names the field in each error" time="0" status="run"/>
+    <testcase classname="C:/Users/jithu/Projects/HMS-auth-rbac/tests/test_console_io.cpp" name="end of input cancels the question; repeated end of input marks the input finished" time="0" status="run"/>
+    <testcase classname="C:/Users/jithu/Projects/HMS-auth-rbac/tests/test_console_io.cpp" name="Windows line endings are accepted and Y/N answers are case-insensitive" time="0" status="run"/>
+    <testcase classname="C:/Users/jithu/Projects/HMS-auth-rbac/tests/test_consultation.cpp" name="TC-Doc-03 a consultation is saved with its prescription and tests, linked to the patient and the appointment" time="0.101132" status="run"/>
+    <testcase classname="C:/Users/jithu/Projects/HMS-auth-rbac/tests/test_consultation.cpp" name="TC-Doc-03 the audit entry names the consultation and fields only, never the clinical text" time="0.09905" status="run"/>
+    <testcase classname="C:/Users/jithu/Projects/HMS-auth-rbac/tests/test_consultation.cpp" name="TC-Doc-03 invalid or incomplete records are rejected and nothing is saved" time="0.086132" status="run"/>
+    <testcase classname="C:/Users/jithu/Projects/HMS-auth-rbac/tests/test_consultation.cpp" name="TC-Doc-03 only the appointment's own doctor can record it, and only while it is booked" time="0.165261" status="run"/>
+    <testcase classname="C:/Users/jithu/Projects/HMS-auth-rbac/tests/test_consultation.cpp" name="TC-Doc-03 a consultation cannot be recorded before the appointment starts" time="0.105047" status="run"/>
+    <testcase classname="C:/Users/jithu/Projects/HMS-auth-rbac/tests/test_consultation.cpp" name="TC-Doc-03 the store itself refuses a consultation that does not match its appointment" time="0.15894" status="run"/>
+    <testcase classname="C:/Users/jithu/Projects/HMS-auth-rbac/tests/test_consultation.cpp" name="TC-Doc-03 a failed save leaves nothing half-written" time="0.126022" status="run"/>
+    <testcase classname="C:/Users/jithu/Projects/HMS-auth-rbac/tests/test_consultation.cpp" name="TC-Doc-03 a doctor sees a patient's earlier consultations, newest first; others cannot" time="0.140057" status="run"/>
+    <testcase classname="C:/Users/jithu/Projects/HMS-auth-rbac/tests/test_consultation.cpp" name="TC-Doc-02 the weekly queue shows the doctor's own appointments for seven days, in time order" time="0.153372" status="run"/>
+    <testcase classname="C:/Users/jithu/Projects/HMS-auth-rbac/tests/test_consultation.cpp" name="TC-Doc-01 a doctor changes only their own weekly hours; the Admin's department stays" time="0.102051" status="run"/>
+    <testcase classname="C:/Users/jithu/Projects/HMS-auth-rbac/tests/test_consultation.cpp" name="TC-Doc-01 own hours: invalid hours, other roles and doctors without a profile are refused" time="0.100622" status="run"/>
+    <testcase classname="C:/Users/jithu/Projects/HMS-auth-rbac/tests/test_consultation.cpp" name="TC-Doc-01 own hours: booked appointments that no longer fit are kept and counted" time="0.119162" status="run"/>
+    <testcase classname="C:/Users/jithu/Projects/HMS-auth-rbac/tests/test_consultation.cpp" name="TC-App-02 a completed visit keeps its slot until the slot ends" time="0.11667" status="run"/>
+    <testcase classname="C:/Users/jithu/Projects/HMS-auth-rbac/tests/test_consultation.cpp" name="TC-Rec-04 a doctor with a care relationship sees every visit of the patient, also with other doctors" time="0.113767" status="run"/>
+    <testcase classname="C:/Users/jithu/Projects/HMS-auth-rbac/tests/test_consultation.cpp" name="TC-Rec-04 a patient with no completed visit shows an empty history" time="0.091799" status="run"/>
+    <testcase classname="C:/Users/jithu/Projects/HMS-auth-rbac/tests/test_consultation.cpp" name="TC-Rec-04 a doctor without a care relationship is denied and the denial is audited" time="0.144992" status="run"/>
+    <testcase classname="C:/Users/jithu/Projects/HMS-auth-rbac/tests/test_core.cpp" name="normaliseName trims, collapses spaces and folds ASCII case" time="0" status="run"/>
+    <testcase classname="C:/Users/jithu/Projects/HMS-auth-rbac/tests/test_core.cpp" name="UTF-8 validation and length in characters" time="0" status="run"/>
+    <testcase classname="C:/Users/jithu/Projects/HMS-auth-rbac/tests/test_core.cpp" name="control characters are detected (C0, DEL, C1)" time="0" status="run"/>
+    <testcase classname="C:/Users/jithu/Projects/HMS-auth-rbac/tests/test_core.cpp" name="fitWidth pads and cuts by characters" time="0" status="run"/>
+    <testcase classname="C:/Users/jithu/Projects/HMS-auth-rbac/tests/test_core.cpp" name="event IDs are 32 hex digits and unique" time="0.004287" status="run"/>
+    <testcase classname="C:/Users/jithu/Projects/HMS-auth-rbac/tests/test_core.cpp" name="calendar arithmetic and local date (Asia/Kolkata, UTC+05:30)" time="0" status="run"/>
+    <testcase classname="C:/Users/jithu/Projects/HMS-auth-rbac/tests/test_core.cpp" name="age in whole years" time="0" status="run"/>
+    <testcase classname="C:/Users/jithu/Projects/HMS-auth-rbac/tests/test_core.cpp" name="Result holds a value or one error that names every bad field" time="0" status="run"/>
+    <testcase classname="C:/Users/jithu/Projects/HMS-auth-rbac/tests/test_doctor_workspace_console.cpp" name="Console TC-Doc-03: the doctor records a consultation through the menu" time="0.120942" status="run"/>
+    <testcase classname="C:/Users/jithu/Projects/HMS-auth-rbac/tests/test_doctor_workspace_console.cpp" name="Console TC-Doc-03: declining the confirmation saves nothing" time="0.093381" status="run"/>
+    <testcase classname="C:/Users/jithu/Projects/HMS-auth-rbac/tests/test_doctor_workspace_console.cpp" name="Console TC-Doc-03: another doctor's appointment is refused with a clear message" time="0.109003" status="run"/>
+    <testcase classname="C:/Users/jithu/Projects/HMS-auth-rbac/tests/test_doctor_workspace_console.cpp" name="Console TC-Doc-02 and history: weekly queue and a patient's past consultations" time="0.11061" status="run"/>
+    <testcase classname="C:/Users/jithu/Projects/HMS-auth-rbac/tests/test_doctor_workspace_console.cpp" name="Console TC-Doc-01: the doctor changes their own weekly hours; the menu is unchanged without the workspace" time="0.079992" status="run"/>
+    <testcase classname="C:/Users/jithu/Projects/HMS-auth-rbac/tests/test_doctor_workspace_console.cpp" name="Console: the Receptionist menu has no doctor workspace entries" time="0.069529" status="run"/>
+    <testcase classname="C:/Users/jithu/Projects/HMS-auth-rbac/tests/test_input.cpp" name="cleanLine: trims spaces, enforces 1,000 characters, rejects control characters" time="0" status="run"/>
+    <testcase classname="C:/Users/jithu/Projects/HMS-auth-rbac/tests/test_input.cpp" name="requireLine: an empty answer to a mandatory prompt is an error naming the field" time="0" status="run"/>
+    <testcase classname="C:/Users/jithu/Projects/HMS-auth-rbac/tests/test_input.cpp" name="parseDate: DD-MM-YYYY with real calendar dates only" time="0" status="run"/>
+    <testcase classname="C:/Users/jithu/Projects/HMS-auth-rbac/tests/test_input.cpp" name="parseWholeNumber: digits only, inside the range" time="0" status="run"/>
+    <testcase classname="C:/Users/jithu/Projects/HMS-auth-rbac/tests/test_input.cpp" name="parseMoneyPaise: the SRS 3.1 money format" time="0" status="run"/>
+    <testcase classname="C:/Users/jithu/Projects/HMS-auth-rbac/tests/test_lab.cpp" name="TC-Lab-01 a result is linked to the ordered test and the treating doctor can see it" time="0.097358" status="run"/>
+    <testcase classname="C:/Users/jithu/Projects/HMS-auth-rbac/tests/test_lab.cpp" name="TC-Lab-01 updating a result keeps every earlier revision" time="0.112482" status="run"/>
+    <testcase classname="C:/Users/jithu/Projects/HMS-auth-rbac/tests/test_lab.cpp" name="TC-Lab-01 the doctor sees only the tests that doctor ordered" time="0.114122" status="run"/>
+    <testcase classname="C:/Users/jithu/Projects/HMS-auth-rbac/tests/test_lab.cpp" name="TC-Lab-01 an unknown order or an invalid result is refused and nothing is saved" time="0.099556" status="run"/>
+    <testcase classname="C:/Users/jithu/Projects/HMS-auth-rbac/tests/test_lab.cpp" name="TC-Lab-01 only the Lab Technician enters results; the doctor reads only own patients; denials are audited" time="0.135908" status="run"/>
+    <testcase classname="C:/Users/jithu/Projects/HMS-auth-rbac/tests/test_lab.cpp" name="TC-Lab-01 the audit entries hold IDs and field names only" time="0.103143" status="run"/>
+    <testcase classname="C:/Users/jithu/Projects/HMS-auth-rbac/tests/test_lab.cpp" name="TC-Lab-01 the store refuses to change or delete a saved result" time="0.104914" status="run"/>
+    <testcase classname="C:/Users/jithu/Projects/HMS-auth-rbac/tests/test_lab.cpp" name="TC-Lab-01 NF-002 a failure before commit saves nothing and the retry works" time="0.108362" status="run"/>
+    <testcase classname="C:/Users/jithu/Projects/HMS-auth-rbac/tests/test_lab.cpp" name="TC-Lab-01 migration 9 keeps every account and doctor profile and accepts the two new roles" time="0.09791" status="run"/>
+    <testcase classname="C:/Users/jithu/Projects/HMS-auth-rbac/tests/test_lab_pharmacy_console.cpp" name="Console TC-Lab-01: the lab technician enters a result and updates it; the doctor reads it" time="0.112292" status="run"/>
+    <testcase classname="C:/Users/jithu/Projects/HMS-auth-rbac/tests/test_lab_pharmacy_console.cpp" name="Console TC-Lab-01: cancelling at the result prompt saves nothing" time="0.117217" status="run"/>
+    <testcase classname="C:/Users/jithu/Projects/HMS-auth-rbac/tests/test_lab_pharmacy_console.cpp" name="Console TC-Pharm-01: the pharmacist adds, restocks and dispenses and sees the low-stock alert" time="0.114784" status="run"/>
+    <testcase classname="C:/Users/jithu/Projects/HMS-auth-rbac/tests/test_lab_pharmacy_console.cpp" name="Console TC-Pharm-01: a dispense that takes the stock below the threshold shows the alert; 'N' dispenses nothing" time="0.109383" status="run"/>
+    <testcase classname="C:/Users/jithu/Projects/HMS-auth-rbac/tests/test_lab_pharmacy_console.cpp" name="Console TC-Pharm-01: a refused dispense shows the reason and leaves the stock alone" time="0.11148" status="run"/>
+    <testcase classname="C:/Users/jithu/Projects/HMS-auth-rbac/tests/test_lab_pharmacy_console.cpp" name="Console TC-Lab-01: with the medical history entry present, lab results are option 9" time="0.109641" status="run"/>
+    <testcase classname="C:/Users/jithu/Projects/HMS-auth-rbac/tests/test_lab_pharmacy_console.cpp" name="Console TC-Pharm-01: the pharmacist corrects a name, a stock count and the availability of a medicine" time="0.094" status="run"/>
+    <testcase classname="C:/Users/jithu/Projects/HMS-auth-rbac/tests/test_medical_record.cpp" name="TC-Rec-01 a new patient has no history yet, and opening it is audited" time="0.096107" status="run"/>
+    <testcase classname="C:/Users/jithu/Projects/HMS-auth-rbac/tests/test_medical_record.cpp" name="TC-Rec-01 each update is a new version with its author and time; earlier versions are kept" time="0.105928" status="run"/>
+    <testcase classname="C:/Users/jithu/Projects/HMS-auth-rbac/tests/test_medical_record.cpp" name="TC-Rec-01 audit entries hold the UHID and field names only, never the clinical text" time="0.107424" status="run"/>
+    <testcase classname="C:/Users/jithu/Projects/HMS-auth-rbac/tests/test_medical_record.cpp" name="TC-Rec-01 a doctor without a care relationship is denied, nothing is saved, and the denial is audited" time="0.197123" status="run"/>
+    <testcase classname="C:/Users/jithu/Projects/HMS-auth-rbac/tests/test_medical_record.cpp" name="TC-Rec-01 cancelling the doctor's only appointment ends access, also to the versions that doctor wrote" time="0.133476" status="run"/>
+    <testcase classname="C:/Users/jithu/Projects/HMS-auth-rbac/tests/test_medical_record.cpp" name="TC-Rec-01 a completed visit keeps the care relationship" time="0.103555" status="run"/>
+    <testcase classname="C:/Users/jithu/Projects/HMS-auth-rbac/tests/test_medical_record.cpp" name="TC-Rec-01 Receptionist, Pharmacist and Admin are denied the history, and each denial is audited" time="0.122922" status="run"/>
+    <testcase classname="C:/Users/jithu/Projects/HMS-auth-rbac/tests/test_medical_record.cpp" name="TC-Rec-01 prescribing does not change the current-medications list" time="0.108082" status="run"/>
+    <testcase classname="C:/Users/jithu/Projects/HMS-auth-rbac/tests/test_medical_record.cpp" name="TC-Rec-01 invalid, empty or unchanged updates are refused and nothing is saved" time="0.116209" status="run"/>
+    <testcase classname="C:/Users/jithu/Projects/HMS-auth-rbac/tests/test_medical_record.cpp" name="TC-Rec-01 a failure before commit saves neither the version nor its audit entry" time="0.097969" status="run"/>
+    <testcase classname="C:/Users/jithu/Projects/HMS-auth-rbac/tests/test_medical_record.cpp" name="TC-Rec-01 the store refuses to change or delete a saved version" time="0.101812" status="run"/>
+    <testcase classname="C:/Users/jithu/Projects/HMS-auth-rbac/tests/test_medical_record_console.cpp" name="Console TC-Rec-01: the doctor records a first version, then updates one field" time="0.123205" status="run"/>
+    <testcase classname="C:/Users/jithu/Projects/HMS-auth-rbac/tests/test_medical_record_console.cpp" name="Console TC-Rec-01: declining the confirmation saves nothing" time="0.095209" status="run"/>
+    <testcase classname="C:/Users/jithu/Projects/HMS-auth-rbac/tests/test_medical_record_console.cpp" name="Console TC-Rec-01: a doctor without an appointment with the patient is refused" time="0.094803" status="run"/>
+    <testcase classname="C:/Users/jithu/Projects/HMS-auth-rbac/tests/test_medical_record_console.cpp" name="Console: without the medical record service the Doctor menu stops at 7" time="0.074699" status="run"/>
+    <testcase classname="C:/Users/jithu/Projects/HMS-auth-rbac/tests/test_patient_store.cpp" name="a new store has the patient, audit and duplicate-review tables" time="0.073211" status="run"/>
+    <testcase classname="C:/Users/jithu/Projects/HMS-auth-rbac/tests/test_patient_store.cpp" name="an empty store created by the foundation build is upgraded on opening" time="0.066992" status="run"/>
+    <testcase classname="C:/Users/jithu/Projects/HMS-auth-rbac/tests/test_patient_store.cpp" name="a registered patient is there after a restart" time="0.07993" status="run"/>
+    <testcase classname="C:/Users/jithu/Projects/HMS-auth-rbac/tests/test_patient_store.cpp" name="HMS-SR-004 audit entries cannot be changed or deleted, even with direct SQL" time="0.076775" status="run"/>
+    <testcase classname="C:/Users/jithu/Projects/HMS-auth-rbac/tests/test_patient_store.cpp" name="audit entries can only be written inside the transaction of the change" time="0.07221" status="run"/>
+    <testcase classname="C:/Users/jithu/Projects/HMS-auth-rbac/tests/test_patient_store.cpp" name="store constraints back up the business rules" time="0.072795" status="run"/>
+    <testcase classname="C:/Users/jithu/Projects/HMS-auth-rbac/tests/test_patient_store.cpp" name="D-04 the store requires a mobile number or a confirmed &quot;no phone available&quot;" time="0.153717" status="run"/>
+    <testcase classname="C:/Users/jithu/Projects/HMS-auth-rbac/tests/test_patient_store.cpp" name="D-04 a version-2 store with a patient who has no phone upgrades and keeps the record" time="0.119326" status="run"/>
+    <testcase classname="C:/Users/jithu/Projects/HMS-auth-rbac/tests/test_patient_validation.cpp" name="TC-Reg-01 valid draft is accepted and normalised" time="0" status="run"/>
+    <testcase classname="C:/Users/jithu/Projects/HMS-auth-rbac/tests/test_patient_validation.cpp" name="TC-Reg-01 mobile number is required (D-04)" time="0" status="run"/>
+    <testcase classname="C:/Users/jithu/Projects/HMS-auth-rbac/tests/test_patient_validation.cpp" name="TC-Reg-01 &quot;no phone available&quot; is accepted only with the number left empty" time="0" status="run"/>
+    <testcase classname="C:/Users/jithu/Projects/HMS-auth-rbac/tests/test_patient_validation.cpp" name="TC-Reg-01 every invalid field is named in one error" time="0" status="run"/>
+    <testcase classname="C:/Users/jithu/Projects/HMS-auth-rbac/tests/test_patient_validation.cpp" name="TC-Reg-01 name length 1-100 characters, must contain a letter" time="0" status="run"/>
+    <testcase classname="C:/Users/jithu/Projects/HMS-auth-rbac/tests/test_patient_validation.cpp" name="TC-Reg-01 address 1-200 characters" time="0" status="run"/>
+    <testcase classname="C:/Users/jithu/Projects/HMS-auth-rbac/tests/test_patient_validation.cpp" name="TC-Reg-01 date of birth: not in the future, not before 01-01-1900" time="0" status="run"/>
+    <testcase classname="C:/Users/jithu/Projects/HMS-auth-rbac/tests/test_patient_validation.cpp" name="TC-Reg-01 (D-03) age instead of date of birth gives an estimated date of birth" time="0" status="run"/>
+    <testcase classname="C:/Users/jithu/Projects/HMS-auth-rbac/tests/test_patient_validation.cpp" name="TC-Reg-01 gender: Male / Female / Other" time="0" status="run"/>
+    <testcase classname="C:/Users/jithu/Projects/HMS-auth-rbac/tests/test_pharmacy.cpp" name="TC-Pharm-01 the pharmacist adds medicines and checks the stock" time="0.080494" status="run"/>
+    <testcase classname="C:/Users/jithu/Projects/HMS-auth-rbac/tests/test_pharmacy.cpp" name="TC-Pharm-01 dispensing reduces the stock by exactly the dispensed quantity" time="0.119747" status="run"/>
+    <testcase classname="C:/Users/jithu/Projects/HMS-auth-rbac/tests/test_pharmacy.cpp" name="TC-Pharm-01 a prescription line can be dispensed in parts but never beyond the prescribed quantity" time="0.111909" status="run"/>
+    <testcase classname="C:/Users/jithu/Projects/HMS-auth-rbac/tests/test_pharmacy.cpp" name="TC-Pharm-01 dispensing more than the stock is refused and nothing changes" time="0.115873" status="run"/>
+    <testcase classname="C:/Users/jithu/Projects/HMS-auth-rbac/tests/test_pharmacy.cpp" name="TC-Pharm-01 invalid dispensing input is refused" time="0.109107" status="run"/>
+    <testcase classname="C:/Users/jithu/Projects/HMS-auth-rbac/tests/test_pharmacy.cpp" name="TC-Pharm-01 the low-stock alert fires when the stock falls BELOW the threshold (E-08)" time="0.135548" status="run"/>
+    <testcase classname="C:/Users/jithu/Projects/HMS-auth-rbac/tests/test_pharmacy.cpp" name="TC-Pharm-01 restocking adds to the stock; invalid or excessive quantities are refused" time="0.076918" status="run"/>
+    <testcase classname="C:/Users/jithu/Projects/HMS-auth-rbac/tests/test_pharmacy.cpp" name="TC-Pharm-01 only the Pharmacist manages and dispenses; denials are audited" time="0.214486" status="run"/>
+    <testcase classname="C:/Users/jithu/Projects/HMS-auth-rbac/tests/test_pharmacy.cpp" name="TC-Pharm-01 the audit entries hold IDs and field names only" time="0.10934" status="run"/>
+    <testcase classname="C:/Users/jithu/Projects/HMS-auth-rbac/tests/test_pharmacy.cpp" name="TC-Pharm-01 the store itself refuses over-dispensing and negative stock" time="0.101395" status="run"/>
+    <testcase classname="C:/Users/jithu/Projects/HMS-auth-rbac/tests/test_pharmacy.cpp" name="TC-Pharm-01 NF-002 a failure before commit saves nothing and the retry works" time="0.112739" status="run"/>
+    <testcase classname="C:/Users/jithu/Projects/HMS-auth-rbac/tests/test_pharmacy.cpp" name="TC-Pharm-01 prescriptions of a patient are listed newest first; an unknown patient is not found" time="0.116304" status="run"/>
+    <testcase classname="C:/Users/jithu/Projects/HMS-auth-rbac/tests/test_pharmacy.cpp" name="TC-Pharm-01 a wrongly typed name or unit can be corrected; a clash, a no-op or bad input is refused" time="0.095822" status="run"/>
+    <testcase classname="C:/Users/jithu/Projects/HMS-auth-rbac/tests/test_pharmacy.cpp" name="TC-Pharm-01 a stock count is corrected to the counted figure and the reason is kept" time="0.097182" status="run"/>
+    <testcase classname="C:/Users/jithu/Projects/HMS-auth-rbac/tests/test_pharmacy.cpp" name="TC-Pharm-01 an unavailable medicine cannot be dispensed or restocked, raises no alert, and can return" time="0.120376" status="run"/>
+    <testcase classname="C:/Users/jithu/Projects/HMS-auth-rbac/tests/test_pharmacy.cpp" name="TC-Pharm-01 only the Pharmacist edits medicines or corrects stock; denials are audited" time="0.117407" status="run"/>
+    <testcase classname="C:/Users/jithu/Projects/HMS-auth-rbac/tests/test_pharmacy.cpp" name="TC-Pharm-01 the store refuses a correction without a reason and a dispense movement without its dispense" time="0.072696" status="run"/>
+    <testcase classname="C:/Users/jithu/Projects/HMS-auth-rbac/tests/test_pharmacy.cpp" name="TC-Pharm-01 NF-002 a failed correction saves nothing" time="0.073882" status="run"/>
+    <testcase classname="C:/Users/jithu/Projects/HMS-auth-rbac/tests/test_phone.cpp" name="TC-Reg-01 phone: every accepted format gives the same 10 digits" time="0" status="run"/>
+    <testcase classname="C:/Users/jithu/Projects/HMS-auth-rbac/tests/test_phone.cpp" name="TC-Reg-01 phone: first digit 6, 7, 8 and 9 accepted; 0-5 rejected" time="0" status="run"/>
+    <testcase classname="C:/Users/jithu/Projects/HMS-auth-rbac/tests/test_phone.cpp" name="TC-Reg-01 phone: wrong lengths, prefixes, letters and landlines rejected" time="0" status="run"/>
+    <testcase classname="C:/Users/jithu/Projects/HMS-auth-rbac/tests/test_phone.cpp" name="phone display form" time="0" status="run"/>
+    <testcase classname="C:/Users/jithu/Projects/HMS-auth-rbac/tests/test_registration.cpp" name="TC-Reg-02 (1) no candidate: a new unique UHID is created and audited" time="0.076967" status="run"/>
+    <testcase classname="C:/Users/jithu/Projects/HMS-auth-rbac/tests/test_registration.cpp" name="TC-Reg-02 (2) strong candidate: nothing is saved until staff decide/Different person without a reason code is refused" time="0.079541" status="run"/>
+    <testcase classname="C:/Users/jithu/Projects/HMS-auth-rbac/tests/test_registration.cpp" name="TC-Reg-02 (2) strong candidate: nothing is saved until staff decide/Different person with a reason code creates a new UHID; decision stored with reviewed set" time="0.112194" status="run"/>
+    <testcase classname="C:/Users/jithu/Projects/HMS-auth-rbac/tests/test_registration.cpp" name="TC-Reg-02 (2) strong candidate: nothing is saved until staff decide/Same patient: existing UHID is used, no record created, decision audited" time="0.100164" status="run"/>
+    <testcase classname="C:/Users/jithu/Projects/HMS-auth-rbac/tests/test_registration.cpp" name="TC-Reg-02 (2) strong candidate: nothing is saved until staff decide/Same patient must be one of the candidates shown" time="0.083919" status="run"/>
+    <testcase classname="C:/Users/jithu/Projects/HMS-auth-rbac/tests/test_registration.cpp" name="TC-Reg-02 (3) phone-match only: shared numbers are allowed without a reason" time="0.089763" status="run"/>
+    <testcase classname="C:/Users/jithu/Projects/HMS-auth-rbac/tests/test_registration.cpp" name="TC-Reg-02 (9) one review screen lists strong and same-phone candidates together; a strong candidate who also shares the phone is listed once, as strong" time="0.084218" status="run"/>
+    <testcase classname="C:/Users/jithu/Projects/HMS-auth-rbac/tests/test_registration.cpp" name="TC-Reg-02 (8),(9) a candidate that appears after the review forces a fresh review" time="0.097502" status="run"/>
+    <testcase classname="C:/Users/jithu/Projects/HMS-auth-rbac/tests/test_registration.cpp" name="TC-Reg-02 (6) UHIDs are never reused" time="0.087364" status="run"/>
+    <testcase classname="C:/Users/jithu/Projects/HMS-auth-rbac/tests/test_registration.cpp" name="TC-Reg-02 (5) / NF-002 a failure before commit leaves neither patient nor audit entry" time="0.085665" status="run"/>
+    <testcase classname="C:/Users/jithu/Projects/HMS-auth-rbac/tests/test_registration.cpp" name="TC-Reg-02 (4) audit entries contain IDs and codes, never names, phones or addresses" time="0.082093" status="run"/>
+    <testcase classname="C:/Users/jithu/Projects/HMS-auth-rbac/tests/test_registration.cpp" name="SR-001 only a Receptionist may register; denials are audited and change nothing" time="0.077924" status="run"/>
+    <testcase classname="C:/Users/jithu/Projects/HMS-auth-rbac/tests/test_registration.cpp" name="Policy switch: SRS v1.1 behaviour (a matching phone blocks a new UHID)" time="0.079716" status="run"/>
+    <testcase classname="C:/Users/jithu/Projects/HMS-auth-rbac/tests/test_registration.cpp" name="Validation errors are returned before anything is written" time="0.073433" status="run"/>
+    <testcase classname="C:/Users/jithu/Projects/HMS-auth-rbac/tests/test_registration.cpp" name="TC-Reg-01/02 no phone available: registered, flagged, and strong duplicates still caught" time="0.087715" status="run"/>
+    <testcase classname="C:/Users/jithu/Projects/HMS-auth-rbac/tests/test_search.cpp" name="TC-Rec-02 search by UHID is an exact match in any accepted format" time="0.081065" status="run"/>
+    <testcase classname="C:/Users/jithu/Projects/HMS-auth-rbac/tests/test_search.cpp" name="TC-Rec-02 name search is a case-insensitive substring match on the normalised name" time="0.08892" status="run"/>
+    <testcase classname="C:/Users/jithu/Projects/HMS-auth-rbac/tests/test_search.cpp" name="TC-Rec-02 phone search normalises the entry and returns every patient sharing the number" time="0.099778" status="run"/>
+    <testcase classname="C:/Users/jithu/Projects/HMS-auth-rbac/tests/test_search.cpp" name="TC-Rec-02 names with quotes, SQL keywords and formula characters are stored and found as data" time="0.157712" status="run"/>
+    <testcase classname="C:/Users/jithu/Projects/HMS-auth-rbac/tests/test_search.cpp" name="TC-Rec-02 results are demographic only and capped with the true total reported" time="0.102311" status="run"/>
+    <testcase classname="C:/Users/jithu/Projects/HMS-auth-rbac/tests/test_search.cpp" name="SR-001 search: Receptionist and Doctor allowed, other roles denied and audited" time="0.078535" status="run"/>
+    <testcase classname="C:/Users/jithu/Projects/HMS-auth-rbac/tests/test_search.cpp" name="getPatient returns the record or NotFound" time="0.07339" status="run"/>
+    <testcase classname="C:/Users/jithu/Projects/HMS-auth-rbac/tests/test_search.cpp" name="TC-Rec-02 name and date of birth: both must match; exact dates of birth first" time="0.078701" status="run"/>
+    <testcase classname="C:/Users/jithu/Projects/HMS-auth-rbac/tests/test_search.cpp" name="TC-Rec-02 name and date of birth: a date estimated from an age matches within one year" time="0.076264" status="run"/>
+    <testcase classname="C:/Users/jithu/Projects/HMS-auth-rbac/tests/test_search.cpp" name="TC-Rec-02 name and date of birth: every invalid field is named; other roles denied" time="0.075054" status="run"/>
+    <testcase classname="C:/Users/jithu/Projects/HMS-auth-rbac/tests/test_store.cpp" name="a missing store is not created unless creation is allowed" time="0.00059" status="run"/>
+    <testcase classname="C:/Users/jithu/Projects/HMS-auth-rbac/tests/test_store.cpp" name="a new store is created owner-only with the durability settings" time="0.06282" status="run"/>
+    <testcase classname="C:/Users/jithu/Projects/HMS-auth-rbac/tests/test_store.cpp" name="data committed in one session is there after a restart" time="0.07092" status="run"/>
+    <testcase classname="C:/Users/jithu/Projects/HMS-auth-rbac/tests/test_store.cpp" name="a transaction that is not committed leaves nothing behind" time="0.077069" status="run"/>
+    <testcase classname="C:/Users/jithu/Projects/HMS-auth-rbac/tests/test_store.cpp" name="a damaged store is refused and its bytes are not changed" time="0.003095" status="run"/>
+    <testcase classname="C:/Users/jithu/Projects/HMS-auth-rbac/tests/test_store.cpp" name="a store with a newer schema version is refused and not changed" time="0.01308" status="run"/>
+    <testcase classname="C:/Users/jithu/Projects/HMS-auth-rbac/tests/test_store.cpp" name="a foreign SQLite database (version 0 with tables) is refused" time="0.007965" status="run"/>
+    <testcase classname="C:/Users/jithu/Projects/HMS-auth-rbac/tests/test_store.cpp" name="a second instance cannot take the store lock (also through another path)" time="0.001715" status="run"/>
+    <testcase classname="C:/Users/jithu/Projects/HMS-auth-rbac/tests/test_uhid.cpp" name="UHID format and parsing" time="0" status="run"/>
+  </testsuite>
+</testsuites>
