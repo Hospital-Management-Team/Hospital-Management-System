@@ -98,7 +98,6 @@ TEST_CASE("TC-Rep-01 the report totals match the stored appointments, bills and 
     CHECK(rep.completed == f.count("SELECT count(*) FROM appointment WHERE status = 'COMPLETED'"));
     CHECK(rep.booked == 1);
     CHECK(rep.cancelled == 1);
-    CHECK(rep.noShow == 0);
     CHECK(rep.patientsSeen == 2);  // the cancelled appointment's patient was not seen
     CHECK(rep.consultations == f.count("SELECT count(*) FROM consultation"));
     CHECK(rep.billsCount == 1);
@@ -313,13 +312,60 @@ TEST_CASE("TC-Rep-01 the report screen prints the summary") {
     const auto out = runReportScreen(f, "26-10-2026\n27-10-2026\n", admin());
     CHECK(contains(out, "HOSPITAL SUMMARY, 26-10-2026 to 27-10-2026"));
     CHECK(contains(out, "Registered patients (all time):   3"));
-    CHECK(contains(out, "Total 3   Booked 1   Completed 1   Cancelled 1   No-show 0"));
+    CHECK(contains(out, "Total 3   Booked 1   Completed 1   Cancelled 1"));
+    CHECK_FALSE(contains(out, "No-show"));
     CHECK(contains(out, "Rs 300.00"));
     CHECK(contains(out, "Still unpaid on those bills: Rs 200.00"));
     CHECK(contains(out, "Dr mehta"));
 
     CHECK(contains(runReportScreen(f, "27-10-2026\n26-10-2026\n", admin()), "must not be before"));
     CHECK(contains(runReportScreen(f, "26-10-2026\n27-10-2026\n", test::receptionist()), "may not view reports"));
+}
+
+TEST_CASE("TC-Admin-01 a department typed on a doctor's profile appears in the department list") {
+    AdminFixture f;
+    const auto mehta = f.addDoctor("mehta", "General Medicine");
+    f.setFee(mehta, "500");
+    f.addDoctor("rao", "Cardiology");
+    f.addDoctor("iyer", "cardiology");  // same department typed in another case: still one entry
+
+    auto list = f.adminSvc.listDepartments(admin());
+    REQUIRE(list.ok());
+    REQUIRE(list.value().size() == 2);
+    std::int64_t doctorsInCardiology = 0;
+    for (const auto& d : list.value()) if (d.name == "Cardiology") doctorsInCardiology = d.doctors;
+    CHECK(doctorsInCardiology == 2);
+
+    // Admin can use the listed department straight away: a room, and the same name in booking and billing.
+    const auto general = [&] {
+        for (const auto& d : list.value()) if (d.name == "General Medicine") return d.departmentId;
+        return std::int64_t{0};
+    }();
+    REQUIRE(general > 0);
+    CHECK(f.adminSvc.addRoom(admin(), "Room 1", general).ok());
+    const auto ravi = f.addPatient("Ravi Kumar");
+    CHECK(f.bookOk(ravi, mehta, at(kMonday, 9, 0)).department == "General Medicine");
+    auto fees = f.billing.listDoctorFees(admin());
+    REQUIRE(fees.ok());
+    bool seen = false;
+    for (const auto& fee : fees.value()) if (fee.department == "General Medicine") seen = true;
+    CHECK(seen);
+}
+
+TEST_CASE("TC-Admin-01 a doctor cannot be put into a department Admin has switched off") {
+    AdminFixture f;
+    auto off = f.adminSvc.addDepartment(admin(), "Dermatology");
+    REQUIRE(off.ok());
+    REQUIRE(f.adminSvc.setDepartmentActive(admin(), off.value().departmentId, false).ok());
+
+    const auto doc = f.addStaff("mehta");
+    DoctorScheduleDraft draft;
+    draft.department = "dermatology";
+    draft.hours = {WeeklyHours{1, 9 * 60, 12 * 60}};
+    auto refused = f.appointments->setDoctorSchedule(admin(), doc, draft);
+    REQUIRE_FALSE(refused.ok());
+    CHECK(refused.error().kind == ErrorKind::Conflict);
+    CHECK(f.count("SELECT count(*) FROM doctor_profile") == 0);
 }
 
 TEST_CASE("TC-Admin-01 the Admin adds departments; names are checked and unique ignoring case") {
@@ -341,9 +387,14 @@ TEST_CASE("TC-Admin-01 renaming a department shows in booking and billing at onc
     AdminFixture f;
     const auto doc = f.addDoctor("mehta", "General Medicine");
     f.setFee(doc, "500");
+    // The doctor's department is on the list as soon as the profile is saved (D-59).
     auto dept = f.adminSvc.addDepartment(admin(), "General Medicine");
-    REQUIRE(dept.ok());
-    CHECK(f.adminSvc.listDepartments(admin()).value()[0].doctors == 1);
+    CHECK(dept.error().kind == ErrorKind::Conflict);
+    auto listed = f.adminSvc.listDepartments(admin());
+    REQUIRE(listed.ok());
+    REQUIRE(listed.value().size() == 1);
+    CHECK(listed.value()[0].doctors == 1);
+    dept = listed.value()[0];
 
     REQUIRE(f.adminSvc.renameDepartment(admin(), dept.value().departmentId, "Internal Medicine").ok());
     auto doctors = f.appointments->listDoctors(admin());
@@ -454,12 +505,14 @@ TEST_CASE("TC-Admin-01 the master data screens") {
     const auto added = runMasterScreen(f, "1\na\nCardiology\n\n0\n", admin());
     CHECK(contains(added, "Department added"));
     CHECK(contains(added, "Cardiology"));
-    const auto renamed = runMasterScreen(f, "1\nr\n1\nHeart Care\n\n0\n", admin());
+    // The doctor's department (number 1) is already on the list; Cardiology is number 2.
+    CHECK(contains(added, "General Medicine"));
+    const auto renamed = runMasterScreen(f, "1\nr\n2\nHeart Care\n\n0\n", admin());
     CHECK(contains(renamed, "Booking and billing show the new name now"));
-    const auto room = runMasterScreen(f, "2\na\nRoom 1\n1\n\n0\n", admin());
+    const auto room = runMasterScreen(f, "2\na\nRoom 1\n2\n\n0\n", admin());
     CHECK(contains(room, "Room saved"));
     CHECK(contains(room, "Heart Care"));
-    const auto mapped = runMasterScreen(f, "3\n1\n1\n\n0\n", admin());
+    const auto mapped = runMasterScreen(f, "3\n1\n2\n\n0\n", admin());
     CHECK(contains(mapped, "Dr mehta is now in Heart Care"));
     CHECK(f.appointments->listDoctors(admin()).value()[0].department == "Heart Care");
     const auto denied = runMasterScreen(f, "1\n\n0\n", test::receptionist());

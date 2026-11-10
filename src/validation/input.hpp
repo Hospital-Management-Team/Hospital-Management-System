@@ -1,5 +1,5 @@
 #pragma once
-// Input layer (SRS v11 draft section 3.1, task #13).
+// Input layer (SRS section 3.1, task #13).
 //
 // Parsing and validation are kept apart from the business rules and from the
 // console, so they can be unit-tested without the menu (HMS-NF-004). Every

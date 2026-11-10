@@ -1,4 +1,4 @@
-// TC-Rec-02: patient search (SRS v11 draft HMS-F-004). The 100,000-patient
+// TC-Rec-02: patient search (SRS HMS-F-004). The 100,000-patient
 // timing belongs to TC-Perf-01 (see tools/hms_seed --bench).
 #include <doctest.h>
 

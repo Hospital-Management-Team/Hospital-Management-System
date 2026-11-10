@@ -26,6 +26,7 @@
 #include "auth/authorizer.hpp"
 #include "auth/session.hpp"
 #include "config/policy.hpp"
+#include "config/settings.hpp"
 #include "core/clock.hpp"
 #include "core/result.hpp"
 #include "data/database.hpp"
@@ -57,14 +58,19 @@ public:
 
     const AppPolicy& policy() const { return policy_; }
 
+    // HMS-F-041: the alert shows when the stock is below this. The Admin can change it (HMS-F-052);
+    // it is read again at every use.
+    std::int64_t lowStockThreshold() const { return settings_.lowStockThreshold(); }
+
 private:
     bool authorize(const Session& session, Permission permission);
     Error denied(const Session& session, const char* what) const;
-    bool isLow(const Medicine& m) const { return m.active && m.stockQuantity < policy_.labPharmacy.lowStockThreshold; }
+    bool isLow(const Medicine& m) const { return m.active && m.stockQuantity < settings_.lowStockThreshold(); }
 
     Database& db_;
     const Clock& clock_;
     AppPolicy policy_;
+    Settings settings_;
     PharmacyRepository repo_;
     AuditLog audit_;
 };

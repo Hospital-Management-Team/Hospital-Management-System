@@ -1,6 +1,8 @@
 #include "data/store.hpp"
 
+#include <cstring>
 #include <filesystem>
+#include <fstream>
 #include <system_error>
 
 #include "data/schema.hpp"
@@ -25,6 +27,31 @@ bool storeFileExists(const std::string& utf8Path) {
     return fs::exists(fromUtf8(utf8Path), ec);
 }
 
+bool storeFileIsPlain(const std::string& utf8Path) {
+    std::ifstream in(fromUtf8(utf8Path), std::ios::binary);
+    char header[16] = {};
+    if (!in.read(header, sizeof(header))) return false;
+    return std::memcmp(header, "SQLite format 3", 15) == 0 && header[15] == '\0';
+}
+
+bool isStorePassphraseAcceptable(const std::string& passphrase, std::string& reason) {
+    if (passphrase.size() < 8) {
+        reason = "The passphrase must be at least 8 characters.";
+        return false;
+    }
+    if (passphrase.size() > 128) {
+        reason = "The passphrase must be at most 128 characters.";
+        return false;
+    }
+    return true;
+}
+
+void wipe(std::string& secret) {
+    volatile char* p = secret.empty() ? nullptr : &secret[0];
+    for (std::size_t i = 0; i < secret.size(); ++i) p[i] = 0;
+    secret.clear();
+}
+
 std::string checkIntegrity(Database& db) {
     {
         Statement st = db.prepare("PRAGMA quick_check");
@@ -39,9 +66,19 @@ std::string checkIntegrity(Database& db) {
     return {};
 }
 
-StoreOpenResult openStore(const std::string& utf8Path, bool createIfMissing) {
+StoreOpenResult openStore(const std::string& utf8Path, bool createIfMissing, const std::string& passphrase,
+                          bool encryptPlainStore) {
     StoreOpenResult result;
     const bool exists = storeFileExists(utf8Path);
+    const bool plainOnDisk = exists && storeFileIsPlain(utf8Path);
+
+    // A plain store is never used as it is by the application: it is encrypted first, or refused.
+    if (plainOnDisk && !passphrase.empty() && !encryptPlainStore) {
+        result.status = StoreStatus::NotEncrypted;
+        result.message = "The data store at " + utf8Path +
+                         " is not encrypted. Patient data must not be stored in plain text. It has not been changed.";
+        return result;
+    }
 
     if (!exists && !createIfMissing) {
         result.status = StoreStatus::NotFound;
@@ -61,7 +98,20 @@ StoreOpenResult openStore(const std::string& utf8Path, bool createIfMissing) {
 
     std::unique_ptr<Database> db;
     try {
-        db = std::make_unique<Database>(utf8Path, Database::Mode::ReadWrite);
+        // A plain file being encrypted is opened plain first and keyed once its checks have passed.
+        db = std::make_unique<Database>(utf8Path, Database::Mode::ReadWrite, plainOnDisk ? std::string() : passphrase);
+        if (exists && !plainOnDisk && !result.created) {
+            // The first read tells a right passphrase from a wrong one (or from a damaged file).
+            try {
+                db->queryInt("SELECT count(*) FROM sqlite_master");
+            } catch (const DbError&) {
+                if (passphrase.empty()) throw;  // no passphrase given: an unreadable file, as before
+                db.reset();
+                result.status = StoreStatus::WrongPassphrase;
+                result.message = "The passphrase is wrong, or the data store is damaged. It has not been changed.";
+                return result;
+            }
+        }
         db->exec("PRAGMA foreign_keys = ON");
 
         // Read-only checks first: a damaged store must never be modified.
@@ -89,6 +139,11 @@ StoreOpenResult openStore(const std::string& utf8Path, bool createIfMissing) {
             result.status = StoreStatus::Damaged;
             result.message = "The file is a database but not an HMS data store. It has not been changed.";
             return result;
+        }
+
+        if (plainOnDisk && !passphrase.empty()) {
+            db->rekey(passphrase);  // encrypts the whole file in place (HMS-NF-003)
+            result.encryptedNow = true;
         }
 
         // Durability settings (SAD ADR-002): rollback journal, full sync.

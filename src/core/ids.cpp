@@ -1,6 +1,6 @@
 #include "core/ids.hpp"
 
-#include <sqlite3.h>
+#include <sqlite3mc_amalgamation.h>
 
 namespace hms {
 

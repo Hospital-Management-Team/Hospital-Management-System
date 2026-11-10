@@ -170,6 +170,25 @@ TEST_CASE("TC-Doc-03 a consultation cannot be recorded before the appointment st
     CHECK(f.consultations.recordConsultation(doctorSession("mehta"), f.draft(appt.id)).ok());
 }
 
+TEST_CASE("TC-Doc-03 checkRecordable gives the same answers as recording, without writing anything") {
+    ConsultationFixture f;  // the clock starts on Sunday 25-10-2026
+    const auto mehta = f.addDoctor("mehta");
+    f.addDoctor("rao");
+    const auto uhid = f.addPatient("Ravi Kumar");
+    const auto later = f.bookOk(uhid, mehta, at(kTuesday, 9, 0));
+    const auto now = f.visit(f.addPatient("Asha Rao"), mehta);
+
+    CHECK(f.consultations.checkRecordable(doctorSession("mehta"), now.id).ok());
+    CHECK(f.consultations.checkRecordable(doctorSession("mehta"), later.id).error().kind == ErrorKind::Conflict);
+    CHECK(f.consultations.checkRecordable(doctorSession("rao"), now.id).error().kind == ErrorKind::AccessDenied);
+    CHECK(f.consultations.checkRecordable(doctorSession("mehta"), 9999).error().kind == ErrorKind::NotFound);
+    CHECK(f.consultations.checkRecordable(test::receptionist(), now.id).error().kind == ErrorKind::AccessDenied);
+
+    REQUIRE(f.consultations.recordConsultation(doctorSession("mehta"), f.draft(now.id)).ok());
+    CHECK(f.consultations.checkRecordable(doctorSession("mehta"), now.id).error().kind == ErrorKind::Conflict);
+    CHECK(f.count("SELECT count(*) FROM consultation") == 1);  // checking never records
+}
+
 TEST_CASE("TC-Doc-03 the store itself refuses a consultation that does not match its appointment") {
     ConsultationFixture f;
     const auto mehta = f.addDoctor("mehta");

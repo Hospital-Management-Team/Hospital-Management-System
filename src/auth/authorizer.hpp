@@ -54,6 +54,7 @@ enum class Permission {
     ManageStaffAccounts,       // HMS-F-023:     Admin (list, deactivate, reactivate, unlock, reset password)
     ViewReports,               // HMS-F-051:     Admin
     ManageMasterData,          // HMS-F-050:     Admin (departments, consultation rooms, doctor-department mapping)
+    ManageSettings,            // HMS-F-052:     Admin (cutoff, lockout cooldown, low-stock threshold)
 };
 
 bool isAllowed(Role role, Permission permission);

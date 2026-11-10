@@ -84,6 +84,10 @@ void ConsoleApp::recordConsultationScreen() {
         appointmentId = *id;
     }
 
+    // Refuse right away if this appointment cannot be recorded, before the doctor types the form.
+    auto recordable = consultations_->checkRecordable(session_, appointmentId);
+    if (!recordable) { handleFailure(recordable.error()); return; }
+
     ConsultationDraft draft;
     draft.appointmentId = appointmentId;
     auto diagnosis = io_.ask<std::string>("* Diagnosis: ", [&](const std::string& s) -> Result<std::string> {

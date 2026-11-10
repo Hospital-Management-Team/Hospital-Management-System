@@ -1,5 +1,5 @@
 // TC-Reg-02: UHID allocation and duplicate-candidate review
-// (SRS v11 draft HMS-F-002, AC (1)-(9); SAD 4.2.2). Integration tests against a
+// (SRS HMS-F-002, AC (1)-(9); SAD 4.2.2). Integration tests against a
 // real SQLite store.
 #include <doctest.h>
 

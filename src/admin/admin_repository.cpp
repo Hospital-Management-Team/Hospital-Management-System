@@ -185,7 +185,7 @@ HospitalReport AdminRepository::report(const std::string& from, const std::strin
     {   // Appointments by slot date (slot_start is already hospital-local).
         auto st = db_.prepare(
             "SELECT COUNT(*), COALESCE(SUM(status = 'BOOKED'), 0), COALESCE(SUM(status = 'COMPLETED'), 0), "
-            "COALESCE(SUM(status = 'CANCELLED'), 0), COALESCE(SUM(status = 'NO_SHOW'), 0), "
+            "COALESCE(SUM(status = 'CANCELLED'), 0), "
             "COUNT(DISTINCT CASE WHEN status IN ('BOOKED', 'COMPLETED') THEN uhid END) "
             "FROM appointment WHERE substr(slot_start, 1, 10) BETWEEN ? AND ?");
         st.bind(1, from).bind(2, to);
@@ -194,15 +194,14 @@ HospitalReport AdminRepository::report(const std::string& from, const std::strin
             r.booked = st.getInt64(1);
             r.completed = st.getInt64(2);
             r.cancelled = st.getInt64(3);
-            r.noShow = st.getInt64(4);
-            r.patientsSeen = st.getInt64(5);
+            r.patientsSeen = st.getInt64(4);
         }
     }
     {
         auto st = db_.prepare(
             "SELECT substr(slot_start, 1, 10) AS d, "
             "COUNT(DISTINCT CASE WHEN status IN ('BOOKED', 'COMPLETED') THEN uhid END), "
-            "SUM(status = 'BOOKED'), SUM(status = 'COMPLETED'), SUM(status = 'CANCELLED'), SUM(status = 'NO_SHOW') "
+            "SUM(status = 'BOOKED'), SUM(status = 'COMPLETED'), SUM(status = 'CANCELLED') "
             "FROM appointment WHERE d BETWEEN ? AND ? GROUP BY d ORDER BY d");
         st.bind(1, from).bind(2, to);
         while (st.step()) {
@@ -212,14 +211,13 @@ HospitalReport AdminRepository::report(const std::string& from, const std::strin
             d.booked = st.getInt64(2);
             d.completed = st.getInt64(3);
             d.cancelled = st.getInt64(4);
-            d.noShow = st.getInt64(5);
             r.days.push_back(d);
         }
     }
     {
         auto st = db_.prepare(
             "SELECT s.username, p.department, SUM(a.status = 'BOOKED'), SUM(a.status = 'COMPLETED'), "
-            "SUM(a.status = 'CANCELLED'), SUM(a.status = 'NO_SHOW') "
+            "SUM(a.status = 'CANCELLED') "
             "FROM appointment a JOIN staff_accounts s ON s.staff_id = a.doctor_staff_id "
             "JOIN doctor_profile p ON p.staff_id = a.doctor_staff_id "
             "WHERE substr(a.slot_start, 1, 10) BETWEEN ? AND ? "
@@ -232,7 +230,6 @@ HospitalReport AdminRepository::report(const std::string& from, const std::strin
             d.booked = st.getInt64(2);
             d.completed = st.getInt64(3);
             d.cancelled = st.getInt64(4);
-            d.noShow = st.getInt64(5);
             r.doctors.push_back(d);
         }
     }

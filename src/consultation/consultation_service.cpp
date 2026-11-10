@@ -112,6 +112,46 @@ Result<ValidConsultation> ConsultationService::validate(const ConsultationDraft&
     return out;
 }
 
+std::optional<Error> ConsultationService::stateProblem(const AppointmentRecord& appt, const std::string& apptText) {
+    if (appt.status == AppointmentStatus::Cancelled) {
+        return Error::conflict("Appointment " + apptText + " was cancelled; there is nothing to record.");
+    }
+    if (appt.status == AppointmentStatus::Completed || repo_.existsForAppointment(appt.id)) {
+        return Error::conflict("A consultation has already been recorded for appointment " + apptText + ".");
+    }
+    if (appt.status != AppointmentStatus::Booked) {
+        return Error::conflict("Appointment " + apptText + " is not a booked appointment (" + to_string(appt.status) +
+                               ").");
+    }
+    // A visit is recorded once it has started, never ahead of time.
+    if (appt.start.epochMinutes() > localSlotAt(clock_.now(), policy_.utcOffsetMinutes).epochMinutes()) {
+        return Error::conflict("Appointment " + apptText + " starts at " + appt.start.toDisplay() +
+                               ". A consultation can be recorded once it has started.");
+    }
+    return std::nullopt;
+}
+
+Result<std::int64_t> ConsultationService::checkRecordable(const Session& session, std::int64_t appointmentId) {
+    if (!authorize(session, Permission::RecordConsultation)) {
+        return Error::accessDenied("Your role (" + to_string(session.role) + ") may not record consultations.");
+    }
+    const std::string apptText = formatAppointmentId(appointmentId);
+    try {
+        auto appt = appointments_.findAppointment(appointmentId);
+        if (!appt) return Error::notFound("No appointment found with number " + apptText + ".");
+        auto doctorId = appointments_.doctorIdForUsername(session.userId);
+        if (!doctorId) return Error::notFound("No doctor profile is set up for your account. Ask an Administrator.");
+        if (appt->doctorStaffId != *doctorId) {
+            auditDenied(session, audit_action::kConsultationRecord, apptText);
+            return Error::accessDenied("Appointment " + apptText + " belongs to another doctor.");
+        }
+        if (auto problem = stateProblem(*appt, apptText)) return *problem;
+        return appt->id;
+    } catch (const DbError&) {
+        return Error::storageFailure(kReadFailed);
+    }
+}
+
 Result<ConsultationRecord> ConsultationService::recordConsultation(const Session& session,
                                                                    const ConsultationDraft& draft) {
     if (!authorize(session, Permission::RecordConsultation)) {
@@ -136,21 +176,7 @@ Result<ConsultationRecord> ConsultationService::recordConsultation(const Session
         // Checked again inside the transaction, so two sessions cannot both record the same visit.
         appt = appointments_.findAppointment(draft.appointmentId);
         if (!appt) return Error::notFound("No appointment found with number " + apptText + ".");
-        if (appt->status == AppointmentStatus::Cancelled) {
-            return Error::conflict("Appointment " + apptText + " was cancelled; there is nothing to record.");
-        }
-        if (appt->status == AppointmentStatus::Completed || repo_.existsForAppointment(appt->id)) {
-            return Error::conflict("A consultation has already been recorded for appointment " + apptText + ".");
-        }
-        if (appt->status != AppointmentStatus::Booked) {
-            return Error::conflict("Appointment " + apptText + " is not a booked appointment (" +
-                                   to_string(appt->status) + ").");
-        }
-        // A visit is recorded once it has started, never ahead of time.
-        if (appt->start.epochMinutes() > localSlotAt(clock_.now(), policy_.utcOffsetMinutes).epochMinutes()) {
-            return Error::conflict("Appointment " + apptText + " starts at " + appt->start.toDisplay() +
-                                   ". A consultation can be recorded once it has started.");
-        }
+        if (auto problem = stateProblem(*appt, apptText)) return *problem;
 
         valid.value().uhid = appt->uhid;  // the patient comes from the appointment
         valid.value().doctorStaffId = *doctorId;

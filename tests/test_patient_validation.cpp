@@ -1,4 +1,4 @@
-// TC-Reg-01: mandatory fields and formats (SRS v11 draft HMS-F-001).
+// TC-Reg-01: mandatory fields and formats (SRS HMS-F-001).
 #include <doctest.h>
 
 #include <algorithm>

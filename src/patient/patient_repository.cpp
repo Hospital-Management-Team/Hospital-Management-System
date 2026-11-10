@@ -41,6 +41,22 @@ std::int64_t PatientRepository::insert(const NewPatient& p) {
     return db_.lastInsertRowId();
 }
 
+void PatientRepository::update(std::int64_t uhid, const NewPatient& p) {
+    Statement st = db_.prepare(
+        "UPDATE patient SET full_name = ?2, normalised_name = ?3, date_of_birth = ?4, dob_estimated = ?5, "
+        "gender = ?6, address = ?7, phone = ?8, no_phone_confirmed = ?9 WHERE uhid = ?1");
+    st.bind(1, uhid)
+        .bind(2, p.fullName)
+        .bind(3, p.normalisedName)
+        .bind(4, p.dateOfBirth.toIso())
+        .bind(5, p.dobEstimated ? 1 : 0)
+        .bind(6, to_string(p.gender))
+        .bind(7, p.address)
+        .bind(8, p.phone)
+        .bind(9, p.noPhoneConfirmed ? 1 : 0);
+    st.run();
+}
+
 std::optional<PatientRecord> PatientRepository::findByUhid(std::int64_t uhid) {
     Statement st = db_.prepare(std::string("SELECT ") + kColumns + " FROM patient WHERE uhid = ?1");
     st.bind(1, uhid);

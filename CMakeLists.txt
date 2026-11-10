@@ -22,14 +22,20 @@ if(HMS_SANITIZE)
   endif()
 endif()
 
-# ---- SQLite (third_party/sqlite) -------------------------------------------
-add_library(hms_sqlite STATIC third_party/sqlite/sqlite3.c)
-target_include_directories(hms_sqlite SYSTEM PUBLIC third_party/sqlite)
+# ---- SQLite3 Multiple Ciphers (third_party/sqlite3mc) ---------------------
+add_library(hms_sqlite STATIC third_party/sqlite3mc/sqlite3mc_amalgamation.c)
+target_include_directories(hms_sqlite SYSTEM PUBLIC third_party/sqlite3mc)
 target_compile_definitions(hms_sqlite PRIVATE
   SQLITE_DQS=0
   SQLITE_DEFAULT_FOREIGN_KEYS=1
   SQLITE_OMIT_DEPRECATED
-  SQLITE_THREADSAFE=1)
+  SQLITE_THREADSAFE=1
+  # Only ChaCha20-Poly1305 (authenticated) is built in; the store is always encrypted with it.
+  HAVE_CIPHER_AES=0
+  HAVE_CIPHER_RC4=0
+  HAVE_CIPHER_SQLCIPHER=0
+  HAVE_CIPHER_ASCON128=0
+  HAVE_CIPHER_AEGIS=0)
 if(MSVC)
   target_compile_options(hms_sqlite PRIVATE /W0)
 else()
@@ -89,6 +95,7 @@ set(HMS_FOUNDATION_SOURCES
 set(HMS_FEATURE_SOURCES
   # Patient registration and search (issue #2)
   src/audit/audit_log.cpp
+  src/config/settings.cpp
   src/auth/authorizer.cpp
   src/patient/uhid.cpp
   src/patient/phone.cpp
@@ -137,7 +144,7 @@ add_library(hms_core STATIC ${HMS_FOUNDATION_SOURCES} ${HMS_FEATURE_SOURCES})
 target_include_directories(hms_core PUBLIC src)
 target_link_libraries(hms_core PUBLIC hms_sqlite hms_argon2 PRIVATE hms_warnings)
 if(WIN32)
-  target_link_libraries(hms_core PUBLIC bcrypt)
+  target_link_libraries(hms_core PUBLIC bcrypt advapi32)
 endif()
 
 add_executable(hms src/app/main.cpp)
@@ -166,6 +173,8 @@ if(HMS_BUILD_TESTS)
     tests/test_search.cpp
     tests/test_patient_store.cpp
     tests/test_console_app.cpp
+    # HMS-F-005 (edit patient demographics)
+    tests/test_patient_update.cpp
     # issue #3
     tests/test_authentication.cpp
     # issue #4
@@ -182,6 +191,7 @@ if(HMS_BUILD_TESTS)
     tests/test_medical_record_console.cpp
     tests/test_audit_log_view.cpp
     tests/test_admin.cpp
+    tests/test_settings.cpp
     # issue #8
     tests/test_lab.cpp
     tests/test_pharmacy.cpp

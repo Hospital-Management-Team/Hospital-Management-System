@@ -221,6 +221,37 @@ void masterDataScreen(ConsoleIO& io, AdminService& admin, const Session& session
     }
 }
 
+void settingsScreen(ConsoleIO& io, AdminService& admin, const Session& session) {
+    auto& out = io.out();
+    while (true) {
+        auto list = admin.listSettings(session);
+        if (!list) { io.showError(list.error()); return; }
+        out << "\n--- SYSTEM SETTINGS ---   (a change applies from the next operation; no restart is needed)\n";
+        int n = 1;
+        for (const auto& s : list.value()) {
+            out << "  " << n++ << ". " << s.info.label << "\n     Now: " << s.value << " " << s.info.unit
+                << "   (allowed " << s.info.min << " to " << s.info.max << ", built-in default " << s.defaultValue
+                << ")\n";
+        }
+        out << "  0. Back\n";
+        auto c = io.readLine("Choose a setting to change: ");
+        if (!c) return;
+        const std::string choice = text::trimSpaces(*c);
+        if (choice == "0" || choice.empty()) return;
+        if (choice.size() != 1 || choice[0] < '1' || choice[0] > static_cast<char>('0' + list.value().size())) {
+            out << "  Please choose a number from 0 to " << list.value().size() << ".\n";
+            continue;
+        }
+        const SettingValue& chosen = list.value()[static_cast<std::size_t>(choice[0] - '1')];
+        auto value = io.readLine("New value in " + std::string(chosen.info.unit) + " (Enter to cancel): ");
+        if (!value || text::trimSpaces(*value).empty()) { out << "Cancelled. Nothing was changed.\n"; continue; }
+        auto saved = admin.updateSetting(session, chosen.info.id, *value);
+        if (!saved) { io.showError(saved.error()); continue; }
+        out << "  Saved: " << saved.value().info.key << " is now " << saved.value().value << " "
+            << saved.value().info.unit << ".\n";
+    }
+}
+
 void reportsScreen(ConsoleIO& io, AdminService& admin, const Session& session) {
     auto& out = io.out();
     auto from = io.ask<Date>("From date (DD-MM-YYYY): ", [](const std::string& s) { return input::parseDate(text::trimSpaces(s), "From date"); });
@@ -238,7 +269,7 @@ void reportsScreen(ConsoleIO& io, AdminService& admin, const Session& session) {
         << "  Different patients seen or booked: " << r.patientsSeen << "\n";
     out << "\nAppointments\n"
         << "  Total " << r.appointments << "   Booked " << r.booked << "   Completed " << r.completed
-        << "   Cancelled " << r.cancelled << "   No-show " << r.noShow << "\n"
+        << "   Cancelled " << r.cancelled << "\n"
         << "  Consultations recorded: " << r.consultations << "\n";
     out << "\nBilling and payments\n"
         << "  Bills generated: " << r.billsCount << ", total " << money(r.billedPaise) << "\n"
@@ -250,23 +281,22 @@ void reportsScreen(ConsoleIO& io, AdminService& admin, const Session& session) {
     if (r.days.empty()) out << "  None.\n";
     else {
         out << "  " << text::fitWidth("Date", 12) << text::fitWidth("Patients", 10) << text::fitWidth("Booked", 8)
-            << text::fitWidth("Done", 6) << text::fitWidth("Cancel", 8) << "No-show\n";
+            << text::fitWidth("Done", 6) << "Cancel\n";
         for (const auto& d : r.days) {
             out << "  " << text::fitWidth(displayDate(d.date), 12) << text::fitWidth(std::to_string(d.patientsSeen), 10)
                 << text::fitWidth(std::to_string(d.booked), 8) << text::fitWidth(std::to_string(d.completed), 6)
-                << text::fitWidth(std::to_string(d.cancelled), 8) << d.noShow << "\n";
+                << d.cancelled << "\n";
         }
     }
     out << "\nDoctor-wise appointments\n";
     if (r.doctors.empty()) out << "  None.\n";
     else {
         out << "  " << text::fitWidth("Doctor", 18) << text::fitWidth("Department", 20) << text::fitWidth("Total", 7)
-            << text::fitWidth("Booked", 8) << text::fitWidth("Done", 6) << text::fitWidth("Cancel", 8) << "No-show\n";
+            << text::fitWidth("Booked", 8) << text::fitWidth("Done", 6) << "Cancel\n";
         for (const auto& d : r.doctors) {
             out << "  " << text::fitWidth("Dr " + d.doctor, 18) << text::fitWidth(d.department, 20)
                 << text::fitWidth(std::to_string(d.total()), 7) << text::fitWidth(std::to_string(d.booked), 8)
-                << text::fitWidth(std::to_string(d.completed), 6) << text::fitWidth(std::to_string(d.cancelled), 8)
-                << d.noShow << "\n";
+                << text::fitWidth(std::to_string(d.completed), 6) << d.cancelled << "\n";
         }
     }
     out << "\nStaff accounts\n";

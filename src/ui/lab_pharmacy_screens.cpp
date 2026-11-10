@@ -2,17 +2,33 @@
 
 #include "ui/lab_pharmacy_screens.hpp"
 
+#include <cctype>
 #include <ostream>
 
 #include "billing/receipt.hpp"
 #include "core/text.hpp"
 #include "patient/uhid.hpp"
 #include "ui/console_app.hpp"
+#include "validation/input.hpp"
 
 namespace hms {
 
 namespace {
 const char* kCancelled = "Cancelled. Nothing was saved.\n";
+
+// True when the stock item looks like the prescribed medicine: the same text, one name inside the
+// other ("Paracetamol" and "Paracetamol 500 mg"), or the same first word. Case is ignored.
+bool sameMedicine(const std::string& prescribed, const std::string& stock) {
+    auto lower = [](std::string s) {
+        for (char& c : s) c = static_cast<char>(std::tolower(static_cast<unsigned char>(c)));
+        return text::trimSpaces(s);
+    };
+    auto firstWord = [](const std::string& s) { return s.substr(0, s.find(' ')); };
+    const std::string a = lower(prescribed);
+    const std::string b = lower(stock);
+    if (a.empty() || b.empty()) return true;
+    return a.find(b) != std::string::npos || b.find(a) != std::string::npos || firstWord(a) == firstWord(b);
+}
 
 // Asks until a printed number (LAB-000012, 12, ...) is typed; Enter or end of input goes back.
 std::optional<std::int64_t> askNumber(ConsoleIO& io, const std::string& prompt, const std::string& what,
@@ -144,9 +160,10 @@ void labMenu(ConsoleIO& io, LabService& lab, const Session& session) {
 
 void pharmacyMenu(ConsoleIO& io, PharmacyService& pharmacy, const Session& session) {
     auto& out = io.out();
-    const std::int64_t threshold = pharmacy.policy().labPharmacy.lowStockThreshold;
+    std::int64_t threshold = 0;
     bool blocked = false;
     while (!io.exhausted()) {
+        threshold = pharmacy.lowStockThreshold();  // the Admin may have changed it (HMS-F-052)
         out << "\n------------------------------------------------------------------------------\n"
                "PHARMACY MENU  -  " << session.displayName
             << "\n------------------------------------------------------------------------------\n"
@@ -233,10 +250,27 @@ void pharmacyMenu(ConsoleIO& io, PharmacyService& pharmacy, const Session& sessi
             if (!showStockList()) continue;
             auto medId = askNumber(io, "Medicine number to give (Enter to go back): ", "Medicine number", parseMedicineId);
             if (!medId) continue;
+            std::string pickedName;
+            if (auto stock = pharmacy.listStock(session)) {
+                for (const auto& m : stock.value()) if (m.medicineId == *medId) pickedName = m.name;
+            }
             auto qty = io.readLine("Quantity to dispense (Enter for " + std::to_string(chosen->remaining()) + "): ");
             if (!qty) { out << kCancelled; continue; }
             const std::string qtyText = text::trimSpaces(*qty).empty() ? std::to_string(chosen->remaining()) : *qty;
-            auto sure = io.askYesNo("Dispense " + qtyText + " now? (Y/N): ");
+            // A quantity that is not a number is refused here, not after a "Dispense now?" question.
+            auto qtyOk = input::parseWholeNumber(text::trimSpaces(qtyText), "Quantity", 1,
+                                                 pharmacy.policy().labPharmacy.maxStockQuantity);
+            if (!qtyOk) { io.showError(qtyOk.error()); continue; }
+            // Prescription names are free text, so the pharmacist may give another stock item; when the
+            // name differs from what was prescribed, say so and ask again (deviation D-53).
+            if (!pickedName.empty() && !sameMedicine(chosen->medicineName, pickedName)) {
+                out << "  ! The prescription says \"" << chosen->medicineName << "\" but you picked \"" << pickedName
+                    << "\".\n";
+                auto other = io.askYesNo("Give " + pickedName + " for this line anyway? (Y/N): ");
+                if (!other || !*other) { out << kCancelled; continue; }
+            }
+            auto sure = io.askYesNo("Dispense " + qtyText + " x " + (pickedName.empty() ? std::string("this medicine") : pickedName) +
+                                    " now? (Y/N): ");
             if (!sure || !*sure) { out << kCancelled; continue; }
             auto done = pharmacy.dispense(session, *lineId, *medId, qtyText);
             if (!done) { fail(done.error()); continue; }

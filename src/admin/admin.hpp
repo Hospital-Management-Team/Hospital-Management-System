@@ -5,7 +5,17 @@
 #include <string>
 #include <vector>
 
+#include "config/settings.hpp"
+
 namespace hms {
+
+// One system parameter as the Admin sees it (HMS-F-052).
+struct SettingValue {
+    SettingInfo info;
+    std::int64_t value = 0;         // in force now
+    std::int64_t defaultValue = 0;  // the build-time default
+    bool changed() const { return value != defaultValue; }
+};
 
 // One staff account as the Admin sees it. The password hash never leaves the data store.
 struct StaffMember {
@@ -42,7 +52,6 @@ struct DayActivity {
     std::int64_t booked = 0;
     std::int64_t completed = 0;
     std::int64_t cancelled = 0;
-    std::int64_t noShow = 0;
 };
 
 struct DoctorActivity {
@@ -51,8 +60,7 @@ struct DoctorActivity {
     std::int64_t booked = 0;
     std::int64_t completed = 0;
     std::int64_t cancelled = 0;
-    std::int64_t noShow = 0;
-    std::int64_t total() const { return booked + completed + cancelled + noShow; }
+    std::int64_t total() const { return booked + completed + cancelled; }
 };
 
 struct ModeTotal {
@@ -78,8 +86,7 @@ struct HospitalReport {
     std::int64_t booked = 0;
     std::int64_t completed = 0;
     std::int64_t cancelled = 0;
-    std::int64_t noShow = 0;
-    std::int64_t consultations = 0;           // recorded in the range
+    std::int64_t consultations = 0;          // recorded in the range
     // Billing (bills by creation date, payments by payment date)
     std::int64_t billsCount = 0;
     std::int64_t billedPaise = 0;

@@ -30,7 +30,8 @@ Error accountNotFound(std::int64_t id) { return Error::notFound("No staff accoun
 }  // namespace
 
 AdminService::AdminService(Database& db, const Clock& clock, AppPolicy policy)
-    : db_(db), clock_(clock), policy_(policy), audit_(db, clock), repo_(db, policy.utcOffsetMinutes) {}
+    : db_(db), clock_(clock), policy_(policy), settings_(db, policy), audit_(db, clock),
+      repo_(db, policy.utcOffsetMinutes) {}
 
 bool AdminService::authorize(const Session& session, Permission permission) {
     if (isAllowed(session.role, permission)) return true;
@@ -45,6 +46,51 @@ bool AdminService::authorize(const Session& session, Permission permission) {
         // The denial stands even if it could not be recorded.
     }
     return false;
+}
+
+Result<std::vector<SettingValue>> AdminService::listSettings(const Session& session) {
+    if (!authorize(session, Permission::ManageSettings)) {
+        return Error::accessDenied("Your role (" + to_string(session.role) + ") may not change system settings.");
+    }
+    return guarded<std::vector<SettingValue>>(false, [&]() -> Result<std::vector<SettingValue>> {
+        std::vector<SettingValue> out;
+        for (const auto& info : settingInfos()) {
+            out.push_back(SettingValue{info, settings_.get(info.id), settingDefault(info.id, policy_)});
+        }
+        return out;
+    });
+}
+
+Result<SettingValue> AdminService::updateSetting(const Session& session, SettingId id, const std::string& valueText) {
+    if (!authorize(session, Permission::ManageSettings)) {
+        return Error::accessDenied("Your role (" + to_string(session.role) + ") may not change system settings.");
+    }
+    const SettingInfo& info = settingInfo(id);
+    auto parsed = input::parseWholeNumber(text::trimSpaces(valueText), "Value", info.min, info.max);
+    if (!parsed) return parsed.error();
+    const std::int64_t value = parsed.value();
+
+    return guarded<SettingValue>(true, [&]() -> Result<SettingValue> {
+        Transaction tx(db_);
+        const std::int64_t old = settings_.get(id);
+        if (old == value) return Error::conflict("That setting already has this value (" + std::to_string(value) + ").");
+        auto st = db_.prepare(
+            "INSERT INTO system_parameter (name, value, updated_at, updated_by) VALUES (?1, ?2, ?3, ?4) "
+            "ON CONFLICT (name) DO UPDATE SET value = excluded.value, updated_at = excluded.updated_at, "
+            "updated_by = excluded.updated_by");
+        st.bind(1, std::string(info.key)).bind(2, value).bind(3, toIsoUtc(clock_.now())).bind(4, session.userId);
+        st.run();
+
+        AuditEntryInput e;
+        e.action = audit_action::kSettingsUpdate;
+        e.recordId = info.key;
+        // A setting is not patient data, so the old and new value are written (SRS HMS-F-052).
+        e.changedFields = {std::string(info.key) + " " + std::to_string(old) + " -> " + std::to_string(value)};
+        audit_.append(session.userId, e);
+        db_.faultPoint("before_commit");
+        tx.commit();
+        return SettingValue{info, value, settingDefault(id, policy_)};
+    });
 }
 
 Result<std::vector<StaffMember>> AdminService::listStaff(const Session& session) {

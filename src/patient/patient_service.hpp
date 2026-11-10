@@ -50,6 +50,13 @@ public:
 
     Result<PatientRecord> getPatient(const Session& session, std::int64_t uhid);
 
+    // HMS-F-005 (Receptionist): corrects an existing patient's name, date of birth, gender, address
+    // and phone. The draft is the full set of details as they should be (the same rules as
+    // registration); only the fields that differ are written, and the audit entry names them
+    // without their values. A change that would make this patient a duplicate of another (same name,
+    // date of birth and gender) is refused. The UHID never changes.
+    Result<PatientUpdate> updateDemographics(const Session& session, std::int64_t uhid, const PatientDraft& draft);
+
     // Hospital-local "today" from the injected clock.
     Date today() const;
 

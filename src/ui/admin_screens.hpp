@@ -17,5 +17,7 @@ using PasswordReader = std::function<bool(const std::string& prompt, std::string
 void staffAccountsScreen(ConsoleIO& io, AdminService& admin, const Session& session, const PasswordReader& readPassword);
 void masterDataScreen(ConsoleIO& io, AdminService& admin, const Session& session);
 void reportsScreen(ConsoleIO& io, AdminService& admin, const Session& session);
+// System parameters (HMS-F-052): view and change the cutoff, lockout cooldown and low-stock threshold.
+void settingsScreen(ConsoleIO& io, AdminService& admin, const Session& session);
 
 }  // namespace hms

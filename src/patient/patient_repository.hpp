@@ -18,6 +18,9 @@ public:
 
     std::int64_t insert(const NewPatient& p);
 
+    // Replaces the demographic details of an existing patient (the UHID never changes).
+    void update(std::int64_t uhid, const NewPatient& p);
+
     std::optional<PatientRecord> findByUhid(std::int64_t uhid);
 
     // Strong candidates: same normalised name, date of birth and gender.

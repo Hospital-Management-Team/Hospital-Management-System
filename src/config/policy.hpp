@@ -16,11 +16,11 @@ namespace hms {
 
 // Patient registration and search (issue #2).
 struct PatientPolicy {
-    // Full name 1-100 characters, address 1-200 (SRS v11 draft HMS-F-001).
+    // Full name 1-100 characters, address 1-200 (SRS HMS-F-001).
     std::size_t maxNameChars = 100;
     std::size_t maxAddressChars = 200;
 
-    // Date of birth from 01-01-1900 to today (SRS v11 draft 2.5).
+    // Date of birth from 01-01-1900 to today (SRS 2.5).
     Date earliestDateOfBirth{1900, 1, 1};
 
     // When the date of birth is not known, the age may be entered; it is

@@ -4,6 +4,7 @@
 #include <optional>
 
 #include "audit/audit_log.hpp"
+#include "config/settings.hpp"
 #include <argon2.h>
 #include <cctype>
 #include <array>
@@ -256,7 +257,10 @@ LoginResult login(
         const bool shouldLock = updatedFailures >= policy.maxFailedAttempts;
         std::optional<std::string> until;
         if (shouldLock) {
-            until = toIsoUtc(clock.now() + std::chrono::minutes(policy.lockoutMinutes));
+            // The cooldown is an Admin setting (HMS-F-052); the policy value is only its default.
+            AppPolicy defaults;
+            defaults.auth = policy;
+            until = toIsoUtc(clock.now() + std::chrono::minutes(Settings(db, defaults).lockoutMinutes()));
         }
 
         auto update = db.prepare(

@@ -25,7 +25,10 @@ inline std::filesystem::path uniqueTempDir() {
 
 inline UtcSeconds fixedNow() { return makeUtc(2026, 10, 25, 6, 0, 0); }  // 11:30 in Asia/Kolkata
 
-// A new data store in its own temporary folder, locked and opened.
+// The passphrase every test store is encrypted with (HMS-NF-003).
+inline const std::string kTestPassphrase = "test-passphrase-123";
+
+// A new, encrypted data store in its own temporary folder, locked and opened.
 struct TempStore {
     std::filesystem::path dir = uniqueTempDir();
     std::string path = (dir / "hms_test.db").string();
@@ -36,7 +39,7 @@ struct TempStore {
     TempStore() {
         std::string err;
         lock = StoreLock::acquire(canonicalStorePath(path), err);
-        store = openStore(path, true);
+        store = openStore(path, true, kTestPassphrase);
     }
     virtual ~TempStore() {
         store.db.reset();
