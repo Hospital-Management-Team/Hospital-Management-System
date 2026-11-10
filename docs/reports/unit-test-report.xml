@@ -228,7 +228,7 @@
     <testcase classname="C:/Users/jithu/Projects/HMS-auth-rbac/tests/test_registration.cpp" name="TC-Reg-02 (5) / NF-002 a failure before commit leaves neither patient nor audit entry" time="0.085665" status="run"/>
     <testcase classname="C:/Users/jithu/Projects/HMS-auth-rbac/tests/test_registration.cpp" name="TC-Reg-02 (4) audit entries contain IDs and codes, never names, phones or addresses" time="0.082093" status="run"/>
     <testcase classname="C:/Users/jithu/Projects/HMS-auth-rbac/tests/test_registration.cpp" name="SR-001 only a Receptionist may register; denials are audited and change nothing" time="0.077924" status="run"/>
-    <testcase classname="C:/Users/jithu/Projects/HMS-auth-rbac/tests/test_registration.cpp" name="Policy switch: SRS v1.1 behaviour (a matching phone blocks a new UHID)" time="0.079716" status="run"/>
+    <testcase classname="C:/Users/jithu/Projects/HMS-auth-rbac/tests/test_registration.cpp" name="Policy switch: submitted SRS behaviour (a matching phone blocks a new UHID)" time="0.079716" status="run"/>
     <testcase classname="C:/Users/jithu/Projects/HMS-auth-rbac/tests/test_registration.cpp" name="Validation errors are returned before anything is written" time="0.073433" status="run"/>
     <testcase classname="C:/Users/jithu/Projects/HMS-auth-rbac/tests/test_registration.cpp" name="TC-Reg-01/02 no phone available: registered, flagged, and strong duplicates still caught" time="0.087715" status="run"/>
     <testcase classname="C:/Users/jithu/Projects/HMS-auth-rbac/tests/test_search.cpp" name="TC-Rec-02 search by UHID is an exact match in any accepted format" time="0.081065" status="run"/>

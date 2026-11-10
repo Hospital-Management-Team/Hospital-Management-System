@@ -20,8 +20,8 @@ jobs:
     runs-on: ubuntu-24.04
     steps:
       - uses: actions/checkout@v4
-      - name: Install Ninja
-        run: sudo apt-get update && sudo apt-get install -y ninja-build
+      - name: Install Ninja and the GUI build libraries (X11, OpenGL)
+        run: sudo apt-get update && sudo apt-get install -y ninja-build xorg-dev libgl1-mesa-dev
       - name: Configure
         run: cmake -S . -B build -G Ninja -DCMAKE_BUILD_TYPE=Debug -DHMS_WERROR=ON -DHMS_SANITIZE=ON
       - name: Build
@@ -37,8 +37,8 @@ jobs:
       CXX: clang++
     steps:
       - uses: actions/checkout@v4
-      - name: Install Ninja
-        run: sudo apt-get update && sudo apt-get install -y ninja-build
+      - name: Install Ninja and the GUI build libraries (X11, OpenGL)
+        run: sudo apt-get update && sudo apt-get install -y ninja-build xorg-dev libgl1-mesa-dev
       - name: Configure
         run: cmake -S . -B build -G Ninja -DCMAKE_BUILD_TYPE=Release -DHMS_WERROR=ON
       - name: Build

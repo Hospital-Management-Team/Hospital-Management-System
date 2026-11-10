@@ -231,7 +231,7 @@ TEST_CASE("SR-001 only a Receptionist may register; denials are audited and chan
     CHECK(f.count("SELECT count(*) FROM audit_entry WHERE outcome = 'DENIED' AND action = 'PATIENT_REGISTER'") == 2);
 }
 
-TEST_CASE("Policy switch: SRS v1.1 behaviour (a matching phone blocks a new UHID)") {
+TEST_CASE("Policy switch: submitted SRS behaviour (a matching phone blocks a new UHID)") {
     AppPolicy strict;
     strict.patient.phoneMatchAllowsNewPatient = false;
     StoreFixture f(strict);

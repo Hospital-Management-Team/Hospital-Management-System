@@ -6,6 +6,7 @@ set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_CXX_EXTENSIONS OFF)
 
 option(HMS_BUILD_TESTS "Build the doctest unit and integration tests" ON)
+option(HMS_BUILD_GUI "Build the graphical front end (hms_gui: Dear ImGui + GLFW + OpenGL)" ON)
 option(HMS_WERROR "Treat compiler warnings in HMS code as errors" OFF)
 option(HMS_SANITIZE "Build with AddressSanitizer (+UBSan on GCC/Clang)" OFF)
 
@@ -150,6 +151,67 @@ endif()
 add_executable(hms src/app/main.cpp)
 target_link_libraries(hms PRIVATE hms_core hms_warnings)
 
+# ---- Graphical front end (src/gui): Dear ImGui + GLFW + OpenGL ----------------
+# The GUI is another front end for the same services as the console application.
+# Turn it off with -DHMS_BUILD_GUI=OFF on a machine without the OpenGL/X11 headers.
+if(HMS_BUILD_GUI)
+  set(GLFW_BUILD_DOCS OFF CACHE BOOL "" FORCE)
+  set(GLFW_BUILD_EXAMPLES OFF CACHE BOOL "" FORCE)
+  set(GLFW_BUILD_TESTS OFF CACHE BOOL "" FORCE)
+  set(GLFW_INSTALL OFF CACHE BOOL "" FORCE)
+  set(GLFW_BUILD_WAYLAND OFF CACHE BOOL "" FORCE)
+  add_subdirectory(third_party/glfw)
+  find_package(OpenGL REQUIRED)
+
+  add_library(hms_imgui STATIC
+    third_party/imgui/imgui.cpp
+    third_party/imgui/imgui_draw.cpp
+    third_party/imgui/imgui_tables.cpp
+    third_party/imgui/imgui_widgets.cpp
+    third_party/imgui/misc/imgui_stdlib.cpp)
+  target_include_directories(hms_imgui SYSTEM PUBLIC third_party/imgui third_party/imgui/misc)
+  if(MSVC)
+    target_compile_options(hms_imgui PRIVATE /W0)
+  else()
+    target_compile_options(hms_imgui PRIVATE -w)
+  endif()
+
+  add_library(hms_imgui_backends STATIC
+    third_party/imgui/backends/imgui_impl_glfw.cpp
+    third_party/imgui/backends/imgui_impl_opengl3.cpp)
+  target_include_directories(hms_imgui_backends SYSTEM PUBLIC third_party/imgui/backends)
+  target_link_libraries(hms_imgui_backends PUBLIC hms_imgui glfw OpenGL::GL)
+  if(MSVC)
+    target_compile_options(hms_imgui_backends PRIVATE /W0)
+  else()
+    target_compile_options(hms_imgui_backends PRIVATE -w)
+  endif()
+
+  # Screens and the application shell. No window or OpenGL code, so the tests can run it.
+  set(HMS_GUI_SOURCES
+    src/gui/ui.cpp
+    src/gui/context.cpp
+    src/gui/patient_picker.cpp
+    src/gui/screens_patients.cpp
+    src/gui/screens_appointments.cpp
+    src/gui/screens_billing.cpp
+    src/gui/screens_doctor.cpp
+    src/gui/screens_lab_pharmacy.cpp
+    src/gui/screens_admin.cpp
+    src/gui/gui_app.cpp
+  )
+  add_library(hms_gui_core STATIC ${HMS_GUI_SOURCES})
+  target_include_directories(hms_gui_core PUBLIC src)
+  target_link_libraries(hms_gui_core PUBLIC hms_core hms_imgui PRIVATE hms_warnings)
+
+  add_executable(hms_gui src/gui/main_gui.cpp)
+  target_link_libraries(hms_gui PRIVATE hms_gui_core hms_imgui_backends hms_warnings)
+  if(MSVC)
+    # A window application (no console window) that still starts at main().
+    target_link_options(hms_gui PRIVATE /SUBSYSTEM:WINDOWS /ENTRY:mainCRTStartup)
+  endif()
+endif()
+
 # ---- Developer tools ---------------------------------------------------------
 add_executable(hms_seed tools/hms_seed.cpp)
 target_link_libraries(hms_seed PRIVATE hms_core hms_warnings)
@@ -201,5 +263,9 @@ if(HMS_BUILD_TESTS)
   target_include_directories(hms_tests SYSTEM PRIVATE third_party/doctest)
   target_include_directories(hms_tests PRIVATE tests)
   target_link_libraries(hms_tests PRIVATE hms_core hms_warnings)
+  if(HMS_BUILD_GUI)
+    target_sources(hms_tests PRIVATE tests/test_gui.cpp)
+    target_link_libraries(hms_tests PRIVATE hms_gui_core)
+  endif()
   add_test(NAME hms_tests COMMAND hms_tests)
 endif()

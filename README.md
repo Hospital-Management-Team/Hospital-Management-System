@@ -1,20 +1,21 @@
 # Hospital Management System (Team 2)
 
-A patient record and appointment management system for hospitals: a single-user, single-machine C++17 console application backed by SQLite.
+A patient record and appointment management system for hospitals: a single-user, single-machine C++17 application backed by SQLite, with a menu-driven console program (`hms`) and a desktop window program (`hms_gui`). Both use the same services, rules, audit trail and data store.
 
 Requirements, design and tests are in [`SRS_Hospital_Management_System_Team2.md`](SRS_Hospital_Management_System_Team2.md), [`Hospital_Management_System_SAD.docx`](Hospital_Management_System_SAD.docx) and [`HMS_Software_Test_Plan.docx`](HMS_Software_Test_Plan.docx).
 
 ## Build and run
 
-You need a C++17 compiler and CMake 3.16 or later. SQLite, Argon2 and doctest are included in `third_party/`, so nothing else has to be installed.
+You need a C++17 compiler and CMake 3.16 or later. SQLite, Argon2, doctest, Dear ImGui and GLFW are included in `third_party/`, so nothing else has to be installed on Windows. On Linux the window program also needs the X11 and OpenGL development packages (below). To build only the console program and its tests, add `-DHMS_BUILD_GUI=OFF` to the first `cmake` command.
 
 **Linux (Ubuntu 24.04)**
 
 ```bash
-sudo apt install build-essential cmake ninja-build
+sudo apt install build-essential cmake ninja-build xorg-dev libgl1-mesa-dev
 cmake -S . -B build -G Ninja
 cmake --build build
-./build/hms                       # data store: database/hospital.db
+./build/hms                       # console program; data store: database/hospital.db
+./build/hms_gui                   # window program; same data store
 ctest --test-dir build --output-on-failure
 ```
 
@@ -23,7 +24,8 @@ ctest --test-dir build --output-on-failure
 ```bat
 cmake -S . -B build
 cmake --build build --config Debug
-build\Debug\hms.exe
+build\Debug\hms.exe               REM console program
+build\Debug\hms_gui.exe           REM window program, same data store
 ctest --test-dir build -C Debug --output-on-failure
 ```
 
@@ -31,7 +33,7 @@ Or open the folder in Visual Studio ("Open a local folder") and it configures CM
 
 **Data store passphrase (HMS-NF-003):** the data store is encrypted. A new store asks you to choose a passphrase (8 to 128 characters, typed twice), and every start-up asks for it. A store from an earlier build that is not encrypted is encrypted in place after you confirm. The passphrase cannot be recovered; if it is lost, the data cannot be read.
 
-Options: `--store PATH` uses another data store file. To cancel at any prompt, press Ctrl+D on Linux or Ctrl+Z then Enter on Windows.
+Options (both programs): `--store PATH` uses another data store file. In the console program, to cancel at any prompt, press Ctrl+D on Linux or Ctrl+Z then Enter on Windows. Only one program can have a data store open at a time: a second one is refused until the first is closed.
 
 ## Project layout
 
@@ -42,6 +44,7 @@ src/data/        SQLite wrapper (Database, Statement, Transaction), schema migra
 src/platform/    the only OS-specific code: per-store lock, owner-only file creation, UTF-8 console, hidden password input
 src/validation/  input layer (SRS 3.1): line checks, DD-MM-YYYY dates, whole numbers, money
 src/ui/          ConsoleIO: prompts, re-asking on invalid input, end of input cancels
+src/gui/         the window program (hms_gui): start-up and login, one screen per menu entry for each role, shared widgets and theme
 src/config/      build-time policy values ([TEAM DECISION] items in the SRS)
 src/patient/     patient registration, duplicate review, search (issue #2)
 src/audit/       append-only audit trail, written in the same transaction as each change
@@ -50,7 +53,7 @@ src/appointment/ doctor schedules, booking, double-booking prevention, reschedul
 src/record/      versioned medical history, allergies and current medications; care-relationship access (issue #6)
 tools/           hms_seed: synthetic test data, search and booking timings
 tests/           doctest suites (run by CI on every push and pull request)
-third_party/     SQLite3 Multiple Ciphers 2.6.1 (SQLite 3.54.0, encrypted store), Argon2 reference implementation, doctest 2.4.11
+third_party/     SQLite3 Multiple Ciphers 2.6.1 (SQLite 3.54.0, encrypted store), Argon2 reference implementation, doctest 2.4.11, Dear ImGui 1.91.9 and GLFW 3.4 (window program)
 ```
 
 ## Rules for every module
@@ -75,7 +78,7 @@ Only staff log in. Patients are records, not users (SRS 2.3).
 
 Passwords are stored only as salted Argon2id hashes.
 
-Not built yet (see `docs/deviation-log.md`, D-15 to D-18): lockout cooldown, audit entries for login events, account management beyond creating accounts.
+The lockout cooldown, the audit entries for login events and account management (deactivate, reactivate, unlock, new password) are built (D-15 to D-18 are closed).
 Test evidence: `docs/test-results-sprint1.md`.
 ### Patient registration and search (issue #2)
 
@@ -115,7 +118,7 @@ Log in as a **Receptionist** (see Staff login above) to register patients. The r
 
 **Doctor, option 3: my appointments** (HMS-F-021): the logged-in doctor's patients for a date, in time order.
 
-**Settings:** slot length, cutoff, booking horizon and reminder window are in `AppointmentPolicy` (`src/config/policy.hpp`) until the Admin parameter screen (HMS-F-052) exists (deviation log D-38).
+**Settings:** the cutoff, the lockout cooldown and the low-stock threshold are changed in Admin option 8 (system settings, below). Slot length, booking horizon and reminder window stay in `AppointmentPolicy` (`src/config/policy.hpp`).
 
 **Audit:** booking, cancelling, rescheduling, reminders and schedule changes are written in the same transaction as the change, with IDs only (`APT-…`, `STAFF-…`). Denied attempts are audited.
 
@@ -139,9 +142,25 @@ A patient with no version shows "No medical history recorded".
 
 Deviations: D-48 and D-49. Tests: `tests/test_medical_record.cpp` and `tests/test_medical_record_console.cpp` (TC-Rec-01), and `tests/test_consultation.cpp` (TC-Rec-04).
 
+### Window program (`hms_gui`)
+
+SRS 3.1 allows "a simple desktop GUI if implemented". `hms_gui` is a second front end over the same services as the console program, so it applies the same validation, role checks, transactions and audit entries. It adds no business rule of its own. It is built with Dear ImGui (drawing), GLFW (window and input) and OpenGL 3, all vendored in `third_party/`. Differences from the console program are recorded in D-61.
+
+- **Start-up:** the same steps as the console program, as windows: confirm a new empty store, choose a passphrase (typed twice) or enter it (three tries), create the first Administrator, log in. A store that is not encrypted is encrypted in place after confirmation.
+- **Menu:** a list on the left, built from the logged-in account's role; the screen on the right. A patient found on one screen stays selected on the next.
+  - **Receptionist:** Register patient, Patients, Book appointment, Change appointment, Reminders, Bill a visit, Payments, Bills and balances, Receipts.
+  - **Doctor:** My appointments, Record consultation, Patients, Past consultations, Medical history, Lab results, My weekly hours.
+  - **Lab Technician:** Tests waiting, Tests of a patient.
+  - **Pharmacist:** Medicine stock, Dispense, Prescriptions of a patient.
+  - **Administrator:** Staff accounts, Doctor hours, Consultation fees, Master data, Reports, Audit log, System settings.
+- **Keyboard:** Tab moves between fields and Enter submits a form. A focused button is pressed with Space, not Enter.
+- **If a save's outcome is unknown** (HMS-NF-002, `OutcomeUnknown`), changes stay blocked until the program is restarted, as in the console program.
+- **Fonts:** the program uses Segoe UI on Windows, or DejaVu, Noto or Liberation Sans on Linux. Text in scripts those fonts lack (for example Devanagari) shows as "?".
+- **Tests:** `tests/test_gui.cpp` runs the start-up steps and draws every screen of every role without opening a window, with ImGui's own consistency checks on.
+
 ## Continuous integration
 
-`.github/workflows/ci.yml` builds and runs every test on each push and pull request:
+`.github/workflows/ci.yml` builds and runs every test on each push and pull request (the Linux jobs install `xorg-dev` and `libgl1-mesa-dev` for the window program):
 - Ubuntu 24.04 with GCC, plus AddressSanitizer and UBSan;
 - Ubuntu 24.04 with Clang;
 - Windows with MSVC.
