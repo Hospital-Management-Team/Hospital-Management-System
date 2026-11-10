@@ -48,6 +48,7 @@ private:
     void registerPatientScreen();
     void searchPatientsScreen();
     void viewPatientByUhidScreen();
+    void updatePatientScreen();  // HMS-F-005 (Receptionist)
     void findReturningPatientScreen();
     bool nameAndDobSearch();
     bool pickFromResults(const SearchResult& r, const std::string& prompt);

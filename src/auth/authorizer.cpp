@@ -52,6 +52,7 @@ bool isAllowed(Role role, Permission permission) {
         case Permission::ManageStaffAccounts:
         case Permission::ViewReports:
         case Permission::ManageMasterData:
+        case Permission::ManageSettings:
             return role == Role::Admin;
         case Permission::ViewLabOrders:
         case Permission::RecordLabResult:
@@ -98,6 +99,7 @@ std::string auditActionFor(Permission permission) {
         case Permission::ManageStaffAccounts: return audit_action::kStaffAccountManage;
         case Permission::ViewReports: return audit_action::kReportView;
         case Permission::ManageMasterData: return audit_action::kMasterDataManage;
+        case Permission::ManageSettings: return audit_action::kSettingsUpdate;
         case Permission::ViewLabOrders: return audit_action::kLabOrderView;
         case Permission::RecordLabResult: return audit_action::kLabResultRecord;
         case Permission::ViewLabResults: return audit_action::kLabResultView;

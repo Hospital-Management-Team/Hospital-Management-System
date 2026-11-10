@@ -25,6 +25,9 @@ public:
     // Replaces the profile and all weekly hours of one doctor.
     void saveSchedule(std::int64_t staffId, const DoctorScheduleDraft& draft, const std::string& updatedAtUtc);
 
+    // True when the name is a department Admin has switched off (HMS-F-050) and the doctor is not
+    // already in it. An unknown name is not "off".
+    bool movesIntoSwitchedOffDepartment(std::int64_t staffId, const std::string& name);
     bool patientExists(std::int64_t uhid);
 
     // Care relationship (SRS 1.4): the doctor has at least one Booked or Completed

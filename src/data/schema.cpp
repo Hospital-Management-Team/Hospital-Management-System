@@ -5,8 +5,8 @@ namespace hms::schema {
 namespace {
 
 // Version 1 - issue #2: patients, audit trail, duplicate-review decisions.
-// Field names follow the SAD v11 draft data dictionary (4.3.2) in snake_case.
-// Store-enforced invariants (SRS v11 draft 2.5): CHECK constraints, unique keys,
+// Field names follow the SAD data dictionary (4.3.2) in snake_case.
+// Store-enforced invariants (SRS 2.5): CHECK constraints, unique keys,
 // foreign keys, and an append-only audit table.
 const char* kV1 = R"SQL(
 CREATE TABLE patient (
@@ -384,6 +384,17 @@ CREATE TABLE consultation_room (
 );
 )SQL";
 
+// Version 11 - HMS-F-052: parameters the Admin can change without a rebuild. A row exists only for
+// a parameter the Admin has changed; the others keep their build-time default (config/policy.hpp).
+const char* kV11 = R"SQL(
+CREATE TABLE system_parameter (
+    name        TEXT    PRIMARY KEY CHECK (name IN ('appointment_cutoff_minutes', 'lockout_minutes', 'low_stock_threshold')),
+    value       INTEGER NOT NULL CHECK (value >= 0),
+    updated_at  TEXT    NOT NULL,
+    updated_by  TEXT    NOT NULL
+);
+)SQL";
+
 }  // namespace
 
 // Each feature appends its tables as the next numbered migration.
@@ -400,6 +411,7 @@ const std::vector<Migration>& migrations() {
         {8, "Medical history versions (#6)", kV8},
         {9, "Lab technician and pharmacist accounts, lab results, medicine stock and dispensing (#8)", kV9},
         {10, "Deactivated staff accounts, departments and consultation rooms (#9)", kV10},
+        {11, "Admin-editable system parameters (HMS-F-052)", kV11},
     };
     return kAll;
 }

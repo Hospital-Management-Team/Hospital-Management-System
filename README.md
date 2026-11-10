@@ -29,6 +29,8 @@ ctest --test-dir build -C Debug --output-on-failure
 
 Or open the folder in Visual Studio ("Open a local folder") and it configures CMake automatically.
 
+**Data store passphrase (HMS-NF-003):** the data store is encrypted. A new store asks you to choose a passphrase (8 to 128 characters, typed twice), and every start-up asks for it. A store from an earlier build that is not encrypted is encrypted in place after you confirm. The passphrase cannot be recovered; if it is lost, the data cannot be read.
+
 Options: `--store PATH` uses another data store file. To cancel at any prompt, press Ctrl+D on Linux or Ctrl+Z then Enter on Windows.
 
 ## Project layout
@@ -46,9 +48,9 @@ src/audit/       append-only audit trail, written in the same transaction as eac
 src/auth/        Session, role check, staff login, password hashing and policy (issue #3)
 src/appointment/ doctor schedules, booking, double-booking prevention, reschedule, cancel, reminders, doctor queue (issue #4)
 src/record/      versioned medical history, allergies and current medications; care-relationship access (issue #6)
-tools/           hms_seed: synthetic test data and search timings
+tools/           hms_seed: synthetic test data, search and booking timings
 tests/           doctest suites (run by CI on every push and pull request)
-third_party/     SQLite 3.50.4 amalgamation, Argon2 reference implementation, doctest 2.4.11
+third_party/     SQLite3 Multiple Ciphers 2.6.1 (SQLite 3.54.0, encrypted store), Argon2 reference implementation, doctest 2.4.11
 ```
 
 ## Rules for every module
@@ -66,7 +68,7 @@ third_party/     SQLite 3.50.4 amalgamation, Argon2 reference implementation, do
 
 Only staff log in. Patients are records, not users (SRS 2.3).
 
-1. **First run:** on an empty data store the app asks you to create the Administrator account. Passwords need 8+ characters with an upper-case letter, a lower-case letter, a digit and a symbol.
+1. **First run:** on an empty data store the app asks you to choose the store passphrase, then to create the Administrator account. Passwords need 8+ characters with an upper-case letter, a lower-case letter, a digit and a symbol.
 2. **Login:** everyone, including the Administrator, logs in with a username and password. The role comes from the stored account and is never chosen by the user. After 5 failed attempts the account is locked.
 3. **Administrator** can create staff accounts (Doctor, Receptionist, Administrator) and set each doctor's department and weekly hours (issue #4).
 4. **Receptionist** registers and searches patients. **Doctor** searches and opens patient records.
@@ -92,11 +94,13 @@ Log in as a **Receptionist** (see Staff login above) to register patients. The r
 
 **Find a returning patient** (Receptionist, option 4): ask for the mobile number first. The list shows everyone registered with that number; confirm the person by name and date of birth, then open the record. If the patient has no phone or isn't listed, the screen moves on to a name and date-of-birth search. A date of birth estimated from an age matches within one year.
 
+**Correct a patient's details** (Receptionist, HMS-F-005): the last entry of the Reception menu (option 8, or 12 when billing is set up). Enter the UHID; press Enter at a prompt to keep the value shown, or type the new one. The new record is read back and confirmed before it is saved. A change that would make the patient a duplicate of another (same name, date of birth and gender) is refused, and the audit entry names the changed fields without their values. Tests: `tests/test_patient_update.cpp`.
+
 **Doctor** (logs in as a Doctor account): can search and view demographic details only.
 
 **Audit** (HMS-SR-004): every registration and decision is written in the same transaction as the change. The store refuses any edit or deletion of an audit entry.
 
-**Test data:** `./build/hms_seed --store perf.db --count 100000 --bench` creates synthetic patients and times the searches.
+**Test data:** `./build/hms_seed --store perf.db --count 100000 --bench` creates synthetic patients, then times the searches and the booking screens and prints the 90th percentile against the 3-second limit (HMS-NF-001). The test store is encrypted like a real one (passphrase `hms-bench-passphrase`, or `--key PASSPHRASE`; `--plain` makes an unencrypted store for comparing timings only).
 
 ### Appointments (issue #4)
 
@@ -106,7 +110,7 @@ Log in as a **Receptionist** (see Staff login above) to register patients. The r
 - **Option 5, book** (HMS-F-010, F-011): patient UHID → date → doctors working that day with their free slots → slot → confirm. You get an appointment number such as `APT-000001`.
   - Slots are 15 minutes, from the start of the doctor's hours. Only slots that haven't started, up to 90 days ahead, are offered.
   - A doctor, and a patient, can have only one booked appointment at any moment. A taken or overlapping slot is refused, and the existing appointment is not changed. The store's unique indexes enforce this too.
-- **Option 6, reschedule or cancel** (HMS-F-012): pick the patient's upcoming appointment, then R or C. Changes close **60 minutes** before the start. A cancelled or rescheduled slot is free again at once. A reschedule keeps the old record as Cancelled, linked to the new appointment.
+- **Option 6, reschedule or cancel** (HMS-F-012): pick the patient's upcoming appointment, then R or C. Changes close **60 minutes** before the start (the Admin can change this in option 8). A cancelled or rescheduled slot is free again at once. A reschedule keeps the old record as Cancelled, linked to the new appointment.
 - **Option 7, reminders** (HMS-F-013): booked appointments starting in the next 48 hours, with mobile numbers. A reminder entry is recorded the first time each one is listed (marked NEW). Run it once a day and contact the NEW patients.
 
 **Doctor, option 3: my appointments** (HMS-F-021): the logged-in doctor's patients for a date, in time order.
@@ -130,6 +134,8 @@ A patient with no version shows "No medical history recorded".
 **Audit:** every opening and every update is audited with the UHID and the changed field names, never the clinical text. Refusals are audited too.
 
 **Admin, option 4: view the audit log** (HMS-SR-004). Lists the newest entries first (press Enter for 50, at most 500): time, user, action, record, outcome, changed fields and reason. It is read only; no screen edits or deletes an entry. Other roles are refused, and the refusal is audited (D-50, TC-Sec-05 in `tests/test_audit_log_view.cpp`).
+
+**Admin, option 8: system settings** (HMS-F-052, TC-Admin-02). Shows and changes the appointment change cutoff (0 to 1440 minutes), the login lockout cooldown (1 to 1440 minutes) and the low-stock alert threshold (0 to 100,000 units). A change applies from the next operation without a restart, and is audited with the old and new value (D-60). Tests: `tests/test_settings.cpp`.
 
 Deviations: D-48 and D-49. Tests: `tests/test_medical_record.cpp` and `tests/test_medical_record_console.cpp` (TC-Rec-01), and `tests/test_consultation.cpp` (TC-Rec-04).
 

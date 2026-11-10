@@ -58,7 +58,7 @@ Result<std::string> shortText(const std::string& raw, const char* field, std::si
 }  // namespace
 
 PharmacyService::PharmacyService(Database& db, const Clock& clock, AppPolicy policy)
-    : db_(db), clock_(clock), policy_(policy), repo_(db), audit_(db, clock) {}
+    : db_(db), clock_(clock), policy_(policy), settings_(db, policy), repo_(db), audit_(db, clock) {}
 
 bool PharmacyService::authorize(const Session& session, Permission permission) {
     if (isAllowed(session.role, permission)) return true;
@@ -307,7 +307,7 @@ Result<DispenseOutcome> PharmacyService::dispense(const Session& session, std::i
         out.quantity = qty.value();
         out.remainingToDispense = line->remaining() - qty.value();
         out.stockAfter = med->stockQuantity - qty.value();
-        out.threshold = policy_.labPharmacy.lowStockThreshold;
+        out.threshold = settings_.lowStockThreshold();
         Medicine after = *med;
         after.stockQuantity = out.stockAfter;
         out.lowStock = isLow(after);

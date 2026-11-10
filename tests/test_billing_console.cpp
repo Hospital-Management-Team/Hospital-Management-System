@@ -133,9 +133,9 @@ TEST_CASE("Console: the billing entries appear only when billing is set up, and 
     BillingFixture f;
     const std::string without = runReception(f, "9\n0\n", false);
     CHECK_FALSE(contains(without, "Bill a completed visit"));
-    CHECK(contains(without, "Please choose a number from 0 to 7."));
-    const std::string with = runReception(f, "12\n0\n");
-    CHECK(contains(with, "Please choose a number from 0 to 11."));
+    CHECK(contains(without, "Please choose a number from 0 to 8."));
+    const std::string with = runReception(f, "13\n0\n");
+    CHECK(contains(with, "Please choose a number from 0 to 12."));
 
     f.addDoctor("mehta");
     std::istringstream in("0\n");

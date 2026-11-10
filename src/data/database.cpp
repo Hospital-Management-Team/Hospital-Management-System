@@ -1,6 +1,6 @@
 #include "data/database.hpp"
 
-#include <sqlite3.h>
+#include <sqlite3mc_amalgamation.h>
 
 namespace hms {
 
@@ -89,7 +89,7 @@ bool Statement::isNull(int col) const { return sqlite3_column_type(stmt_, col) =
 
 // ----------------------------------------------------------------- Database
 
-Database::Database(const std::string& utf8Path, Mode mode) {
+Database::Database(const std::string& utf8Path, Mode mode, const std::string& passphrase) {
     int flags = SQLITE_OPEN_READWRITE | SQLITE_OPEN_NOMUTEX;
     if (mode == Mode::ReadWriteCreate) flags |= SQLITE_OPEN_CREATE;
     const int rc = sqlite3_open_v2(utf8Path.c_str(), &db_, flags, nullptr);
@@ -100,6 +100,24 @@ Database::Database(const std::string& utf8Path, Mode mode) {
         throw DbError(rc, msg);
     }
     sqlite3_extended_result_codes(db_, 1);
+    if (!passphrase.empty()) {
+        // The cipher is fixed so a store always opens the same way (the build only contains this one).
+        if (sqlite3mc_config(db_, "cipher", CODEC_TYPE_CHACHA20) != CODEC_TYPE_CHACHA20 ||
+            sqlite3_key_v2(db_, "main", passphrase.data(), static_cast<int>(passphrase.size())) != SQLITE_OK) {
+            sqlite3_close(db_);
+            db_ = nullptr;
+            throw DbError(SQLITE_ERROR, "open " + utf8Path + ": the encryption key could not be set");
+        }
+    }
+}
+
+void Database::rekey(const std::string& newPassphrase) {
+    if (newPassphrase.empty()) throw DbError(SQLITE_MISUSE, "rekey: an empty passphrase would remove the encryption");
+    if (sqlite3mc_config(db_, "cipher", CODEC_TYPE_CHACHA20) != CODEC_TYPE_CHACHA20) {
+        throw DbError(SQLITE_ERROR, "rekey: the cipher could not be selected");
+    }
+    const int rc = sqlite3_rekey_v2(db_, "main", newPassphrase.data(), static_cast<int>(newPassphrase.size()));
+    if (rc != SQLITE_OK) fail(db_, rc, "rekey");
 }
 
 Database::~Database() {

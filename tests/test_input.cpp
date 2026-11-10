@@ -1,4 +1,4 @@
-// Input layer (SRS v11 draft section 3.1; task #13). Tested without the menu.
+// Input layer (SRS section 3.1; task #13). Tested without the menu.
 #include <doctest.h>
 
 #include "validation/input.hpp"

@@ -1,6 +1,6 @@
 #pragma once
 // The session of the logged-in user. Every business function receives it so
-// the caller's role can be checked (SAD v1.10 section 4.4).
+// the caller's role can be checked (SAD section 4.4).
 //
 // main.cpp creates it after a successful staff login (issue #3); the role
 // comes from the stored account. `simulated` was used before login existed

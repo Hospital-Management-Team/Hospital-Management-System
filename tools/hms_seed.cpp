@@ -1,7 +1,7 @@
 // hms_seed - developer tool: fills a data store with synthetic patients and
 // optionally times patient searches (groundwork for TC-Perf-01, HMS-NF-001).
 //
-// Usage: hms_seed --store PATH --count N [--bench]
+// Usage: hms_seed --store PATH --count N [--bench] [--key PASSPHRASE | --plain]
 //
 // Test data only. Records are inserted directly through the repository in
 // one transaction, without audit entries, and must never be used on a store
@@ -15,6 +15,8 @@
 #include <string>
 #include <vector>
 
+#include "appointment/appointment_service.hpp"
+#include "auth/authentication.hpp"
 #include "config/policy.hpp"
 #include "core/clock.hpp"
 #include "data/store.hpp"
@@ -47,18 +49,22 @@ int main(int argc, char** argv) {
     std::string store;
     long long count = 0;
     bool bench = false;
+    // Test stores are encrypted like real ones, so the timings include the cipher (HMS-NF-003).
+    std::string key = "hms-bench-passphrase";
     for (int i = 1; i < argc; ++i) {
         const std::string a = argv[i];
         if (a == "--store" && i + 1 < argc) store = argv[++i];
         else if (a == "--count" && i + 1 < argc) count = std::stoll(argv[++i]);
         else if (a == "--bench") bench = true;
+        else if (a == "--key" && i + 1 < argc) key = argv[++i];
+        else if (a == "--plain") key.clear();  // an unencrypted store, for comparing timings only
         else {
-            std::cerr << "Usage: hms_seed --store PATH --count N [--bench]\n";
+            std::cerr << "Usage: hms_seed --store PATH --count N [--bench] [--key PASSPHRASE | --plain]\n";
             return 2;
         }
     }
     if (store.empty()) {
-        std::cerr << "Usage: hms_seed --store PATH --count N [--bench]\n";
+        std::cerr << "Usage: hms_seed --store PATH --count N [--bench] [--key PASSPHRASE | --plain]\n";
         return 2;
     }
 
@@ -69,7 +75,7 @@ int main(int argc, char** argv) {
         std::cerr << "Cannot lock store: " << err << "\n";
         return 1;
     }
-    auto opened = openStore(canonical, true);
+    auto opened = openStore(canonical, true, key);
     if (opened.status != StoreStatus::Opened) {
         std::cerr << opened.message << "\n";
         return 1;
@@ -108,6 +114,15 @@ int main(int argc, char** argv) {
         SystemClock clock;
         PatientService svc(db, clock, AppPolicy{});
         Session s{"BENCH", "bench", Role::Receptionist, true};
+        // HMS-NF-001: 90 % of operations within 3 seconds, so the 90th percentile is what counts.
+        constexpr double kLimitMs = 3000.0;
+        auto report = [&](const char* label, const std::vector<double>& times) {
+            const double p90 = percentile(times, 0.90);
+            std::cout << label << ": p50 " << percentile(times, 0.50) << " ms, p90 " << p90 << " ms, p95 "
+                      << percentile(times, 0.95) << " ms, max " << *std::max_element(times.begin(), times.end())
+                      << " ms (" << times.size() << " runs; HMS-NF-001 p90 <= " << kLimitMs << " ms: "
+                      << (p90 <= kLimitMs ? "PASS" : "FAIL") << ")\n";
+        };
         auto run = [&](const char* label, SearchMode mode, const std::vector<std::string>& queries) {
             std::vector<double> times;
             for (int i = 0; i < 100; ++i) {
@@ -120,13 +135,67 @@ int main(int argc, char** argv) {
                 }
                 times.push_back(std::chrono::duration<double, std::milli>(t1 - t0).count());
             }
-            std::cout << label << ": p50 " << percentile(times, 0.50) << " ms, p95 " << percentile(times, 0.95)
-                      << " ms (100 runs; HMS-F-004 target p95 <= 2000 ms)\n";
+            report(label, times);
         };
         run("Search by UHID ", SearchMode::Uhid, {"1", "500", "HMS-000777", "42"});
         run("Search by name ", SearchMode::Name, {"sharma", "priya", "kumar", "venkat rao", "a"});
         run("Search by phone", SearchMode::Phone, {"9876543210", "+91 81234 56789", "070000 00000"});
-        std::cout << "Note: timings exclude console display; the full TC-Perf-01 harness needs booking as well.\n";
+
+        // The booking screens: the list of doctors with free slots, then booking a slot (TC-Perf-01).
+        AppPolicy policy;
+        AppointmentService appts(db, clock, policy);
+        Session admin{"BENCH-ADMIN", "bench admin", Role::Admin, true};
+        std::int64_t doctorId = 0;
+        {
+            auth::createStaffAccount(db, "benchdoc", "SecurePass123!", auth::Role::Doctor, clock, "BENCH");
+            auto st = db.prepare("SELECT staff_id FROM staff_accounts WHERE username = 'benchdoc'");
+            if (st.step()) doctorId = st.getInt64(0);
+        }
+        DoctorScheduleDraft hours;
+        hours.department = "General Medicine";
+        for (int day = 1; day <= 7; ++day) hours.hours.push_back(WeeklyHours{day, 9 * 60, 17 * 60});
+        if (doctorId == 0 || !appts.setDoctorSchedule(admin, doctorId, hours)) {
+            std::cerr << "could not set up the benchmark doctor\n";
+            return 1;
+        }
+        const auto patientCount = static_cast<std::int64_t>(repo.count());
+        if (patientCount < 1) {
+            std::cerr << "the booking benchmark needs patients: use --count N\n";
+            return 1;
+        }
+        std::vector<double> screen, book;
+        for (int i = 0; i < 100; ++i) {
+            // Tomorrow onward, so every slot is in the future whatever time the benchmark runs.
+            const Date t = appts.today();
+            const Date day = civilFromDays(daysFromCivil(t.year, t.month, t.day) + 1 + i / 30);
+
+            auto t0 = std::chrono::steady_clock::now();
+            auto doctors = appts.doctorsOn(s, day);
+            auto t1 = std::chrono::steady_clock::now();
+            if (!doctors) {
+                std::cerr << "doctor list failed: " << doctors.error().describe() << "\n";
+                return 1;
+            }
+            screen.push_back(std::chrono::duration<double, std::milli>(t1 - t0).count());
+
+            t0 = std::chrono::steady_clock::now();
+            auto slots = appts.freeSlots(s, doctorId, day);
+            if (!slots || slots.value().empty()) {
+                std::cerr << "no free slot to book on " << day.toDisplay() << "\n";
+                return 1;
+            }
+            const auto uhid = 1 + static_cast<std::int64_t>(rng() % static_cast<unsigned long long>(patientCount));
+            auto booked = appts.book(s, uhid, doctorId, slots.value().front());
+            t1 = std::chrono::steady_clock::now();
+            if (!booked) {
+                std::cerr << "booking failed: " << booked.error().describe() << "\n";
+                return 1;
+            }
+            book.push_back(std::chrono::duration<double, std::milli>(t1 - t0).count());
+        }
+        report("Booking screen (doctors and free slots)", screen);
+        report("Book a slot (find free slot, then book) ", book);
+        std::cout << "Note: timings exclude console display and typing.\n";
     }
     return 0;
 }

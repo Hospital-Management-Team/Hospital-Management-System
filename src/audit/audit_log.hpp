@@ -89,6 +89,9 @@ inline constexpr const char* kDepartmentUpdate = "DEPARTMENT_UPDATE";
 inline constexpr const char* kRoomCreate = "ROOM_CREATE";
 inline constexpr const char* kRoomUpdate = "ROOM_UPDATE";
 inline constexpr const char* kDoctorDepartmentSet = "DOCTOR_DEPARTMENT_SET";
+// System parameters (HMS-F-052). The record is the parameter name; the old and new value are
+// written as the changed field (they are settings, not patient data).
+inline constexpr const char* kSettingsUpdate = "SETTINGS_UPDATE";
 }  // namespace audit_action
 
 struct AuditEntryInput {

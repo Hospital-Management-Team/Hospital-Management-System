@@ -236,6 +236,77 @@ Result<SearchResult> PatientService::searchByNameAndDob(const Session& session, 
     }
 }
 
+Result<PatientUpdate> PatientService::updateDemographics(const Session& session, std::int64_t uhid,
+                                                         const PatientDraft& draft) {
+    if (!authorize(session, Permission::UpdatePatientDemographics)) {
+        return Error::accessDenied("Your role (" + to_string(session.role) + ") may not change patient details.");
+    }
+    auto valid = patient_rules::validatePatient(draft, today(), policy_.patient);
+    if (!valid) return valid.error();
+    NewPatient p = valid.value();
+
+    try {
+        Transaction tx(db_);
+        auto current = repo_.findByUhid(uhid);
+        if (!current) return Error::notFound("No patient found with UHID " + formatUhid(uhid) + ".");
+
+        // An estimated date of birth that is typed back unchanged stays an estimate.
+        if (current->dobEstimated && !p.dobEstimated && p.dateOfBirth == current->dateOfBirth) p.dobEstimated = true;
+
+        std::vector<std::string> changed;
+        if (p.fullName != current->fullName) changed.push_back("full_name");
+        if (!(p.dateOfBirth == current->dateOfBirth) || p.dobEstimated != current->dobEstimated) {
+            changed.push_back("date_of_birth");
+        }
+        if (p.gender != current->gender) changed.push_back("gender");
+        if (p.address != current->address) changed.push_back("address");
+        if (p.phone != current->phone || p.noPhoneConfirmed != current->noPhoneConfirmed) changed.push_back("phone");
+
+        PatientUpdate result;
+        if (changed.empty()) {
+            tx.rollback();  // nothing to write, nothing to audit
+            result.record = *current;
+            return result;
+        }
+
+        // The same duplicate rule as registration, against the other patients.
+        const bool identityChanged = p.normalisedName != text::normaliseName(current->fullName) ||
+                                     !(p.dateOfBirth == current->dateOfBirth) || p.gender != current->gender;
+        if (identityChanged) {
+            auto same = repo_.findStrong(p.normalisedName, p.dateOfBirth, p.gender, uhid);
+            if (!same.empty()) {
+                return Error::conflict("Another patient (" + formatUhid(same.front().uhid) +
+                                       ") already has this name, date of birth and gender. Use that record, or "
+                                       "correct the details.");
+            }
+        }
+        if (!policy_.patient.phoneMatchAllowsNewPatient && p.phone && p.phone != current->phone &&
+            !repo_.findByPhone(*p.phone, uhid).empty()) {
+            return Error::conflict("Hospital policy: this mobile number already belongs to another patient.");
+        }
+
+        repo_.update(uhid, p);
+        AuditEntryInput e;
+        e.action = audit_action::kPatientUpdateDemographics;
+        e.recordId = formatUhid(uhid);
+        e.outcome = AuditOutcome::Ok;
+        e.changedFields = changed;  // field names only, never the values
+        audit_.append(session.userId, e);
+        db_.faultPoint("patient_update_before_commit");
+        tx.commit();
+
+        result.record = *repo_.findByUhid(uhid);
+        result.changedFields = std::move(changed);
+        return result;
+    } catch (const CommitUncertain&) {
+        return Error::outcomeUnknown(kOutcomeUnknown);
+    } catch (const DbError&) {
+        return Error::storageFailure(kStorageFailed);
+    } catch (const InjectedFault&) {
+        return Error::storageFailure(kStorageFailed);
+    }
+}
+
 Result<PatientRecord> PatientService::getPatient(const Session& session, std::int64_t uhid) {
     if (!authorize(session, Permission::ViewPatientDemographics)) {
         return Error::accessDenied("Your role (" + to_string(session.role) + ") may not view patient records.");

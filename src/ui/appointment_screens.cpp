@@ -160,7 +160,7 @@ void ConsoleApp::changeAppointmentScreen() {
     auto& out = io_.out();
     if (blockedForChanges()) return;
     out << "\nRESCHEDULE OR CANCEL AN APPOINTMENT\n"
-        << "  Changes close " << appointments_.policy().appointment.cutoffMinutes
+        << "  Changes close " << appointments_.cutoffMinutes()
         << " minutes before the appointment starts.\n";
     auto patient = askPatient();
     if (!patient) return;

@@ -1,5 +1,5 @@
 #pragma once
-// Common result type for every module function (SAD v1.10 section 4.4,
+// Common result type for every module function (SAD section 4.4,
 // "common contract"). A function either succeeds with a value or fails with
 // exactly one Error. Business outcomes that are not failures (for example
 // "possible duplicates found, staff must decide") are part of the success

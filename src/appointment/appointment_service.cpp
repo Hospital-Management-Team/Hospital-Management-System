@@ -1,6 +1,6 @@
 #include "appointment/appointment_service.hpp"
 
-#include <sqlite3.h>
+#include <sqlite3mc_amalgamation.h>
 
 #include <algorithm>
 #include <set>
@@ -41,7 +41,7 @@ std::string staffRecordId(std::int64_t staffId) { return "STAFF-" + std::to_stri
 }  // namespace
 
 AppointmentService::AppointmentService(Database& db, const Clock& clock, AppPolicy policy)
-    : db_(db), clock_(clock), policy_(policy), repo_(db), audit_(db, clock) {}
+    : db_(db), clock_(clock), policy_(policy), settings_(db, policy), repo_(db), audit_(db, clock) {}
 
 Date AppointmentService::today() const { return localDate(clock_.now(), policy_.utcOffsetMinutes); }
 LocalSlot AppointmentService::now() const { return localSlotAt(clock_.now(), policy_.utcOffsetMinutes); }
@@ -180,6 +180,12 @@ Result<ScheduleSaved> AppointmentService::applySchedule(const Session& session, 
         Transaction tx(db_);
         if (!repo_.findDoctor(doctorStaffId)) {
             return Error::notFound("No Doctor account with staff number " + std::to_string(doctorStaffId) + ".");
+        }
+        // A doctor already in a switched-off department keeps it (their hours can still change);
+        // moving a doctor into one is refused.
+        if (repo_.movesIntoSwitchedOffDepartment(doctorStaffId, clean.department)) {
+            return Error::conflict("The department " + clean.department +
+                                   " is switched off. Switch it on in Master data, or choose another department.");
         }
         repo_.saveSchedule(doctorStaffId, clean, toIsoUtc(clock_.now()));
 
@@ -336,10 +342,11 @@ std::optional<Error> AppointmentService::checkChangeAllowed(const AppointmentRec
                                " and cannot be " + verb + ".");
     }
     const std::int64_t minutesLeft = a.start.epochMinutes() - now().epochMinutes();
-    if (minutesLeft < policy_.appointment.cutoffMinutes) {
+    const int cutoff = settings_.cutoffMinutes();
+    if (minutesLeft < cutoff) {
         return Error::conflict(formatAppointmentId(a.id) + " starts at " + a.start.toDisplay() +
-                               ". It can no longer be " + verb + ": changes close " +
-                               std::to_string(policy_.appointment.cutoffMinutes) + " minutes before the start.");
+                               ". It can no longer be " + verb + ": changes close " + std::to_string(cutoff) +
+                               " minutes before the start.");
     }
     return std::nullopt;
 }

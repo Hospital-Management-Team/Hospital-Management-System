@@ -53,6 +53,12 @@ public:
     Result<DoctorMapping> assignDoctorDepartment(const Session& session, std::int64_t doctorStaffId,
                                                  std::int64_t departmentId);
 
+    // System parameters (HMS-F-052, Admin): the appointment cutoff, the login lockout cooldown and the
+    // low-stock threshold. A change is checked against the allowed range, audited with the old and
+    // new value, and applies from the next operation without a restart.
+    Result<std::vector<SettingValue>> listSettings(const Session& session);
+    Result<SettingValue> updateSetting(const Session& session, SettingId id, const std::string& valueText);
+
     // Inclusive hospital-local dates; from must not be after to, and the range is limited.
     Result<HospitalReport> report(const Session& session, const Date& from, const Date& to);
 
@@ -66,6 +72,7 @@ private:
     Database& db_;
     const Clock& clock_;
     AppPolicy policy_;
+    Settings settings_;
     AuditLog audit_;
     AdminRepository repo_;
 };

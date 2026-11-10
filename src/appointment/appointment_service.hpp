@@ -21,6 +21,7 @@
 #include "auth/authorizer.hpp"
 #include "auth/session.hpp"
 #include "config/policy.hpp"
+#include "config/settings.hpp"
 #include "core/clock.hpp"
 #include "core/result.hpp"
 #include "data/database.hpp"
@@ -73,6 +74,10 @@ public:
     LocalSlot now() const;
     const AppPolicy& policy() const { return policy_; }
 
+    // HMS-F-012: minutes before the start after which an appointment can no longer be changed.
+    // The Admin can change it (HMS-F-052); it is read again at every use.
+    int cutoffMinutes() const { return settings_.cutoffMinutes(); }
+
 private:
     bool authorize(const Session& session, Permission permission);
     // Every slot start for one doctor's working window, on the slot grid.
@@ -94,6 +99,7 @@ private:
     Database& db_;
     const Clock& clock_;
     AppPolicy policy_;
+    Settings settings_;
     AppointmentRepository repo_;
     AuditLog audit_;
 };

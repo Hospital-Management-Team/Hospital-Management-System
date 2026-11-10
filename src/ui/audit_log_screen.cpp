@@ -38,11 +38,15 @@ void auditLogScreen(ConsoleIO& io, AuditLogService& auditLog, const Session& ses
         out << "  No entries.\n";
         return;
     }
-    out << "  " << text::fitWidth("Time", 18) << text::fitWidth("User", 14) << text::fitWidth("Action", 30)
+    // fitWidth adds no padding when the text is exactly the column width, so the
+    // action column is wider than the longest action name (30 characters).
+    constexpr std::size_t kActionWidth = 32;
+    out << "  " << text::fitWidth("Time", 18) << text::fitWidth("User", 14) << text::fitWidth("Action", kActionWidth)
         << text::fitWidth("Record", 14) << "Outcome\n";
     for (const auto& e : r.value()) {
         out << "  " << text::fitWidth(localDateTimeText(e.recordedAt, offset), 18) << text::fitWidth(e.userId, 14)
-            << text::fitWidth(e.action, 30) << text::fitWidth(e.recordId.value_or("-"), 14) << outcomeText(e.outcome)
+            << text::fitWidth(e.action, kActionWidth) << text::fitWidth(e.recordId.value_or("-"), 14)
+            << outcomeText(e.outcome)
             << "\n";
         if (e.changedFields) out << "      fields: " << *e.changedFields << "\n";
         if (e.reasonCode) out << "      reason: " << *e.reasonCode << "\n";

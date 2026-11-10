@@ -76,9 +76,22 @@ TEST_CASE("Console TC-Doc-03: another doctor's appointment is refused with a cle
     const auto doc = f.addDoctor("mehta");
     f.addDoctor("rao");
     const auto appt = f.visit(f.addPatient("Ravi Kumar"), doc);
-    const std::string out = run(f, "5\n" + formatAppointmentId(appt.id) + "\nCough\nN\nN\nY\n0\n", doctorSession("rao"));
+    // The refusal comes straight after the appointment number: the form is never shown.
+    const std::string out = run(f, "5\n" + formatAppointmentId(appt.id) + "\n0\n", doctorSession("rao"));
     CHECK(contains(out, "belongs to another doctor"));
+    CHECK_FALSE(contains(out, "Diagnosis"));
     CHECK(f.count("SELECT count(*) FROM consultation") == 0);
+}
+
+TEST_CASE("Console TC-Doc-03: a recorded appointment is refused before the form is shown") {
+    ConsultationFixture f;
+    const auto doc = f.addDoctor("mehta");
+    const auto appt = f.visit(f.addPatient("Ravi Kumar"), doc);
+    REQUIRE(f.consultations.recordConsultation(doctorSession("mehta"), f.draft(appt.id, "Cough")).ok());
+    const std::string out = run(f, "5\n" + formatAppointmentId(appt.id) + "\n0\n", doctorSession("mehta"));
+    CHECK(contains(out, "has already been recorded"));
+    CHECK_FALSE(contains(out, "Diagnosis"));
+    CHECK(f.count("SELECT count(*) FROM consultation") == 1);
 }
 
 TEST_CASE("Console TC-Doc-02 and history: weekly queue and a patient's past consultations") {

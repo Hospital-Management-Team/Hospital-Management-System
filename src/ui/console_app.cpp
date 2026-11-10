@@ -52,6 +52,8 @@ int ConsoleApp::run() {
     // The lab-results entry follows the medical history entry (issue #6) when both are present.
     const bool historyEntry = consultations_ && medicalRecords_;
     const std::string labNumber = historyEntry ? "9" : "8";
+    // The Receptionist's "correct a patient's details" entry follows the billing entries when present.
+    const std::string updateNumber = billing_ ? "12" : "8";
     while (!io_.exhausted()) {
         out << "\n" << kRule << "\n";
         out << (reception ? "RECEPTION" : "DOCTOR") << " MENU  -  " << session_.displayName;
@@ -72,6 +74,7 @@ int ConsoleApp::run() {
                        "  10. Bills and balances\n"
                        "  11. Print a receipt again\n";
             }
+            out << "  " << updateNumber << ". Correct a patient's details (name, date of birth, gender, address, mobile)\n";
         } else {
             out << "  1. Search patients (UHID, name, mobile number, or name and date of birth)\n"
                    "  2. Open a patient record by UHID\n"
@@ -104,7 +107,8 @@ int ConsoleApp::run() {
             else if (billing_ && c == "9") paymentScreen();
             else if (billing_ && c == "10") billsScreen();
             else if (billing_ && c == "11") reprintReceiptScreen();
-            else out << (billing_ ? "  Please choose a number from 0 to 11.\n" : "  Please choose a number from 0 to 7.\n");
+            else if (c == updateNumber) updatePatientScreen();
+            else out << (billing_ ? "  Please choose a number from 0 to 12.\n" : "  Please choose a number from 0 to 8.\n");
         } else {
             if (c == "1") searchPatientsScreen();
             else if (c == "2") viewPatientByUhidScreen();
@@ -493,6 +497,137 @@ void ConsoleApp::viewPatientByUhidScreen() {
     auto r = patients_.getPatient(session_, *id);
     if (!r) { handleFailure(r.error()); return; }
     showPatient(r.value());
+}
+
+// HMS-F-005: only a Receptionist corrects a patient's details. Pressing Enter keeps what is stored;
+// the details are read back and confirmed before anything is saved (SRS 3.1).
+void ConsoleApp::updatePatientScreen() {
+    auto& out = io_.out();
+    if (changesBlocked_) {
+        out << "  ! Changes are blocked until the application is restarted (an earlier save could not be "
+               "confirmed).\n";
+        return;
+    }
+    const PatientPolicy& policy = patients_.policy().patient;
+    const Date today = patients_.today();
+    static const char* kCancelledText = "Cancelled. Nothing was changed.\n";
+
+    out << "\nCORRECT A PATIENT'S DETAILS\n";
+    auto line = io_.readLine("UHID of the patient (e.g. HMS-000123; Enter to go back): ");
+    if (!line || text::trimSpaces(*line).empty()) return;
+    auto id = parseUhid(*line);
+    if (!id) { out << "  ! UHID: must look like HMS-000123 or 123\n"; return; }
+    auto found = patients_.getPatient(session_, *id);
+    if (!found) { handleFailure(found.error()); return; }
+    const PatientRecord current = found.value();
+    showPatient(current);
+    out << "\nPress Enter at a prompt to keep the value shown. To cancel, press Ctrl+D (Linux) or Ctrl+Z then Enter "
+           "(Windows).\n\n";
+
+    PatientDraft draft;
+    draft.fullName = current.fullName;
+    draft.dateOfBirth = current.dateOfBirth.toDisplay();
+    draft.gender = to_string(current.gender);
+    draft.address = current.address;
+    draft.phone = current.phone.value_or("");
+    draft.noPhone = !current.phone && current.noPhoneConfirmed;
+
+    // Asks until Enter (keep), a valid value (replace) or end of input (cancel).
+    auto askField = [&](const std::string& prompt, const std::function<Result<std::string>(const std::string&)>& check,
+                        std::string& target) -> bool {
+        while (true) {
+            auto typed = io_.readLine(prompt);
+            if (!typed) return false;
+            if (text::trimSpaces(*typed).empty()) return true;
+            auto ok = check(*typed);
+            if (!ok) { io_.showError(ok.error()); continue; }
+            target = ok.value();
+            return true;
+        }
+    };
+
+    if (!askField("Full name [" + current.fullName + "]: ",
+                  [&](const std::string& s) { return patient_rules::validateFullName(s, policy); }, draft.fullName)) {
+        out << kCancelledText;
+        return;
+    }
+    if (!askField("Date of birth DD-MM-YYYY [" + current.dateOfBirth.toDisplay() +
+                      (current.dobEstimated ? ", estimated" : "") + "]: ",
+                  [&](const std::string& s) -> Result<std::string> {
+                      auto r = patient_rules::validateDateOfBirth(s, today, policy);
+                      if (!r) return r.error();
+                      return text::trimSpaces(s);
+                  },
+                  draft.dateOfBirth)) {
+        out << kCancelledText;
+        return;
+    }
+    if (!askField("Gender M, F or O [" + to_string(current.gender) + "]: ",
+                  [](const std::string& s) -> Result<std::string> {
+                      auto r = patient_rules::validateGender(s);
+                      if (!r) return r.error();
+                      return to_string(r.value());
+                  },
+                  draft.gender)) {
+        out << kCancelledText;
+        return;
+    }
+    if (!askField("Address [" + current.address + "]: ",
+                  [&](const std::string& s) { return patient_rules::validateAddress(s, policy); }, draft.address)) {
+        out << kCancelledText;
+        return;
+    }
+
+    // Mobile number: Enter keeps it, a number replaces it, N confirms that nobody has a phone.
+    const bool hasMobile = current.phone.has_value() || current.noPhoneConfirmed;
+    while (true) {
+        auto mobile = io_.readLine("Mobile number, or N if no phone is available [" +
+                                   (hasMobile ? phoneText(current) : std::string("not recorded - a number is needed")) +
+                                   "]: ");
+        if (!mobile) { out << kCancelledText; return; }
+        if (text::trimSpaces(*mobile).empty() && hasMobile) break;
+        if (meansNoPhone(*mobile)) {
+            auto sure = io_.askYesNo("Confirm: the patient AND everyone with them have no mobile number? (Y/N): ");
+            if (!sure) { out << kCancelledText; return; }
+            if (*sure) {
+                draft.phone.clear();
+                draft.noPhone = true;
+                break;
+            }
+            continue;
+        }
+        auto r = patient_rules::validatePhone(*mobile);
+        if (!r) { io_.showError(r.error()); continue; }
+        draft.phone = r.value();
+        draft.noPhone = false;
+        break;
+    }
+
+    auto preview = patient_rules::validatePatient(draft, today, policy);
+    if (!preview) { handleFailure(preview.error()); return; }
+    PatientRecord shown = current;
+    shown.fullName = preview.value().fullName;
+    shown.dateOfBirth = preview.value().dateOfBirth;
+    shown.dobEstimated = (current.dobEstimated && preview.value().dateOfBirth == current.dateOfBirth) ||
+                         preview.value().dobEstimated;
+    shown.gender = preview.value().gender;
+    shown.address = preview.value().address;
+    shown.phone = preview.value().phone;
+    shown.noPhoneConfirmed = preview.value().noPhoneConfirmed;
+    out << "\nThe record will read:\n";
+    showPatient(shown);
+    auto confirm = io_.askYesNo("Save these details? (Y/N): ");
+    if (!confirm || !*confirm) { out << kCancelledText; return; }
+
+    auto result = patients_.updateDemographics(session_, *id, draft);
+    if (!result) { handleFailure(result.error()); return; }
+    if (!result.value().changed()) {
+        out << "  Nothing was changed: the details are the same as before.\n";
+        return;
+    }
+    out << "  Details saved for " << formatUhid(*id) << ". Changed:";
+    for (const auto& f : result.value().changedFields) out << " " << f;
+    out << "\n";
 }
 
 void ConsoleApp::showPatient(const PatientRecord& p) {

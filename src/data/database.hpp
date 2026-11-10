@@ -77,10 +77,18 @@ class Database {
 public:
     enum class Mode { ReadWrite, ReadWriteCreate };
 
-    Database(const std::string& utf8Path, Mode mode);
+    // A non-empty passphrase opens the file as an encrypted store (ChaCha20-Poly1305, key derived
+    // from the passphrase; HMS-NF-003). It is applied before anything else is read. An empty
+    // passphrase opens a plain, unencrypted file: only tests, tools and the one-time upgrade of an
+    // old store do that. A wrong passphrase is only noticed at the first read (SQLITE_NOTADB).
+    Database(const std::string& utf8Path, Mode mode, const std::string& passphrase = {});
     ~Database();
     Database(const Database&) = delete;
     Database& operator=(const Database&) = delete;
+
+    // Encrypts a plain database in place with `passphrase`, or changes the passphrase of an
+    // encrypted one. Throws DbError on failure.
+    void rekey(const std::string& newPassphrase);
 
     void exec(const std::string& sql);
     Statement prepare(const std::string& sql);

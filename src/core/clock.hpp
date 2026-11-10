@@ -1,5 +1,5 @@
 #pragma once
-// Time handling (SRS v11 draft section 2.5 "Time"): all code reads "now" through
+// Time handling (SRS section 2.5 "Time"): all code reads "now" through
 // one replaceable Clock so that tests can fix the time. Times the system
 // records itself are UTC; calendar rules (date of birth, "today") use the
 // hospital-local date, computed with a fixed UTC offset (Asia/Kolkata has no

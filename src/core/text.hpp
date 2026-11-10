@@ -1,6 +1,6 @@
 #pragma once
 // Text helpers shared by the input layer and the business modules.
-// All text in HMS is UTF-8 (SRS v11 draft section 2.4, portability rules).
+// All text in HMS is UTF-8 (SRS section 2.4, portability rules).
 
 #include <cstddef>
 #include <string>

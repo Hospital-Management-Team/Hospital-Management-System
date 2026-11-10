@@ -85,6 +85,14 @@ struct RegistrationOutcome {
     bool differentPersonAllowed = true;    // false under the v1.1 phone-blocks policy
 };
 
+// The result of correcting a patient's details (HMS-F-005): the record as it is now, and the names
+// of the fields that really changed (empty when the typed details matched what was stored).
+struct PatientUpdate {
+    PatientRecord record;
+    std::vector<std::string> changedFields;
+    bool changed() const { return !changedFields.empty(); }
+};
+
 enum class SearchMode { Uhid, Name, Phone };
 
 // Returning-patient lookup by name and date of birth (HMS-F-004).

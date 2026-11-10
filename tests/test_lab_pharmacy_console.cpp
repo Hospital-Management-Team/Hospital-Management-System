@@ -168,6 +168,36 @@ TEST_CASE("Console TC-Pharm-01: a refused dispense shows the reason and leaves t
     CHECK(f.count("SELECT count(*) FROM dispense") == 0);
 }
 
+TEST_CASE("Console TC-Pharm-01: a different medicine from the prescription is warned about and needs a second yes") {
+    LabPharmacyFixture f;
+    const auto doc = f.addDoctor("mehta");
+    f.seen(f.addPatient("Ravi Kumar"), doc, "mehta", {}, {{"Amoxicillin 250mg", "twice a day", "10"}});
+    f.addMedicine("Paracetamol 500mg", "tablet", "20");
+    f.addMedicine("Amoxicillin 250 mg", "capsule", "20");
+
+    // Declining the second question gives nothing.
+    const std::string declined = runPharmacy(f, "5\nRX-000001\nMED-000001\n2\nN\n0\n");
+    CHECK(contains(declined, "The prescription says \"Amoxicillin 250mg\" but you picked \"Paracetamol 500mg\"."));
+    CHECK(contains(declined, "Cancelled. Nothing was saved."));
+    CHECK(f.stockOf(1) == 20);
+    CHECK(f.count("SELECT count(*) FROM dispense") == 0);
+
+    // Saying yes to both questions still works, and the confirmation names the medicine.
+    const std::string forced = runPharmacy(f, "5\nRX-000001\nMED-000001\n2\nY\nY\n0\n");
+    CHECK(contains(forced, "Dispense 2 x Paracetamol 500mg now? (Y/N):"));
+    CHECK(f.stockOf(1) == 18);
+
+    // The matching medicine (spelled differently) is not questioned.
+    const std::string same = runPharmacy(f, "5\nRX-000001\nMED-000002\n2\nY\n0\n");
+    CHECK_FALSE(contains(same, "The prescription says"));
+    CHECK(f.stockOf(2) == 18);
+
+    // A quantity that is not a number is refused before any question.
+    const std::string bad = runPharmacy(f, "5\nRX-000001\nMED-000002\nabc\n0\n");
+    CHECK(contains(bad, "Quantity"));
+    CHECK_FALSE(contains(bad, "now? (Y/N)"));
+}
+
 TEST_CASE("Console TC-Lab-01: with the medical history entry present, lab results are option 9") {
     LabPharmacyFixture f;
     const auto doc = f.addDoctor("mehta");

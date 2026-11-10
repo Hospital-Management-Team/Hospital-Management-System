@@ -34,6 +34,11 @@ public:
     // HMS-F-022 (Doctor).
     Result<ConsultationRecord> recordConsultation(const Session& session, const ConsultationDraft& draft);
 
+    // The same appointment checks recordConsultation makes (role, own appointment, booked,
+    // not yet recorded, already started), without writing anything, so the screen can refuse
+    // before the doctor types the diagnosis. Returns the appointment number when recordable.
+    Result<std::int64_t> checkRecordable(const Session& session, std::int64_t appointmentId);
+
     // A patient's earlier consultations, newest first (HMS-F-006, Doctor). Only a doctor
     // with a care relationship may open it; a refusal is audited.
     Result<std::vector<ConsultationRecord>> listPatientHistory(const Session& session, std::int64_t uhid);
@@ -46,6 +51,9 @@ private:
     void auditDenied(const Session& session, const char* action, const std::string& recordId,
                      const char* reasonCode = nullptr);
     Result<ValidConsultation> validate(const ConsultationDraft& draft) const;
+    // Why this appointment cannot be recorded now (cancelled, already recorded, not booked, not
+    // started), or nothing when it can.
+    std::optional<Error> stateProblem(const AppointmentRecord& appt, const std::string& apptText);
 
     Database& db_;
     const Clock& clock_;

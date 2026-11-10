@@ -1,5 +1,5 @@
-// TC-Reg-01 (phone part): canonical form of SRS v11 draft section 1.4, boundary
-// cases listed in STP v1.10 section 5.2.
+// TC-Reg-01 (phone part): canonical form of SRS section 1.4, boundary
+// cases listed in STP section 5.2.
 #include <doctest.h>
 
 #include "patient/phone.hpp"

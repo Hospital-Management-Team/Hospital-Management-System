@@ -94,6 +94,22 @@ TEST_CASE("Console TC-Sec-05: the Admin screen lists the entries with time, user
     CHECK(contains(two, "2 entries shown."));
 }
 
+TEST_CASE("Console TC-Sec-05: the longest action name does not run into the record column") {
+    AuditViewFixture f;
+    {
+        AuditLog writer(f.db(), f.clock);
+        Transaction tx(f.db());
+        AuditEntryInput in;
+        in.action = audit_action::kPatientUseExisting;  // exactly 30 characters
+        in.recordId = "HMS-000001";
+        writer.append("receptionist", in);
+        tx.commit();
+    }
+    const std::string out = runScreen(f, "5\n", test::admin());
+    CHECK(contains(out, "PATIENT_DUPLICATE_USE_EXISTING  "));
+    CHECK_FALSE(contains(out, "PATIENT_DUPLICATE_USE_EXISTINGHMS-000001"));
+}
+
 TEST_CASE("Console TC-Sec-05: another role using the screen is refused") {
     AuditViewFixture f;
     const std::string out = runScreen(f, "\n", test::receptionist());

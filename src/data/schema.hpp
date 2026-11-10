@@ -5,7 +5,7 @@
 // later sprint adds tables by appending a Migration with the next version
 // number; existing migrations are never edited once merged, so a data store
 // created by an earlier build can be brought forward step by step.
-// (The v11 working-draft SRS HMS-F-053(12) defers migration; forward
+// (The SRS HMS-F-053(12) defers migration; forward
 // migration is listed in docs/deviation-log.md.)
 
 #include <string>

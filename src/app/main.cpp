@@ -14,6 +14,7 @@
 #include "auth/authentication.hpp"
 #include "auth/session.hpp"
 #include "config/policy.hpp"
+#include "config/settings.hpp"
 #include "core/clock.hpp"
 #include "data/schema.hpp"
 #include "data/store.hpp"
@@ -82,6 +83,7 @@ void adminMenu(ConsoleIO& io, Database& db, AppointmentService& appointments, Bi
                "  5. Manage staff accounts (deactivate, unlock, new password)\n"
                "  6. Summary reports\n"
                "  7. Master data (departments, rooms, doctor mapping)\n"
+               "  8. System settings (appointment cutoff, lockout cooldown, low-stock threshold)\n"
                "  0. Log out\n";
         auto c = io.readLine("Choose an option: ");
         if (!c || *c == "0") return;
@@ -91,7 +93,8 @@ void adminMenu(ConsoleIO& io, Database& db, AppointmentService& appointments, Bi
         if (*c == "5") { staffAccountsScreen(io, admin, session, readPassword); continue; }
         if (*c == "6") { reportsScreen(io, admin, session); continue; }
         if (*c == "7") { masterDataScreen(io, admin, session); continue; }
-        if (*c != "1") { out << "  Please choose a number from 0 to 7.\n"; continue; }
+        if (*c == "8") { settingsScreen(io, admin, session); continue; }
+        if (*c != "1") { out << "  Please choose a number from 0 to 8.\n"; continue; }
 
         auto u = io.readLine("New username: ");
         if (!u) return;
@@ -120,6 +123,29 @@ void adminMenu(ConsoleIO& io, Database& db, AppointmentService& appointments, Bi
         } else {
             out << "  Could not create the account (empty name, contains spaces, or already used).\n";
         }
+    }
+}
+
+// Asks twice for a new store passphrase (not shown while typing). False if the input ended.
+bool askNewPassphrase(ConsoleIO& io, std::string& passphrase) {
+    auto& out = io.out();
+    out << "\nChoose a passphrase for the data store (8 to 128 characters). It is asked at every start-up.\n"
+           "It cannot be recovered: if it is lost, the data cannot be read.\n";
+    while (true) {
+        std::string first, second;
+        if (!readPassword("New data store passphrase: ", first)) return false;
+        if (!readPassword("Repeat the passphrase: ", second)) {
+            wipe(first);
+            return false;
+        }
+        std::string reason;
+        const bool matches = first == second;
+        const bool acceptable = matches && isStorePassphraseAcceptable(first, reason);
+        if (acceptable) passphrase = first;
+        wipe(first);
+        wipe(second);
+        if (acceptable) return true;
+        out << "  " << (matches ? reason : std::string("The two passphrases do not match.")) << "\n";
     }
 }
 
@@ -156,10 +182,24 @@ int main(int argc, char** argv) {
 
     // The folder that holds the store is created if it is missing.
     const std::string canonical = canonicalStorePath(storePath);
+    // A folder the application creates is limited to the current user, so the store's temporary
+    // files are protected too (HMS-SR-005). A folder that already existed is left as it is.
     {
         std::error_code ec;
         const auto parent = std::filesystem::path(canonical).parent_path();
-        if (!parent.empty()) std::filesystem::create_directories(parent, ec);
+        if (!parent.empty() && !std::filesystem::exists(parent, ec)) {
+            if (std::filesystem::create_directories(parent, ec)) {
+                std::string aclError;
+                std::string parentUtf8;
+                {
+                    const auto u8 = parent.u8string();
+                    parentUtf8.assign(u8.begin(), u8.end());
+                }
+                if (!restrictToCurrentUser(parentUtf8, true, aclError)) {
+                    out << "Warning: " << aclError << ".\n";
+                }
+            }
+        }
     }
 
     // 1. One instance per data store (SRS 2.4): take the lock before opening.
@@ -169,10 +209,23 @@ int main(int argc, char** argv) {
         out << "Cannot start: " << lockError << ".\nNothing was changed.\n";
         return 1;
     }
+    // An existing store and its lock file are limited to the current user as well (HMS-SR-005).
+    {
+        std::string aclError;
+        if (storeFileExists(canonical) && !restrictToCurrentUser(canonical, false, aclError)) {
+            out << "Warning: " << aclError << ".\n";
+        }
+        if (!restrictToCurrentUser(lock->lockPath(), false, aclError)) out << "Warning: " << aclError << ".\n";
+    }
 
     // 2. A missing store is created only after confirmation (HMS-F-053 rule 1).
+    //    The store is always encrypted (HMS-NF-003): a new one gets a passphrase, an old plain one is
+    //    encrypted once, and an encrypted one is opened with its passphrase.
     bool create = false;
-    if (!storeFileExists(canonical)) {
+    bool encryptPlain = false;
+    std::string passphrase;
+    const bool existing = storeFileExists(canonical);
+    if (!existing) {
         out << "\nNo existing data store was found at:\n  " << canonical << "\n";
         auto yes = io.askYesNo("Set up a NEW, EMPTY data store here? (Y/N): ");
         if (!yes || !*yes) {
@@ -180,12 +233,40 @@ int main(int argc, char** argv) {
             return 0;
         }
         create = true;
+        if (!askNewPassphrase(io, passphrase)) return 0;
+    } else if (storeFileIsPlain(canonical)) {
+        out << "\nThis data store is NOT encrypted:\n  " << canonical << "\n"
+            << "Patient data must not be kept in plain text. It will be encrypted in place with a passphrase you "
+               "choose.\n"
+               "If you want a backup first, copy the file now; a copy stays readable by anyone until you delete it.\n";
+        auto yes = io.askYesNo("Encrypt this data store now? (Y/N): ");
+        if (!yes || !*yes) {
+            out << "Nothing was changed. The application does not run on a plain data store.\n";
+            return 0;
+        }
+        encryptPlain = true;
+        if (!askNewPassphrase(io, passphrase)) return 0;
     }
 
-    auto store = openStore(canonical, create);
+    StoreOpenResult store;
+    if (existing && !encryptPlain) {
+        for (int attempt = 0; attempt < 3; ++attempt) {
+            if (!readPassword("Data store passphrase: ", passphrase)) return 0;
+            store = openStore(canonical, false, passphrase);
+            wipe(passphrase);
+            if (store.status != StoreStatus::WrongPassphrase) break;
+            out << "  The passphrase is wrong, or the data store is damaged.\n";
+        }
+    } else {
+        store = openStore(canonical, create, passphrase, encryptPlain);
+        wipe(passphrase);
+    }
     if (store.status != StoreStatus::Opened) {
         out << "\nCannot start: " << store.message << "\n";
         return 1;
+    }
+    if (store.encryptedNow) {
+        out << "The data store is now encrypted. Keep the passphrase safe: it cannot be recovered.\n";
     }
     out << "\nData store: " << canonical << (store.created ? "  (new)" : "") << "\n";
     if (store.migrated) out << "The data store was upgraded to schema version " << store.schemaVersion << ".\n";
@@ -245,7 +326,7 @@ int main(int argc, char** argv) {
             } else if (result.status == auth::LoginStatus::AccountLocked) {
                 locked = true;
                 out << "\nThis account is locked after repeated failed attempts. Try again in "
-                    << policy.auth.lockoutMinutes << " minutes.\n";
+                    << Settings(*store.db, policy).lockoutMinutes() << " minutes.\n";
             } else {
                 out << "\nInvalid username or password.\n";
             }

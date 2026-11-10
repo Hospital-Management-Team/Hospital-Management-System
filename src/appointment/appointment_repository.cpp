@@ -95,6 +95,12 @@ void AppointmentRepository::saveSchedule(std::int64_t staffId, const DoctorSched
     up.bind(4, updatedAtUtc);
     up.run();
 
+    // HMS-F-050: a department typed on the doctor profile also belongs on the department list
+    // (deviation D-59), so Admin can see it, assign rooms to it and switch it off later.
+    auto dept = db_.prepare("INSERT OR IGNORE INTO department (name) VALUES (?)");
+    dept.bind(1, draft.department);
+    dept.run();
+
     auto del = db_.prepare("DELETE FROM doctor_availability WHERE staff_id = ?");
     del.bind(1, staffId);
     del.run();
@@ -106,6 +112,14 @@ void AppointmentRepository::saveSchedule(std::int64_t staffId, const DoctorSched
         ins.bind(1, staffId).bind(2, h.weekday).bind(3, h.startMinute).bind(4, h.endMinute);
         ins.run();
     }
+}
+
+bool AppointmentRepository::movesIntoSwitchedOffDepartment(std::int64_t staffId, const std::string& name) {
+    auto st = db_.prepare(
+        "SELECT 1 FROM department d WHERE d.name = ? AND d.active = 0 AND NOT EXISTS "
+        "(SELECT 1 FROM doctor_profile p WHERE p.staff_id = ? AND p.department = d.name COLLATE NOCASE)");
+    st.bind(1, name).bind(2, staffId);
+    return st.step();
 }
 
 bool AppointmentRepository::patientExists(std::int64_t uhid) {
