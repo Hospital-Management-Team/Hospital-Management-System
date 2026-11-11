@@ -180,8 +180,22 @@ int main(int argc, char** argv) {
            " HOSPITAL MANAGEMENT SYSTEM  -  Patient records and appointments\n"
            "==============================================================================\n";
 
-    // The folder that holds the store is created if it is missing.
     const std::string canonical = canonicalStorePath(storePath);
+
+    // A missing store is created only after confirmation (HMS-F-053 rule 1), so nothing is created
+    // on disk, not even the folder or the lock file, until the answer is Yes.
+    bool confirmedNew = false;
+    if (!storeFileExists(canonical)) {
+        out << "\nNo existing data store was found at:\n  " << canonical << "\n";
+        auto yes = io.askYesNo("Set up a NEW, EMPTY data store here? (Y/N): ");
+        if (!yes || !*yes) {
+            out << "Nothing was created. If you expected existing data, check the --store path.\n";
+            return 0;
+        }
+        confirmedNew = true;
+    }
+
+    // The folder that holds the store is created if it is missing.
     // A folder the application creates is limited to the current user, so the store's temporary
     // files are protected too (HMS-SR-005). A folder that already existed is left as it is.
     {
@@ -218,19 +232,21 @@ int main(int argc, char** argv) {
         if (!restrictToCurrentUser(lock->lockPath(), false, aclError)) out << "Warning: " << aclError << ".\n";
     }
 
-    // 2. A missing store is created only after confirmation (HMS-F-053 rule 1).
-    //    The store is always encrypted (HMS-NF-003): a new one gets a passphrase, an old plain one is
+    // 2. The store is always encrypted (HMS-NF-003): a new one gets a passphrase, an old plain one is
     //    encrypted once, and an encrypted one is opened with its passphrase.
     bool create = false;
     bool encryptPlain = false;
     std::string passphrase;
     const bool existing = storeFileExists(canonical);
     if (!existing) {
-        out << "\nNo existing data store was found at:\n  " << canonical << "\n";
-        auto yes = io.askYesNo("Set up a NEW, EMPTY data store here? (Y/N): ");
-        if (!yes || !*yes) {
-            out << "Nothing was created. If you expected existing data, check the --store path.\n";
-            return 0;
+        // Asked again only if the store was there a moment ago and has vanished since.
+        if (!confirmedNew) {
+            out << "\nNo existing data store was found at:\n  " << canonical << "\n";
+            auto yes = io.askYesNo("Set up a NEW, EMPTY data store here? (Y/N): ");
+            if (!yes || !*yes) {
+                out << "Nothing was created. If you expected existing data, check the --store path.\n";
+                return 0;
+            }
         }
         create = true;
         if (!askNewPassphrase(io, passphrase)) return 0;

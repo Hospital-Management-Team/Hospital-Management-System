@@ -82,7 +82,7 @@ struct RegistrationOutcome {
     std::int64_t uhid = 0;                 // set when Registered
     std::vector<Candidate> candidates;     // set when NeedsDecision
     bool reasonRequired = false;           // a strong candidate is listed
-    bool differentPersonAllowed = true;    // false under the v1.1 phone-blocks policy
+    bool differentPersonAllowed = true;    // false under the phone-blocks policy
 };
 
 // The result of correcting a patient's details (HMS-F-005): the record as it is now, and the names

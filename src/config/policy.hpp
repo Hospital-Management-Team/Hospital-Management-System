@@ -25,14 +25,14 @@ struct PatientPolicy {
 
     // When the date of birth is not known, the age may be entered; it is
     // stored as an estimated date of birth (1 January of the birth year) and
-    // flagged (submitted SRS v1.1 HMS-F-001 "age/DOB"; deviation D-03).
+    // flagged (submitted SRS HMS-F-001 "age/DOB"; deviation D-03).
     int maxAgeYears = 125;
 
     // HMS-F-002 duplicate rule for a shared phone number (deviation D-02).
     //  true  = team decision for Sprint 1: a patient who only shares a phone
     //          number (for example a family member) may be registered as a
     //          different person after staff review.
-    //  false = submitted SRS v1.1 AC-HMS-F-002: a matching phone number blocks
+    //  false = submitted SRS AC-HMS-F-002: a matching phone number blocks
     //          a new UHID; staff must use the existing record.
     bool phoneMatchAllowsNewPatient = true;
 

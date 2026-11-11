@@ -1125,9 +1125,9 @@ TEST CASE:  SR-001 only a Receptionist may register; denials are audited and cha
 0.079990 s: SR-001 only a Receptionist may register; denials are audited and change nothing
 ===============================================================================
 C:/Users/jithu/Projects/HMS-auth-rbac/tests/test_registration.cpp:234:
-TEST CASE:  Policy switch: SRS v1.1 behaviour (a matching phone blocks a new UHID)
+TEST CASE:  Policy switch: submitted SRS behaviour (a matching phone blocks a new UHID)
 
-0.079042 s: Policy switch: SRS v1.1 behaviour (a matching phone blocks a new UHID)
+0.079042 s: Policy switch: submitted SRS behaviour (a matching phone blocks a new UHID)
 ===============================================================================
 C:/Users/jithu/Projects/HMS-auth-rbac/tests/test_registration.cpp:250:
 TEST CASE:  Validation errors are returned before anything is written
